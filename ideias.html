@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-pt" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS | Segundo Cérebro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-color text-base">
+
+    <aside id="sidebar"></aside>
+
+    <main class="flex-1 p-6 overflow-y-auto">
+        
+        <header class="mb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <div>
+                <h2 class="text-3xl font-black text-strong uppercase tracking-tight">Segundo Cérebro</h2>
+                <p class="text-[11px] font-bold uppercase tracking-widest mt-1 text-muted">Capture agora. Organize depois.</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="abrirModalNota()" class="bg-accent text-black px-5 py-2.5 rounded-xl text-xs font-black shadow-sm hover:scale-105 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb"></i> NOVA INSIGHT
+                </button>
+                <button id="theme-toggle" title="Alternar Tema" class="bg-panel border border-theme p-2.5 rounded-xl text-strong hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="flex gap-2 mb-6 overflow-x-auto pb-2" id="filtros-tags">
+            <button onclick="filtrarNotas('Todas')" class="px-4 py-1.5 rounded-full bg-accent text-black text-[10px] font-black uppercase tracking-widest transition-all">Todas</button>
+            <button onclick="filtrarNotas('Negócios')" class="px-4 py-1.5 rounded-full bg-panel border border-theme text-muted text-[10px] font-black uppercase tracking-widest hover:border-accent transition-all">Negócios</button>
+            <button onclick="filtrarNotas('Pessoal')" class="px-4 py-1.5 rounded-full bg-panel border border-theme text-muted text-[10px] font-black uppercase tracking-widest hover:border-accent transition-all">Pessoal</button>
+            <button onclick="filtrarNotas('Estudos')" class="px-4 py-1.5 rounded-full bg-panel border border-theme text-muted text-[10px] font-black uppercase tracking-widest hover:border-accent transition-all">Estudos</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="grid-notas">
+            </div>
+
+        <div id="modal-nota" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+            <div class="bg-panel border border-theme rounded-2xl w-full max-w-lg shadow-2xl">
+                <div class="p-6">
+                    <input type="text" id="nota-titulo" class="w-full bg-transparent border-none text-xl font-black text-strong focus:outline-none mb-4" placeholder="Título do Insight...">
+                    <textarea id="nota-conteudo" class="w-full h-40 bg-transparent border-none text-sm text-base focus:outline-none resize-none mb-4" placeholder="Escreva sua ideia aqui..."></textarea>
+                    
+                    <div class="flex flex-wrap gap-4 items-center justify-between border-t border-theme pt-4">
+                        <select id="nota-tag" class="bg-black/20 border border-theme rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase text-muted outline-none focus:border-accent">
+                            <option value="Negócios">Negócios</option>
+                            <option value="Pessoal">Pessoal</option>
+                            <option value="Estudos">Estudos</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                        <div class="flex gap-2">
+                            <button onclick="fecharModalNota()" class="px-4 py-2 text-xs font-bold text-muted hover:text-strong">Cancelar</button>
+                            <button onclick="salvarNota()" class="bg-accent text-black px-6 py-2 rounded-xl text-xs font-black shadow-lg">Capturar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script src="components.js"></script>
+    <script>
+        const IDEIAS_KEY = 'lifeos_ideias';
+        let ideias = JSON.parse(localStorage.getItem(IDEIAS_KEY)) || [];
+        let filtroAtivo = 'Todas';
+
+        function renderNotas() {
+            const grid = document.getElementById('grid-notas');
+            grid.innerHTML = '';
+
+            const notasFiltradas = filtroAtivo === 'Todas' 
+                ? ideias 
+                : ideias.filter(i => i.tag === filtroAtivo);
+
+            if (notasFiltradas.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center opacity-30"><i class="fa-solid fa-brain text-5xl mb-4"></i><p class="font-bold uppercase tracking-widest text-xs">Nenhum insight capturado</p></div>`;
+                return;
+            }
+
+            notasFiltradas.forEach((nota, index) => {
+                const card = document.createElement('div');
+                card.className = "glass-card p-5 border-t-2 border-accent hover:shadow-lg hover:shadow-accent/5 transition-all group relative";
+                card.innerHTML = `
+                    <button onclick="excluirNota(${index})" class="absolute top-4 right-4 text-muted opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                    <h3 class="font-bold text-strong mb-2 pr-6">${nota.titulo}</h3>
+                    <p class="text-xs text-muted leading-relaxed whitespace-pre-wrap">${nota.conteudo}</p>
+                    <div class="mt-4 flex items-center justify-between">
+                        <span class="text-[8px] font-black bg-accent/10 text-accent px-2 py-0.5 rounded uppercase tracking-widest">${nota.tag}</span>
+                        <span class="text-[8px] font-bold text-muted opacity-50 uppercase">${nota.data}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function abrirModalNota() {
+            document.getElementById('modal-nota').classList.replace('hidden', 'flex');
+            document.getElementById('nota-titulo').focus();
+        }
+
+        function fecharModalNota() {
+            document.getElementById('modal-nota').classList.replace('flex', 'hidden');
+            document.getElementById('nota-titulo').value = '';
+            document.getElementById('nota-conteudo').value = '';
+        }
+
+        function salvarNota() {
+            const titulo = document.getElementById('nota-titulo').value.trim();
+            const conteudo = document.getElementById('nota-conteudo').value.trim();
+            const tag = document.getElementById('nota-tag').value;
+
+            if (!titulo || !conteudo) return alert("Preencha título e conteúdo!");
+
+            const novaNota = {
+                titulo,
+                conteudo,
+                tag,
+                data: new Date().toLocaleDateString('pt-PT')
+            };
+
+            ideias.unshift(novaNota);
+            localStorage.setItem(IDEIAS_KEY, JSON.stringify(ideias));
+            fecharModalNota();
+            renderNotas();
+        }
+
+        function excluirNota(index) {
+            if(confirm("Deseja deletar este insight?")) {
+                ideias.splice(index, 1);
+                localStorage.setItem(IDEIAS_KEY, JSON.stringify(ideias));
+                renderNotas();
+            }
+        }
+
+        function filtrarNotas(tag) {
+            filtroAtivo = tag;
+            // Estilo visual dos botões de filtro
+            const botoes = document.querySelectorAll('#filtros-tags button');
+            botoes.forEach(btn => {
+                if(btn.innerText.toLowerCase() === tag.toLowerCase()) {
+                    btn.className = "px-4 py-1.5 rounded-full bg-accent text-black text-[10px] font-black uppercase tracking-widest transition-all";
+                } else {
+                    btn.className = "px-4 py-1.5 rounded-full bg-panel border border-theme text-muted text-[10px] font-black uppercase tracking-widest hover:border-accent transition-all";
+                }
+            });
+            renderNotas();
+        }
+
+        window.onload = renderNotas;
+    </script>
+</body>
+</html>
