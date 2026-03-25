@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-pt" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS | Gestão de Tarefas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="overflow-hidden"> <aside id="sidebar">
+        <div class="p-6 flex items-center justify-between border-b border-theme">
+            <h1 class="logo-text font-bold text-accent uppercase tracking-tighter text-xl">Life<span class="text-strong">OS</span></h1>
+            <button id="toggle-menu" class="text-muted hover:text-accent transition-colors"><i class="fa-solid fa-indent"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto mt-4">
+            <nav class="space-y-2">
+                <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> <span class="menu-text">Voltar ao Início</span></a>
+                <a href="tarefas.html" class="nav-link active"><i class="fa-solid fa-list-check"></i> <span class="menu-text">Tarefas</span></a>
+            </nav>
+        </div>
+    </aside>
+
+    <main class="flex flex-col h-screen p-6">
+        
+        <header class="mb-6 flex justify-between items-end shrink-0">
+            <div>
+                <h2 class="text-3xl font-black text-strong uppercase tracking-tight">Caixa de Entrada</h2>
+                <p class="text-[11px] font-bold uppercase tracking-widest mt-1 text-muted">Ação > Planejamento</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="theme-toggle" title="Alternar Tema" class="bg-panel border border-theme p-2 rounded-xl text-strong hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="flex flex-col lg:flex-row gap-6 flex-1 overflow-hidden pb-4">
+            
+            <div class="w-full lg:w-1/3 flex flex-col glass-card overflow-hidden border-t-4 border-accent">
+                
+                <div class="p-4 border-b border-theme bg-panel z-10">
+                    <form id="form-nova-tarefa" class="relative flex items-center">
+                        <i class="fa-solid fa-plus absolute left-3 text-muted"></i>
+                        <input type="text" id="input-nova-tarefa" class="w-full bg-black/5 dark:bg-white/5 border border-theme rounded-xl py-3 pl-10 pr-4 text-sm text-strong focus:outline-none focus:border-accent transition-colors placeholder-muted" placeholder="Adicionar tarefa rápida (Enter)..." autocomplete="off">
+                    </form>
+                </div>
+
+                <div class="flex items-center gap-2 p-3 border-b border-theme bg-panel/50 text-xs font-bold text-muted">
+                    <button onclick="setFiltro('hoje')" id="filter-hoje" class="px-3 py-1.5 rounded-lg bg-accent/10 text-accent transition-colors">Hoje / Pendentes</button>
+                    <button onclick="setFiltro('concluidas')" id="filter-concluidas" class="px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors">Concluídas</button>
+                </div>
+
+                <div id="lista-tarefas" class="flex-1 overflow-y-auto p-2 space-y-1">
+                    </div>
+            </div>
+
+            <div class="w-full lg:w-2/3 glass-card flex flex-col overflow-hidden relative border-t-4 border-zinc-500">
+                
+                <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center opacity-40 select-none">
+                    <i class="fa-solid fa-list-check text-6xl mb-4 text-muted"></i>
+                    <p class="text-sm font-bold text-strong uppercase tracking-widest">Selecione uma tarefa</p>
+                    <p class="text-xs text-muted mt-2">Clique em uma tarefa na lista para ver os detalhes e executar.</p>
+                </div>
+
+                <div id="painel-detalhes" class="hidden flex-col h-full bg-panel">
+                    
+                    <div class="p-6 border-b border-theme flex justify-between items-start gap-4">
+                        <div class="flex-1">
+                            <input type="text" id="detalhe-titulo" class="w-full bg-transparent border-none text-xl font-black text-strong focus:outline-none focus:ring-2 focus:ring-accent/50 rounded px-2 -ml-2 transition-all" placeholder="Título da Tarefa">
+                            <div class="flex items-center gap-4 mt-3">
+                                <div class="flex items-center gap-2 text-xs text-muted font-bold">
+                                    <i class="fa-regular fa-calendar"></i>
+                                    <input type="date" id="detalhe-data" class="bg-transparent border-none focus:outline-none text-strong cursor-pointer">
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-muted font-bold">
+                                    <i class="fa-solid fa-flag"></i>
+                                    <select id="detalhe-prio" class="bg-transparent border-none focus:outline-none text-strong cursor-pointer font-bold">
+                                        <option value="Baixa" class="text-blue-500">🟢 Baixa</option>
+                                        <option value="Media" class="text-yellow-500">🟡 Média</option>
+                                        <option value="Alta" class="text-red-500">🔴 Alta</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="salvarDetalhes()" class="bg-accent/10 text-accent hover:bg-accent hover:text-white px-3 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm"><i class="fa-solid fa-save mr-1"></i> SALVAR</button>
+                            <button onclick="excluirTarefaAtual()" class="text-muted hover:text-red-500 px-2 py-2 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="fecharDetalhes()" class="text-muted hover:text-strong px-2 py-2 transition-colors lg:hidden"><i class="fa-solid fa-xmark text-lg"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-6 space-y-8">
+                        
+                        <div>
+                            <h3 class="text-[10px] font-black uppercase tracking-widest text-muted mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-align-left text-accent"></i> Descrição / Como Resolver
+                            </h3>
+                            <textarea id="detalhe-desc" class="w-full h-24 bg-black/5 dark:bg-white/5 border border-theme rounded-xl p-4 text-sm text-strong focus:outline-none focus:border-accent resize-none placeholder-muted" placeholder="Escreva o passo a passo mental ou recursos necessários para resolver isso de forma rápida..."></textarea>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-[10px] font-black uppercase tracking-widest text-muted flex items-center gap-2">
+                                    <i class="fa-solid fa-list-ul text-accent"></i> Subtarefas
+                                </h3>
+                            </div>
+                            <div class="w-full bg-black/10 dark:bg-white/5 h-1.5 rounded-full mb-3 overflow-hidden">
+                                <div id="progresso-subtarefas" class="bg-accent h-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <div id="lista-subtarefas" class="space-y-1 mb-3">
+                                </div>
+                            <form id="form-subtarefa" class="flex gap-2">
+                                <input type="text" id="input-subtarefa" class="flex-1 bg-transparent border-b border-theme py-1 text-sm text-strong focus:outline-none focus:border-accent placeholder-muted" placeholder="Adicionar passo menor (Enter)...">
+                            </form>
+                        </div>
+
+                        <div>
+                            <h3 class="text-[10px] font-black uppercase tracking-widest text-muted mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-pen text-accent"></i> Anotações de Fechamento
+                            </h3>
+                            <textarea id="detalhe-notas" class="w-full h-20 bg-black/5 dark:bg-white/5 border border-theme rounded-xl p-4 text-sm text-strong focus:outline-none focus:border-accent resize-none placeholder-muted" placeholder="O que aconteceu? Teve algum bloqueio? Registre aqui..."></textarea>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+    
+    <script>
+        const TAREFAS_KEY = 'lifeos_tarefas';
+        let tarefas = JSON.parse(localStorage.getItem(TAREFAS_KEY)) || [];
+        let tarefaSelecionadaId = null;
+        let filtroAtual = 'hoje'; // 'hoje' ou 'concluidas'
+
+        const coresPrio = {
+            'Alta': 'border-red-500 text-red-500 bg-red-500/10',
+            'Media': 'border-yellow-500 text-yellow-500 bg-yellow-500/10',
+            'Baixa': 'border-blue-500 text-blue-500 bg-blue-500/10'
+        };
+
+        // --- RENDERIZAÇÃO DA LISTA ---
+        function renderListaTarefas() {
+            const lista = document.getElementById('lista-tarefas');
+            lista.innerHTML = '';
+
+            const tarefasFiltradas = tarefas.filter(t => filtroAtual === 'concluidas' ? t.concluida : !t.concluida);
+            const ordemPrio = { 'Alta': 1, 'Media': 2, 'Baixa': 3 };
+            tarefasFiltradas.sort((a, b) => (ordemPrio[a.prioridade] || 3) - (ordemPrio[b.prioridade] || 3));
+
+            if (tarefasFiltradas.length === 0) {
+                lista.innerHTML = `<p class="text-xs text-muted italic p-4 text-center">Nenhuma tarefa encontrada.</p>`;
+                return;
+            }
+
+            tarefasFiltradas.forEach(tarefa => {
+                const isSelected = tarefa.id === tarefaSelecionadaId;
+                const corPrio = coresPrio[tarefa.prioridade] || coresPrio['Baixa'];
+                
+                const div = document.createElement('div');
+                div.className = `flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer group 
+                    ${isSelected ? 'border-accent bg-accent/5' : 'border-transparent hover:border-theme hover:bg-black/5 dark:hover:bg-white/5'}
+                    ${tarefa.concluida ? 'opacity-60' : ''}`;
+                
+                div.onclick = (e) => {
+                    if(!e.target.closest('.checkbox-area')) {
+                        abrirDetalhes(tarefa.id);
+                    }
+                };
+
+                const checkboxCls = tarefa.concluida ? 'bg-accent border-accent text-white' : 'border-theme bg-panel text-transparent group-hover:border-accent';
+                
+                div.innerHTML = `
+                    <div class="checkbox-area w-5 h-5 rounded mt-0.5 border flex items-center justify-center transition-colors ${checkboxCls}" onclick="toggleConcluirTarefa(${tarefa.id})">
+                        <i class="fa-solid fa-check text-[10px]"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold truncate ${tarefa.concluida ? 'line-through text-muted' : 'text-strong'}">${tarefa.titulo}</p>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${corPrio}">${tarefa.prioridade || 'Baixa'}</span>
+                            ${tarefa.data ? `<span class="text-[9px] text-muted font-bold"><i class="fa-regular fa-calendar mr-1"></i>${formataDataDisplay(tarefa.data)}</span>` : ''}
+                            ${tarefa.submetas && tarefa.submetas.length > 0 ? `<span class="text-[9px] text-muted font-bold"><i class="fa-solid fa-list-ul mr-1"></i>${tarefa.submetas.filter(s=>s.concluida).length}/${tarefa.submetas.length}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+                lista.appendChild(div);
+            });
+        }
+
+        // --- ADICIONAR TAREFA RÁPIDA ---
+        document.getElementById('form-nova-tarefa').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('input-nova-tarefa');
+            const titulo = input.value.trim();
+            
+            if (titulo) {
+                const novaTarefa = {
+                    id: Date.now(),
+                    titulo: titulo,
+                    concluida: false,
+                    prioridade: 'Baixa',
+                    data: new Date().toISOString().split('T')[0],
+                    descricao: '',
+                    notas: '',
+                    submetas: []
+                };
+                tarefas.unshift(novaTarefa);
+                salvarDados();
+                input.value = '';
+                renderListaTarefas();
+            }
+        });
+
+        function toggleConcluirTarefa(id) {
+            const index = tarefas.findIndex(t => t.id === id);
+            if (index !== -1) {
+                tarefas[index].concluida = !tarefas[index].concluida;
+                salvarDados();
+                renderListaTarefas();
+                
+                if(tarefaSelecionadaId === id && tarefas[index].concluida && filtroAtual === 'hoje') {
+                    fecharDetalhes();
+                }
+            }
+        }
+
+        // --- PAINEL DE DETALHES ---
+        function abrirDetalhes(id) {
+            tarefaSelecionadaId = id;
+            const tarefa = tarefas.find(t => t.id === id);
+            if (!tarefa) return;
+
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('painel-detalhes').classList.replace('hidden', 'flex');
+            
+            renderListaTarefas();
+
+            document.getElementById('detalhe-titulo').value = tarefa.titulo;
+            document.getElementById('detalhe-data').value = tarefa.data || '';
+            document.getElementById('detalhe-prio').value = tarefa.prioridade || 'Baixa';
+            document.getElementById('detalhe-desc').value = tarefa.descricao || '';
+            document.getElementById('detalhe-notas').value = tarefa.notas || '';
+
+            renderSubtarefas();
+        }
+
+        function fecharDetalhes() {
+            tarefaSelecionadaId = null;
+            document.getElementById('empty-state').classList.remove('hidden');
+            document.getElementById('painel-detalhes').classList.replace('flex', 'hidden');
+            renderListaTarefas();
+        }
+
+        function salvarDetalhes() {
+            if (!tarefaSelecionadaId) return;
+            const index = tarefas.findIndex(t => t.id === tarefaSelecionadaId);
+            if (index !== -1) {
+                const tituloNovo = document.getElementById('detalhe-titulo').value.trim();
+                if(!tituloNovo) { alert("A tarefa precisa de um título."); return; }
+
+                tarefas[index].titulo = tituloNovo;
+                tarefas[index].data = document.getElementById('detalhe-data').value;
+                tarefas[index].prioridade = document.getElementById('detalhe-prio').value;
+                tarefas[index].descricao = document.getElementById('detalhe-desc').value;
+                tarefas[index].notas = document.getElementById('detalhe-notas').value;
+                
+                salvarDados();
+                renderListaTarefas();
+
+                const btn = event.currentTarget;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> SALVO';
+                btn.classList.replace('bg-accent/10', 'bg-accent');
+                btn.classList.replace('text-accent', 'text-white');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('bg-accent', 'bg-accent/10');
+                    btn.classList.replace('text-white', 'text-accent');
+                }, 1500);
+            }
+        }
+
+        function excluirTarefaAtual() {
+            if (!tarefaSelecionadaId) return;
+            if (confirm("Deletar esta tarefa permanentemente?")) {
+                tarefas = tarefas.filter(t => t.id !== tarefaSelecionadaId);
+                salvarDados();
+                fecharDetalhes();
+            }
+        }
+
+        // --- SUBTAREFAS ---
+        function renderSubtarefas() {
+            if (!tarefaSelecionadaId) return;
+            const tarefa = tarefas.find(t => t.id === tarefaSelecionadaId);
+            const lista = document.getElementById('lista-subtarefas');
+            const barra = document.getElementById('progresso-subtarefas');
+            
+            lista.innerHTML = '';
+            
+            if (!tarefa.submetas) tarefa.submetas = [];
+            
+            const total = tarefa.submetas.length;
+            const concluidas = tarefa.submetas.filter(s => s.concluida).length;
+            barra.style.width = total === 0 ? '0%' : `${(concluidas/total)*100}%`;
+
+            tarefa.submetas.forEach((sub, sIdx) => {
+                const chkClass = sub.concluida ? 'bg-accent border-accent text-white' : 'border-theme bg-panel text-transparent';
+                lista.innerHTML += `
+                    <div class="flex items-center gap-3 p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg group transition-colors">
+                        <div onclick="toggleSubtarefa(${sIdx})" class="w-4 h-4 rounded border flex items-center justify-center cursor-pointer transition-colors ${chkClass}">
+                            <i class="fa-solid fa-check text-[8px]"></i>
+                        </div>
+                        <span class="flex-1 text-xs ${sub.concluida ? 'text-muted line-through' : 'text-strong'}">${sub.texto}</span>
+                        <button onclick="removerSubtarefa(${sIdx})" class="opacity-0 group-hover:opacity-100 text-muted hover:text-red-500 transition-opacity"><i class="fa-solid fa-xmark text-[10px]"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('form-subtarefa').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!tarefaSelecionadaId) return;
+            const input = document.getElementById('input-subtarefa');
+            const texto = input.value.trim();
+            
+            if (texto) {
+                const index = tarefas.findIndex(t => t.id === tarefaSelecionadaId);
+                if (!tarefas[index].submetas) tarefas[index].submetas = [];
+                tarefas[index].submetas.push({ texto: texto, concluida: false });
+                
+                salvarDados();
+                renderSubtarefas();
+                renderListaTarefas();
+                input.value = '';
+            }
+        });
+
+        function toggleSubtarefa(subIndex) {
+            const index = tarefas.findIndex(t => t.id === tarefaSelecionadaId);
+            tarefas[index].submetas[subIndex].concluida = !tarefas[index].submetas[subIndex].concluida;
+            salvarDados();
+            renderSubtarefas();
+            renderListaTarefas();
+        }
+
+        function removerSubtarefa(subIndex) {
+            const index = tarefas.findIndex(t => t.id === tarefaSelecionadaId);
+            tarefas[index].submetas.splice(subIndex, 1);
+            salvarDados();
+            renderSubtarefas();
+            renderListaTarefas();
+        }
+
+        // --- UTILIDADES ---
+        function setFiltro(tipo) {
+            filtroAtual = tipo;
+            const btnHoje = document.getElementById('filter-hoje');
+            const btnConcluidas = document.getElementById('filter-concluidas');
+            
+            if (tipo === 'hoje') {
+                btnHoje.className = 'px-3 py-1.5 rounded-lg bg-accent/10 text-accent transition-colors';
+                btnConcluidas.className = 'px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-muted';
+            } else {
+                btnConcluidas.className = 'px-3 py-1.5 rounded-lg bg-accent/10 text-accent transition-colors';
+                btnHoje.className = 'px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-muted';
+            }
+            
+            fecharDetalhes();
+            renderListaTarefas();
+        }
+
+        function salvarDados() {
+            localStorage.setItem(TAREFAS_KEY, JSON.stringify(tarefas));
+        }
+
+        function formataDataDisplay(dataISO) {
+            if(!dataISO) return '';
+            const p = dataISO.split('-');
+            return `${p[2]}/${p[1]}`;
+        }
+
+        renderListaTarefas();
+    </script>
+</body>
+</html>

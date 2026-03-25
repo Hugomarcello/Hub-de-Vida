@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-pt" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>LifeOS | Centro de Operações</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <aside id="sidebar">
+        <div class="p-6 flex items-center justify-between border-b border-theme">
+            <h1 class="logo-text font-bold text-accent uppercase tracking-tighter text-xl">Life<span class="text-strong">OS</span></h1>
+            <button id="toggle-menu" class="text-muted hover:text-accent transition-colors"><i class="fa-solid fa-indent"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto pb-4">
+            
+            <p class="section-label">Área Pessoal</p>
+            <nav>
+                <a href="index.html" class="nav-link active"><i class="fa-solid fa-house"></i> <span class="menu-text">Dashboard</span></a>
+                <a href="objetivos.html" class="nav-link"><i class="fa-solid fa-bullseye"></i> <span class="menu-text">Metas</span></a>
+                <a href="habitos.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> <span class="menu-text">Hábitos</span></a>
+                <a href="tarefas.html" class="nav-link"><i class="fa-solid fa-list-check"></i> <span class="menu-text">Tarefas</span></a>
+                <a href="ideias.html" class="nav-link"><i class="fa-solid fa-lightbulb"></i> <span class="menu-text">Ideias</span></a>
+                <a href="garagem.html" class="nav-link"><i class="fa-solid fa-motorcycle"></i> <span class="menu-text">Moto / Garagem</span></a>
+                <a href="casa.html" class="nav-link"><i class="fa-solid fa-house-user"></i> <span class="menu-text">Gerenciamento da Casa</span></a>
+            </nav>
+            
+            <p class="section-label mt-6 text-blue-500">Área Profissional</p>
+            <nav>
+                <a href="dashboardPro.html" class="nav-link pro"><i class="fa-solid fa-chart-line"></i> <span class="menu-text">Dashboard Pro</span></a>
+                <a href="alunos.html" class="nav-link pro"><i class="fa-solid fa-users"></i> <span class="menu-text">Central de Alunos</span></a>
+                <a href="financeiroPro.html" class="nav-link pro"><i class="fa-solid fa-file-invoice-dollar"></i> <span class="menu-text">Financeiro Profissional</span></a>
+            </nav>
+            
+        </div>
+    </aside>
+    <main>
+        <header class="mb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <div>
+                <h1 id="greeting" class="text-3xl font-black text-strong tracking-tight">Modo Operacional</h1>
+                <p class="text-[11px] font-bold uppercase tracking-widest mt-1 text-muted">Vença o dia de hoje. Esqueça o resto.</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 bg-panel border border-theme p-1.5 rounded-xl">
+                    <span class="text-[9px] font-bold uppercase text-muted ml-2 mr-1">Energia:</span>
+                    <button class="px-3 py-1 text-xs font-bold rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-colors">Alta</button>
+                    <button class="px-3 py-1 text-xs font-bold rounded-lg hover:bg-yellow-500/10 hover:text-yellow-500 transition-colors text-muted">Média</button>
+                    <button class="px-3 py-1 text-xs font-bold rounded-lg hover:bg-red-500/10 hover:text-red-500 transition-colors text-muted">Baixa</button>
+                </div>
+
+                <button id="theme-toggle" title="Alternar Tema" class="bg-panel border border-theme p-2 rounded-xl text-strong hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="lg:col-span-2 space-y-6">
+                
+                <div class="glass-card border-l-4 border-red-500 p-6 flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong">🔥 As 3 Prioridades do Dia</h3>
+                        <span class="text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-1 rounded">FOCO TOTAL</span>
+                    </div>
+                    
+                    <div class="space-y-4 flex-1">
+                        <div onclick="window.location.href='tarefas.html'" class="flex items-start gap-4 p-4 rounded-xl border border-red-500/30 bg-red-500/5 group hover:bg-red-500/10 transition-colors cursor-pointer">
+                            <div class="w-8 h-8 rounded-lg bg-red-500 text-white flex items-center justify-center font-black shrink-0 shadow-lg shadow-red-500/30">1</div>
+                            <div class="flex-1">
+                                <p class="text-strong font-bold text-lg leading-tight group-hover:text-red-500 transition-colors">Finalizar a estrutura do módulo de Vendas</p>
+                                <p class="text-xs text-muted mt-1">Meta associada: Lançamento do Produto (Ação Mínima: Escrever 1 página)</p>
+                            </div>
+                            <div class="w-6 h-6 rounded border-2 border-theme group-hover:border-red-500 flex items-center justify-center"><i class="fa-solid fa-check text-transparent"></i></div>
+                        </div>
+
+                        <div onclick="window.location.href='tarefas.html'" class="flex items-start gap-4 p-4 rounded-xl border border-yellow-500/30 bg-yellow-500/5 group hover:bg-yellow-500/10 transition-colors cursor-pointer">
+                            <div class="w-8 h-8 rounded-lg bg-yellow-500 text-white flex items-center justify-center font-black shrink-0">2</div>
+                            <div class="flex-1">
+                                <p class="text-strong font-bold text-lg leading-tight group-hover:text-yellow-500 transition-colors">Gravar 2 vídeos curtos (Reels)</p>
+                                <p class="text-xs text-muted mt-1">Meta associada: Audiência (Ação Mínima: Apenas gravar o áudio)</p>
+                            </div>
+                            <div class="w-6 h-6 rounded border-2 border-theme flex items-center justify-center"><i class="fa-solid fa-check text-transparent"></i></div>
+                        </div>
+
+                        <div onclick="window.location.href='habitos.html'" class="flex items-start gap-4 p-4 rounded-xl border border-blue-500/30 bg-blue-500/5 group hover:bg-blue-500/10 transition-colors cursor-pointer">
+                            <div class="w-8 h-8 rounded-lg bg-blue-500 text-white flex items-center justify-center font-black shrink-0">3</div>
+                            <div class="flex-1">
+                                <p class="text-strong font-bold text-lg leading-tight group-hover:text-blue-500 transition-colors">Treino de Força (Pernas)</p>
+                                <p class="text-xs text-muted mt-1">Hábito (Ação Mínima: 10 agachamentos em casa)</p>
+                            </div>
+                            <div class="w-6 h-6 rounded border-2 border-theme flex items-center justify-center"><i class="fa-solid fa-check text-transparent"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card border-l-4 border-professional p-6">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-professional mb-4"><i class="fa-solid fa-sack-dollar mr-2"></i> Foco Financeiro & Renda</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-panel border border-theme p-3 rounded-xl flex items-center justify-between cursor-pointer hover:border-professional transition-colors">
+                            <span class="text-xs font-bold text-strong">Conteúdo Criado</span>
+                            <i class="fa-regular fa-square text-muted"></i>
+                        </div>
+                        <div class="bg-panel border border-theme p-3 rounded-xl flex items-center justify-between cursor-pointer hover:border-professional transition-colors">
+                            <span class="text-xs font-bold text-strong">Leads Gerados</span>
+                            <i class="fa-regular fa-square text-muted"></i>
+                        </div>
+                        <div class="bg-panel border border-theme p-3 rounded-xl flex items-center justify-between cursor-pointer hover:border-professional transition-colors">
+                            <span class="text-xs font-bold text-strong">Ação de Venda</span>
+                            <i class="fa-regular fa-square text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="space-y-6">
+                
+                <div onclick="window.location.href='habitos.html'" class="glass-card p-6 flex flex-col items-center justify-center text-center bg-gradient-to-b from-panel to-accent/5 cursor-pointer hover:scale-[1.02] transition-transform">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-muted mb-2">Score de Hoje</p>
+                    <div class="relative w-32 h-32 flex items-center justify-center mb-2">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <path class="text-black/5 dark:text-white/5" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+                            <path class="text-accent" stroke-dasharray="72, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+                        </svg>
+                        <div class="absolute text-3xl font-black text-strong">72%</div>
+                    </div>
+                    <div class="w-full space-y-2 mt-4">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-muted font-bold">Prioridades (Tarefas)</span>
+                            <span class="text-strong font-black">1/3</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-muted font-bold">Hábitos</span>
+                            <span class="text-strong font-black">4/5</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-muted font-bold">Rotinas</span>
+                            <span class="text-strong font-black">80%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 border border-red-500/30 bg-red-500/5">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-red-500 mb-2"><i class="fa-solid fa-triangle-exclamation"></i> Atenção</h4>
+                    <p class="text-xs text-strong font-medium mb-1">• Você ainda não meditou hoje.</p>
+                    <p class="text-xs text-strong font-medium">• A meta "Lançamento" está estagnada há 3 dias.</p>
+                </div>
+
+                <div class="glass-card border-l-4 border-zinc-500 p-5 flex flex-col">
+                    <div class="flex justify-between items-center mb-3">
+                        <div onclick="window.location.href='ideias.html'" class="flex items-center gap-2 cursor-pointer group">
+                            <h3 class="text-[10px] font-black uppercase tracking-widest text-muted group-hover:text-strong transition-colors">💡 Descarrego de Ideias</h3>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[8px] text-muted opacity-50"></i>
+                        </div>
+                        <button id="save-quick-note" class="text-accent hover:text-white font-black text-[10px] transition-all"><i class="fa-solid fa-check"></i></button>
+                    </div>
+                    <textarea id="quick-note-area" class="w-full h-16 bg-transparent border-none text-xs text-strong focus:outline-none resize-none placeholder-zinc-500" placeholder="Pensou em algo? Escreva e tire da cabeça..."></textarea>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

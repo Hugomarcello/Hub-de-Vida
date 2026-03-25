@@ -1,0 +1,137 @@
+/* style.css - COPIE E SUBSTITUA TUDO */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+    /* MODO ESCURO (Padrão) */
+    --bg-color: #0a0b0d;
+    --panel-color: #111217;
+    --border-color: rgba(255, 255, 255, 0.05);
+    --text-strong: #ffffff;
+    --text-base: #e4e4e7;
+    --text-muted: #71717a;
+    --hover-bg: rgba(255, 255, 255, 0.05);
+    
+    --accent: #10b981;
+    --professional: #3b82f6;
+    --xp: #8b5cf6;
+}
+
+[data-theme="light"] {
+    /* MODO CLARO */
+    --bg-color: #f3f4f6;
+    --panel-color: #ffffff;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --text-strong: #111827;
+    --text-base: #374151;
+    --text-muted: #6b7280;
+    --hover-bg: rgba(0, 0, 0, 0.05);
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-base);
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Classes Dinâmicas */
+.text-strong { color: var(--text-strong) !important; }
+.text-base { color: var(--text-base) !important; }
+.text-muted { color: var(--text-muted) !important; }
+.bg-panel { background-color: var(--panel-color) !important; }
+.border-theme { border-color: var(--border-color) !important; }
+.hover-theme:hover { background-color: var(--hover-bg) !important; }
+
+/* Menu Lateral */
+#sidebar {
+    width: 260px;
+    background: var(--panel-color);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 50;
+}
+
+#sidebar.sidebar-collapsed { width: 80px; }
+#sidebar.sidebar-collapsed .menu-text, 
+#sidebar.sidebar-collapsed .section-label, 
+#sidebar.sidebar-collapsed .logo-text { display: none; }
+
+.section-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin: 1.5rem 0 0.5rem 1.5rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all 0.2s;
+    border-radius: 12px;
+    margin: 2px 12px;
+    font-size: 0.85rem;
+}
+
+.nav-link i { width: 20px; margin-right: 12px; text-align: center; }
+.nav-link:hover, .nav-link.active { background: rgba(16, 185, 129, 0.1); color: var(--accent); }
+.nav-link.pro:hover { background: rgba(59, 130, 246, 0.1); color: var(--professional); }
+
+/* Área Principal e Cards */
+main { flex: 1; overflow-y: auto; padding: 2rem; background: var(--bg-color); transition: background-color 0.3s ease; }
+
+.glass-card {
+    background: var(--panel-color);
+    border: 1px solid var(--border-color);
+    border-radius: 1.25rem;
+    transition: transform 0.2s ease, background-color 0.3s, border-color 0.3s;
+}
+
+/* Botão de Tema */
+#theme-toggle {
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--panel-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-strong);
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#theme-toggle:hover { transform: scale(1.05); }
+
+/* --- MODO FOCO (HUD) --- */
+body.focus-mode #sidebar { display: none !important; }
+body.focus-mode .hide-in-focus { display: none !important; }
+body.focus-mode main { padding: 4rem; max-width: 1200px; margin: 0 auto; }
+
+/* Botão Flutuante de Sair do Foco */
+#exit-focus-btn { display: none; position: fixed; top: 1.5rem; right: 2rem; z-index: 9999; }
+body.focus-mode #exit-focus-btn { display: flex; }
+
+/* Animação de Sucesso */
+@keyframes popCheck {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop { animation: popCheck 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+/* Utilidades e Scrollbar */
+.hidden { display: none !important; }
+.text-accent { color: var(--accent); }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-color); }
+::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; }

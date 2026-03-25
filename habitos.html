@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-pt" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS | Sistema de Hábitos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .state-btn { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; border: 2px solid var(--border-color); font-size: 10px; }
+        .state-0 { background: transparent; color: transparent; }
+        .state-1 { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .state-2 { background: #ef4444; border-color: #ef4444; color: white; }
+        .week-block { width: 14px; height: 14px; border-radius: 3px; background-color: var(--border-color); transition: all 0.3s; }
+        .block-lvl-1 { background-color: rgba(16, 185, 129, 0.3); }
+        .block-lvl-2 { background-color: rgba(16, 185, 129, 0.6); }
+        .block-lvl-3 { background-color: rgba(16, 185, 129, 0.9); }
+        
+        /* Brilho Neon para Barra de XP (Estilo PS5) */
+        .neon-xp { box-shadow: 0 0 15px rgba(139, 92, 246, 0.6); }
+    </style>
+</head>
+<body>
+
+    <button id="exit-focus-btn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg items-center gap-2 transition-transform hover:scale-105 cursor-pointer">
+        <i class="fa-solid fa-compress"></i> SAIR DO MODO FOCO
+    </button>
+
+    <aside id="sidebar">
+        <div class="p-6 flex items-center justify-between border-b border-theme">
+            <h1 class="logo-text font-bold text-accent uppercase tracking-tighter text-xl">Life<span class="text-strong">OS</span></h1>
+            <button id="toggle-menu" class="text-muted hover:text-accent transition-colors"><i class="fa-solid fa-indent"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto mt-4">
+            <nav class="space-y-2">
+                <a href="index.html" class="nav-link"><i class="fa-solid fa-arrow-left"></i> <span class="menu-text">Voltar ao Início</span></a>
+                <a href="habitos.html" class="nav-link active"><i class="fa-solid fa-khanda"></i> <span class="menu-text">Treinamento (Hábitos)</span></a>
+            </nav>
+        </div>
+    </aside>
+
+    <main>
+        
+        <header class="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-6 hide-in-focus">
+            <div>
+                <h2 class="text-3xl font-black text-strong uppercase tracking-tight">Centro de Treinamento</h2>
+                <p class="text-[11px] font-bold uppercase tracking-widest mt-1 text-muted">Forje a sua disciplina</p>
+            </div>
+            
+            <div class="flex-1 w-full max-w-md bg-panel border border-theme p-3 rounded-2xl flex flex-col justify-center">
+                <div class="flex justify-between items-end mb-2">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-muted">Lvl <span id="global-level" class="text-purple-500 text-2xl ml-1">1</span></span>
+                    <span class="text-[9px] font-bold text-muted tracking-widest uppercase"><span id="current-xp" class="text-strong">0</span> / <span id="next-xp">100</span> XP</span>
+                </div>
+                <div class="w-full h-2.5 bg-black/10 dark:bg-white/5 rounded-full overflow-hidden shadow-inner relative">
+                    <div id="global-xp-bar" class="h-full bg-purple-500 neon-xp transition-all duration-500 ease-out" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="focus-toggle" class="bg-panel border-theme text-strong px-4 py-3 rounded-xl text-xs font-bold shadow-sm hover:scale-105 transition-all border">
+                    <i class="fa-solid fa-expand"></i> Foco
+                </button>
+                <button id="theme-toggle" title="Alternar Tema" class="bg-panel border-theme p-3 rounded-xl text-strong hover:scale-105 transition-transform border">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6 hide-in-focus">
+            
+            <div class="glass-card p-5 flex flex-col justify-center items-center text-center">
+                <p class="text-[9px] font-black uppercase tracking-widest mb-1 text-muted">Consistência Real</p>
+                <div class="text-4xl font-black text-accent leading-none my-2" id="cons-total">0%</div>
+                <p class="text-[9px] font-bold uppercase text-muted">Da semana atual</p>
+            </div>
+
+            <div class="glass-card p-4 flex flex-col justify-center gap-3">
+                <div class="bg-accent/10 border border-accent/20 rounded-xl p-3">
+                    <p class="text-[8px] font-black uppercase tracking-widest text-accent mb-1"><i class="fa-solid fa-arrow-up mr-1"></i> Ponto Forte</p>
+                    <p id="ponto-forte" class="text-xs font-bold text-strong truncate">---</p>
+                </div>
+                <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+                    <p class="text-[8px] font-black uppercase tracking-widest text-red-500 mb-1"><i class="fa-solid fa-arrow-down mr-1"></i> Ponto Fraco</p>
+                    <p id="ponto-fraco" class="text-xs font-bold text-strong truncate">---</p>
+                </div>
+            </div>
+            
+            <div class="glass-card p-4 lg:col-span-2 flex flex-row items-center justify-between gap-4">
+                <div class="flex-1 h-24 relative flex items-center justify-center">
+                    <canvas id="performanceChart" class="relative z-10 w-full h-full"></canvas>
+                </div>
+                <div class="flex flex-col gap-2 min-w-[120px]">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded bg-accent"></div>
+                        <span class="text-[10px] font-bold text-muted uppercase tracking-widest"><span id="label-cumpridos" class="text-strong">0</span> Cumpridos</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded bg-panel border border-theme"></div>
+                        <span class="text-[10px] font-bold text-muted uppercase tracking-widest"><span id="label-falhas" class="text-strong">0</span> Pendentes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card mb-6 overflow-hidden border-l-4 border-accent p-0 hide-in-focus">
+            <div id="guide-header" class="hover-theme px-5 py-3 flex justify-between items-center border-b border-theme cursor-pointer select-none transition-colors">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-accent animate-pulse text-sm"></i>
+                    <span class="text-[10px] font-black uppercase tracking-[2px] text-strong">Instruções da Missão</span>
+                    <i id="guide-chevron" class="fa-solid fa-chevron-up text-[10px] text-muted ml-2 transition-transform"></i>
+                </div>
+                <div class="flex gap-4">
+                    <button id="btn-edit-guide" class="text-muted hover:text-accent transition-colors px-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button id="btn-save-guide" class="hidden bg-accent text-white font-black text-[10px] px-3 py-1 rounded-lg">SALVAR</button>
+                </div>
+            </div>
+            <div id="guide-body" class="p-5 bg-panel/50">
+                <div id="guide-content" class="text-sm text-base leading-relaxed italic whitespace-pre-wrap"></div>
+                <textarea id="guide-input" class="hidden w-full h-24 bg-panel border border-theme rounded-xl p-4 text-sm text-base focus:outline-none focus:border-accent font-mono"></textarea>
+            </div>
+        </div>
+
+        <section class="glass-card mb-6 p-0 overflow-hidden">
+            <div class="p-5 border-b border-theme flex justify-between items-center hover-theme">
+                <h3 class="font-bold uppercase tracking-widest text-sm flex items-center gap-2 text-strong">
+                    <i class="fa-solid fa-khanda text-accent"></i> Árvore de Skills
+                </h3>
+                <div class="flex gap-3">
+                    <button onclick="adicionarHabito()" class="text-[10px] font-bold bg-panel border border-theme text-strong px-3 py-2 rounded-lg hover:border-accent transition-colors"><i class="fa-solid fa-plus text-accent mr-1"></i> NOVO HÁBITO</button>
+                    <button onclick="arquivarHabitos()" class="text-[10px] font-bold bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent hover:text-white transition-colors"><i class="fa-solid fa-box-archive mr-1"></i> ARQUIVAR SEMANA</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto p-4">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-[10px] uppercase font-black tracking-widest text-muted border-b border-theme">
+                            <th class="p-4 min-w-[200px]">Hábito & Nível</th>
+                            <th class="text-center w-10">S</th><th class="text-center w-10">T</th><th class="text-center w-10">Q</th>
+                            <th class="text-center w-10">Q</th><th class="text-center w-10">S</th><th class="text-center w-10">S</th><th class="text-center w-10">D</th>
+                            <th class="text-right p-4">Progresso</th>
+                        </tr>
+                    </thead>
+                    <tbody id="habits-table"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="mb-10">
+            <div class="flex justify-between items-end mb-4">
+                <h3 class="text-sm font-bold uppercase tracking-[3px] text-muted">Fluxo de Rotinas</h3>
+                <button onclick="arquivarRotinas()" class="text-[10px] font-bold text-muted hover:text-strong px-3 py-2 rounded-lg border border-theme bg-panel"><i class="fa-solid fa-clock-rotate-left mr-1"></i> RESETAR DIÁRIO</button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass-card p-0 flex flex-col min-h-[300px] border-t-4 border-yellow-500">
+                    <div class="p-4 border-b border-theme flex justify-between items-center hover-theme">
+                        <span class="text-xs font-bold uppercase text-yellow-500"><i class="fa-solid fa-sun mr-2"></i>Matinal</span>
+                        <button onclick="addRotina('Manha')" class="text-muted hover:text-strong"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div id="rotina-Manha" class="flex-1 p-4 space-y-2 overflow-y-auto"></div>
+                </div>
+                <div class="glass-card p-0 flex flex-col min-h-[300px] border-t-4 border-blue-400">
+                    <div class="p-4 border-b border-theme flex justify-between items-center hover-theme">
+                        <span class="text-xs font-bold uppercase text-blue-500"><i class="fa-solid fa-cloud-sun mr-2"></i>Tarde</span>
+                        <button onclick="addRotina('Tarde')" class="text-muted hover:text-strong"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div id="rotina-Tarde" class="flex-1 p-4 space-y-2 overflow-y-auto"></div>
+                </div>
+                <div class="glass-card p-0 flex flex-col min-h-[300px] border-t-4 border-indigo-500">
+                    <div class="p-4 border-b border-theme flex justify-between items-center hover-theme">
+                        <span class="text-xs font-bold uppercase text-indigo-500"><i class="fa-solid fa-moon mr-2"></i>Noturna</span>
+                        <button onclick="addRotina('Noite')" class="text-muted hover:text-strong"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div id="rotina-Noite" class="flex-1 p-4 space-y-2 overflow-y-auto"></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 hide-in-focus">
+            <div class="glass-card p-5">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Mapa Anual (52 Semanas)</h4>
+                <div class="flex flex-wrap gap-1.5" id="github-map"></div>
+            </div>
+            <div class="glass-card p-5 flex flex-col h-full">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Arquivo Base</h4>
+                <div class="flex-1 overflow-y-auto pr-2 space-y-6">
+                    <div>
+                        <p class="text-[9px] font-bold uppercase text-accent mb-2">Histórico de Hábitos</p>
+                        <div id="historico-habitos-lista" class="space-y-2"></div>
+                    </div>
+                    <div>
+                        <p class="text-[9px] font-bold uppercase text-blue-500 mb-2">Histórico de Rotinas</p>
+                        <div id="historico-rotinas-lista" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        // === MOTOR DE GAMIFICAÇÃO & DADOS ===
+        const KEYS = { habitos: 'habitosSemanaAtual', histHabitos: 'historicoHabitos', rManha: 'rotinaManha', rTarde: 'rotinaTarde', rNoite: 'rotinaNoite', histRotinas: 'historicoRotinas', streak: 'streakHabitos', xpHabitos: 'xpHabitos', xpGeral: 'xpUsuario' };
+        const habitosIniciais = ["Dormir 8h", "Beber 2L de água", "Exercício físico", "Estudar", "Meditar"];
+
+        let state = {
+            habitos: JSON.parse(localStorage.getItem(KEYS.habitos)) || {},
+            streaks: JSON.parse(localStorage.getItem(KEYS.streak)) || {},
+            xps: JSON.parse(localStorage.getItem(KEYS.xpHabitos)) || {},
+            histHabitos: JSON.parse(localStorage.getItem(KEYS.histHabitos)) || [],
+            histRotinas: JSON.parse(localStorage.getItem(KEYS.histRotinas)) || [],
+            xpGlobal: parseInt(localStorage.getItem(KEYS.xpGeral)) || 0
+        };
+
+        if (Object.keys(state.habitos).length === 0) {
+            habitosIniciais.forEach(h => { state.habitos[h] = [0,0,0,0,0,0,0]; state.streaks[h] = 0; state.xps[h] = 0; });
+            saveState();
+        }
+
+        function saveState() {
+            localStorage.setItem(KEYS.habitos, JSON.stringify(state.habitos));
+            localStorage.setItem(KEYS.streak, JSON.stringify(state.streaks));
+            localStorage.setItem(KEYS.xpHabitos, JSON.stringify(state.xps));
+            localStorage.setItem(KEYS.xpGeral, state.xpGlobal);
+        }
+
+        function renderHabits() {
+            const tbody = document.getElementById('habits-table');
+            tbody.innerHTML = '';
+            let totalPossible = 0; let totalDone = 0;
+            
+            Object.entries(state.habitos).forEach(([name, days]) => {
+                totalPossible += 7;
+                const doneCount = days.filter(d => d === 1).length;
+                totalDone += doneCount;
+                const perc = Math.round((doneCount/7)*100);
+                const xp = state.xps[name] || 0;
+                const lvl = Math.floor(Math.sqrt(xp / 50)) + 1;
+                const streak = state.streaks[name] || 0;
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-theme hover-theme";
+                tr.innerHTML = `
+                    <td class="p-4">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-bold text-strong">${name}</span>
+                            <button onclick="removerHabito('${name}')" class="text-muted hover:text-red-500 transition-colors"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] font-black uppercase text-accent bg-accent/10 px-1.5 py-0.5 rounded">Lvl ${lvl}</span>
+                        </div>
+                    </td>
+                    ${days.map((s, idx) => `<td class="text-center"><div class="flex justify-center"><div onclick="toggleHabit('${name}', ${idx}, this)" class="state-btn state-${s}"><i class="fa-solid ${s===1?'fa-check':(s===2?'fa-xmark':'')}"></i></div></div></td>`).join('')}
+                    <td class="p-4 text-right">
+                        <div class="flex items-center justify-end gap-3 mb-1">
+                            <span class="text-[10px] font-bold text-orange-500"><i class="fa-solid fa-fire"></i> ${streak}</span>
+                            <span class="text-[10px] font-black text-muted">${doneCount}/7</span>
+                        </div>
+                        <div class="w-24 h-1.5 bg-panel border border-theme rounded-full ml-auto overflow-hidden"><div class="h-full bg-accent" style="width: ${perc}%"></div></div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updateStats(totalPossible, totalDone);
+        }
+
+        function toggleHabit(name, idx, element) {
+            let s = state.habitos[name][idx];
+            let newS = (s + 1) % 3;
+            state.habitos[name][idx] = newS;
+            
+            if(newS === 1) { 
+                state.xps[name] += 15; state.xpGlobal += 10; 
+                element.classList.add('animate-pop');
+                setTimeout(() => element.classList.remove('animate-pop'), 300);
+            } 
+            else if (s === 1 && newS !== 1) { 
+                state.xps[name] = Math.max(0, state.xps[name] - 15); 
+                state.xpGlobal = Math.max(0, state.xpGlobal - 10); 
+            }
+            
+            let currStreak = 0; let maxS = 0;
+            state.habitos[name].forEach(v => { if(v === 1) { currStreak++; maxS = Math.max(maxS, currStreak); } else { currStreak = 0; } });
+            state.streaks[name] = maxS;
+            saveState(); renderHabits();
+        }
+
+        function adicionarHabito() {
+            const h = prompt("Qual skill (hábito) deseja treinar?");
+            if(h && !state.habitos[h]) { state.habitos[h] = [0,0,0,0,0,0,0]; state.streaks[h] = 0; state.xps[h] = 0; saveState(); renderHabits(); }
+        }
+        function removerHabito(name) {
+            if(confirm(`Excluir ${name}?`)) { delete state.habitos[name]; delete state.streaks[name]; delete state.xps[name]; saveState(); renderHabits(); }
+        }
+
+        // --- SISTEMA DE TELEMETRIA E GRÁFICO (NOVO) ---
+        let chartInstance;
+        function updateStats(totalPossible, totalDone) {
+            // 1. Atualizar XP Bar (PS5 Style)
+            const lvl = Math.floor(Math.sqrt(state.xpGlobal / 100)) + 1;
+            const currentLvlXP = Math.pow(lvl-1, 2) * 100;
+            const nextLvlXP = Math.pow(lvl, 2) * 100;
+            const prog = ((state.xpGlobal - currentLvlXP) / (nextLvlXP - currentLvlXP)) * 100;
+            
+            document.getElementById('global-level').innerText = lvl;
+            document.getElementById('current-xp').innerText = state.xpGlobal;
+            document.getElementById('next-xp').innerText = nextLvlXP;
+            document.getElementById('global-xp-bar').style.width = `${prog}%`;
+            
+            // 2. Atualizar Consistência
+            document.getElementById('cons-total').innerText = totalPossible > 0 ? Math.round((totalDone/totalPossible)*100) + '%' : '0%';
+
+            // 3. Ponto Forte e Ponto Fraco
+            let maxP = -1; let minP = 101;
+            let forte = "---"; let fraco = "---";
+            Object.entries(state.habitos).forEach(([name, days]) => {
+                let p = (days.filter(v=>v===1).length / 7) * 100;
+                if (p > maxP) { maxP = p; forte = name; }
+                if (p < minP) { minP = p; fraco = name; }
+            });
+            document.getElementById('ponto-forte').innerText = forte;
+            document.getElementById('ponto-fraco').innerText = fraco;
+
+            // 4. Gráfico de Desempenho (Doughnut)
+            const pendentes = totalPossible - totalDone;
+            document.getElementById('label-cumpridos').innerText = totalDone;
+            document.getElementById('label-falhas').innerText = pendentes;
+
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+            
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const bgPending = isLight ? '#e5e7eb' : 'rgba(255, 255, 255, 0.05)';
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cumpridos', 'Pendentes'],
+                    datasets: [{
+                        data: [totalDone, pendentes],
+                        backgroundColor: ['#10b981', bgPending],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // === ROTINAS E ARQUIVAMENTO MANTIDOS INTACTOS ===
+        function renderRotinas() {
+            ['Manha', 'Tarde', 'Noite'].forEach(p => {
+                const list = document.getElementById('rotina-' + p);
+                const items = JSON.parse(localStorage.getItem('rotina' + p)) || [];
+                list.innerHTML = items.map((i, idx) => `
+                    <div class="flex items-center gap-3 p-3 hover-theme rounded-xl group border border-theme transition-all">
+                        <div onclick="toggleRotina('${p}', ${idx}, this)" class="state-btn ${i.done ? 'state-1' : 'state-0'}"><i class="fa-solid ${i.done?'fa-check':''}"></i></div>
+                        <span class="flex-1 text-[11px] font-medium ${i.done ? 'text-muted line-through' : 'text-strong'}">${i.text}</span>
+                        <button onclick="remRotina('${p}', ${idx})" class="text-muted opacity-0 group-hover:opacity-100 hover:text-red-500"><i class="fa-solid fa-xmark text-[10px]"></i></button>
+                    </div>
+                `).join('');
+            });
+        }
+        function addRotina(p) { const t = prompt("Adicionar ação para " + p); if(t) { let items = JSON.parse(localStorage.getItem('rotina' + p)) || []; items.push({text: t, done: false}); localStorage.setItem('rotina'+p, JSON.stringify(items)); renderRotinas(); } }
+        function toggleRotina(p, idx, element) { 
+            let items = JSON.parse(localStorage.getItem('rotina' + p)); items[idx].done = !items[idx].done; 
+            if(items[idx].done) { 
+                state.xpGlobal += 5; saveState(); renderHabits();
+                element.classList.add('animate-pop');
+                setTimeout(() => element.classList.remove('animate-pop'), 300);
+            } 
+            localStorage.setItem('rotina'+p, JSON.stringify(items)); renderRotinas(); 
+        }
+        function remRotina(p, idx) { let items = JSON.parse(localStorage.getItem('rotina' + p)); items.splice(idx, 1); localStorage.setItem('rotina'+p, JSON.stringify(items)); renderRotinas(); }
+
+        function getWeek() { const d = new Date(); return Math.ceil((((d - new Date(d.getFullYear(),0,1))/86400000)+1)/7); }
+        
+        function arquivarHabitos() {
+            if(!confirm("Arquivar o progresso desta semana? (A atual será zerada)")) return;
+            let total = 0, done = 0; Object.values(state.habitos).forEach(d => { total+=7; done += d.filter(v=>v===1).length; });
+            const cons = total > 0 ? Math.round((done/total)*100) : 0;
+            state.histHabitos.unshift({ week: getWeek(), year: new Date().getFullYear(), cons: cons, data: JSON.parse(JSON.stringify(state.habitos)) });
+            localStorage.setItem(KEYS.histHabitos, JSON.stringify(state.histHabitos));
+            Object.keys(state.habitos).forEach(k => state.habitos[k] = [0,0,0,0,0,0,0]);
+            saveState(); renderHabits(); renderHistorico(); renderGraficos();
+        }
+
+        function arquivarRotinas() {
+            if(!confirm("Salvar log e resetar checklist?")) return;
+            const m = JSON.parse(localStorage.getItem('rotinaManha'))||[]; const t = JSON.parse(localStorage.getItem('rotinaTarde'))||[]; const n = JSON.parse(localStorage.getItem('rotinaNoite'))||[];
+            state.histRotinas.unshift({ data: new Date().toLocaleDateString(), resumo: `${m.filter(x=>x.done).length+t.filter(x=>x.done).length+n.filter(x=>x.done).length} concluídas` });
+            localStorage.setItem(KEYS.histRotinas, JSON.stringify(state.histRotinas));
+            m.forEach(i=>i.done=false); t.forEach(i=>i.done=false); n.forEach(i=>i.done=false);
+            localStorage.setItem('rotinaManha', JSON.stringify(m)); localStorage.setItem('rotinaTarde', JSON.stringify(t)); localStorage.setItem('rotinaNoite', JSON.stringify(n));
+            renderRotinas(); renderHistorico();
+        }
+
+        function renderHistorico() {
+            const listH = document.getElementById('historico-habitos-lista');
+            listH.innerHTML = state.histHabitos.slice(0,5).map((h, i) => `<div class="p-3 bg-panel border border-theme rounded-xl flex justify-between items-center"><span class="text-[10px] text-muted font-bold uppercase">S${h.week} • ${h.cons}%</span><button onclick="restaurarSemana(${i})" class="text-[9px] bg-panel border border-theme text-strong hover:bg-accent hover:text-white px-2 py-1 rounded font-bold transition-all">RESTAURAR</button></div>`).join('');
+            const listR = document.getElementById('historico-rotinas-lista');
+            listR.innerHTML = state.histRotinas.slice(0,5).map((r) => `<div class="p-3 bg-panel border border-theme rounded-xl flex justify-between items-center"><span class="text-[10px] text-muted font-bold uppercase">${r.data}</span><span class="text-[9px] text-blue-500 font-bold">${r.resumo}</span></div>`).join('');
+        }
+
+        function restaurarSemana(index) {
+            if(!confirm("Isso sobrescreve a semana atual. Tem certeza?")) return;
+            state.habitos = JSON.parse(JSON.stringify(state.histHabitos[index].data));
+            state.histHabitos.splice(index, 1); saveState(); localStorage.setItem(KEYS.histHabitos, JSON.stringify(state.histHabitos));
+            renderHabits(); renderHistorico(); renderGraficos();
+        }
+
+        function renderGraficos() {
+            const mapContainer = document.getElementById('github-map'); mapContainer.innerHTML = '';
+            let mapData = Array(52).fill(0);
+            state.histHabitos.forEach(h => { if(h.week <= 52) mapData[h.week-1] = h.cons; });
+            mapData.forEach(cons => {
+                let colorClass = '';
+                if(cons > 0 && cons <= 30) colorClass = 'block-lvl-1'; else if(cons > 30 && cons <= 70) colorClass = 'block-lvl-2'; else if(cons > 70) colorClass = 'block-lvl-3';
+                mapContainer.innerHTML += `<div class="week-block ${colorClass}" title="${cons}%"></div>`;
+            });
+        }
+
+        window.onload = () => { renderHabits(); renderRotinas(); renderHistorico(); renderGraficos(); };
+    </script>
+</body>
+</html>

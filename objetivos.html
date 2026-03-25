@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-pt" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS | Metas SMART</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <aside id="sidebar">
+        <div class="p-6 flex items-center justify-between border-b border-theme">
+            <h1 class="logo-text font-bold text-accent uppercase tracking-tighter text-xl">Life<span class="text-strong">OS</span></h1>
+            <button id="toggle-menu" class="text-muted hover:text-accent transition-colors"><i class="fa-solid fa-indent"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto">
+            <p class="section-label">Área Pessoal</p>
+            <nav>
+                <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> <span class="menu-text">Dashboard</span></a>
+                <a href="habitos.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> <span class="menu-text">Hábitos</span></a>
+                <a href="tarefas.html" class="nav-link"><i class="fa-solid fa-list-check"></i> <span class="menu-text">Tarefas</span></a>
+                <a href="objetivos.html" class="nav-link active"><i class="fa-solid fa-bullseye"></i> <span class="menu-text">Metas</span></a>
+                <a href="ideias.html" class="nav-link"><i class="fa-solid fa-lightbulb"></i> <span class="menu-text">Ideias</span></a>
+                <a href="garagem.html" class="nav-link"><i class="fa-solid fa-motorcycle"></i> <span class="menu-text">Moto / Garagem</span></a>
+            </nav>
+            <p class="section-label" style="color: #3b82f6;">Área Profissional</p>
+            <nav>
+                <a href="dashboardPro.html" class="nav-link pro"><i class="fa-solid fa-chart-line"></i> <span class="menu-text">Dashboard Pro</span></a>
+                <a href="alunos.html" class="nav-link pro"><i class="fa-solid fa-users"></i> <span class="menu-text">Central de Alunos</span></a>
+            </nav>
+        </div>
+    </aside>
+
+    <main class="relative">
+        <header class="mb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <div>
+                <h2 class="text-3xl font-black text-strong uppercase tracking-tight">Metas Inteligentes</h2>
+                <p class="text-[11px] font-bold uppercase tracking-widest mt-1 text-muted">Metodologia S.M.A.R.T</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="abrirModalMeta()" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm hover:scale-105 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> NOVA META SMART
+                </button>
+                <button id="theme-toggle" title="Alternar Tema" class="hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div id="metas-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12">
+            </div>
+
+        <div id="modal-meta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+            <div class="bg-panel border border-theme rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
+                <div class="sticky top-0 bg-panel border-b border-theme px-6 py-4 flex justify-between items-center z-10">
+                    <h3 class="text-lg font-black text-strong uppercase tracking-widest"><i class="fa-solid fa-bullseye text-blue-500 mr-2"></i> Estruturar Meta</h3>
+                    <button onclick="fecharModalMeta()" class="text-muted hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                
+                <div class="p-6 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Título da Meta</label>
+                            <input type="text" id="meta-titulo" class="w-full bg-black/5 border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-blue-500" placeholder="Ex: Correr a Meia Maratona">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Prioridade</label>
+                            <select id="meta-prioridade" class="w-full bg-black/5 border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-blue-500 appearance-none">
+                                <option value="Alta">🔴 Alta</option>
+                                <option value="Media">🟡 Média</option>
+                                <option value="Baixa">🟢 Baixa</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 border border-theme p-4 rounded-xl bg-black/5">
+                        <h4 class="text-xs font-black uppercase tracking-widest text-strong mb-4 border-b border-theme pb-2">Definição S.M.A.R.T</h4>
+                        
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted mb-1"><span class="text-blue-500">S (Específico):</span> O que exatamente você quer alcançar?</label>
+                            <input type="text" id="meta-s" class="w-full bg-transparent border-b border-theme/50 p-2 text-sm text-strong focus:outline-none focus:border-blue-500" placeholder="Ex: Completar 21km na corrida da cidade">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted mb-1"><span class="text-blue-500">M (Mensurável):</span> Como vai medir o progresso?</label>
+                            <input type="text" id="meta-m" class="w-full bg-transparent border-b border-theme/50 p-2 text-sm text-strong focus:outline-none focus:border-blue-500" placeholder="Ex: Acompanhar km corridos por semana no app">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted mb-1"><span class="text-blue-500">A (Atingível):</span> Que recursos/passos precisa?</label>
+                            <input type="text" id="meta-a" class="w-full bg-transparent border-b border-theme/50 p-2 text-sm text-strong focus:outline-none focus:border-blue-500" placeholder="Ex: Treinar 3x por semana seguindo planillha">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted mb-1"><span class="text-blue-500">R (Relevante):</span> Por que isso é importante para a sua vida?</label>
+                            <input type="text" id="meta-r" class="w-full bg-transparent border-b border-theme/50 p-2 text-sm text-strong focus:outline-none focus:border-blue-500" placeholder="Ex: Melhorar saúde cardiovascular e superar limites">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted mb-1"><span class="text-blue-500">T (Tempo):</span> Qual é o prazo final?</label>
+                            <input type="date" id="meta-t" class="w-full bg-transparent border-b border-theme/50 p-2 text-sm text-strong focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sticky bottom-0 bg-panel border-t border-theme p-4 flex justify-end gap-3 z-10">
+                    <button onclick="fecharModalMeta()" class="px-4 py-2 rounded-lg text-xs font-bold text-muted hover:text-strong transition-colors">CANCELAR</button>
+                    <button onclick="salvarMeta()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold shadow-md transition-all">SALVAR META</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+    
+    <script>
+        const METAS_KEY = 'lifeos_metas';
+        let metas = JSON.parse(localStorage.getItem(METAS_KEY)) || [];
+
+        // Cores baseadas na prioridade
+        const prioColors = {
+            'Alta': 'border-red-500 text-red-500 bg-red-500/10',
+            'Media': 'border-yellow-500 text-yellow-500 bg-yellow-500/10',
+            'Baixa': 'border-accent text-accent bg-accent/10'
+        };
+        const prioBarColors = { 'Alta': 'bg-red-500', 'Media': 'bg-yellow-500', 'Baixa': 'bg-accent' };
+
+        // --- RENDERIZAR METAS ---
+        function renderMetas() {
+            const container = document.getElementById('metas-container');
+            container.innerHTML = '';
+
+            if (metas.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full glass-card p-12 text-center border-dashed border-2 border-theme opacity-60">
+                        <i class="fa-solid fa-bullseye text-4xl text-muted mb-4"></i>
+                        <p class="text-strong font-bold">Nenhuma meta definida.</p>
+                        <p class="text-xs text-muted mt-2">Use o método SMART para criar o seu primeiro grande objetivo.</p>
+                    </div>`;
+                return;
+            }
+
+            metas.forEach((meta, index) => {
+                // Calcular Progresso
+                const totalSub = meta.submetas ? meta.submetas.length : 0;
+                const concluidas = meta.submetas ? meta.submetas.filter(s => s.concluida).length : 0;
+                const progresso = totalSub > 0 ? Math.round((concluidas / totalSub) * 100) : 0;
+                
+                const prioClass = prioColors[meta.prioridade] || prioColors['Media'];
+                const barClass = prioBarColors[meta.prioridade] || prioBarColors['Media'];
+
+                // Gerar HTML das Submetas
+                let submetasHTML = '';
+                if (meta.submetas && meta.submetas.length > 0) {
+                    submetasHTML = meta.submetas.map((sub, sIdx) => `
+                        <div class="flex items-center gap-3 p-2 hover-theme rounded-lg group transition-colors">
+                            <div onclick="toggleSubmeta(${index}, ${sIdx})" class="w-5 h-5 rounded border border-theme flex items-center justify-center cursor-pointer transition-colors ${sub.concluida ? barClass + ' border-transparent' : 'bg-black/5'}">
+                                <i class="fa-solid fa-check text-[10px] ${sub.concluida ? 'text-white' : 'text-transparent'}"></i>
+                            </div>
+                            <span class="flex-1 text-xs ${sub.concluida ? 'text-muted line-through' : 'text-strong'}">${sub.texto}</span>
+                            <button onclick="removerSubmeta(${index}, ${sIdx})" class="opacity-0 group-hover:opacity-100 text-muted hover:text-red-500 transition-opacity"><i class="fa-solid fa-xmark text-[10px]"></i></button>
+                        </div>
+                    `).join('');
+                } else {
+                    submetasHTML = `<p class="text-[10px] text-muted italic p-2">Nenhuma submeta ou tarefa vinculada ainda.</p>`;
+                }
+
+                // Renderizar o Card
+                const card = document.createElement('div');
+                card.className = `glass-card flex flex-col overflow-hidden border-t-4 ${prioClass.split(' ')[0]}`;
+                card.innerHTML = `
+                    <div class="p-6 flex-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${prioClass} mb-2 inline-block">Prioridade ${meta.prioridade}</span>
+                                <h3 class="text-lg font-black text-strong leading-tight">${meta.titulo}</h3>
+                            </div>
+                            <button onclick="excluirMeta(${index})" class="text-muted hover:text-red-500 transition-colors p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+
+                        <div class="mb-6">
+                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted mb-2">
+                                <span>Progresso</span>
+                                <span class="text-strong">${progresso}%</span>
+                            </div>
+                            <div class="w-full bg-black/10 border border-theme h-2 rounded-full overflow-hidden">
+                                <div class="${barClass} h-full transition-all duration-500" style="width: ${progresso}%"></div>
+                            </div>
+                        </div>
+
+                        <details class="mb-6 group cursor-pointer">
+                            <summary class="text-xs font-bold text-blue-500 uppercase tracking-widest select-none flex items-center gap-2 outline-none">
+                                <i class="fa-solid fa-microscope"></i> Ver Detalhes S.M.A.R.T <i class="fa-solid fa-chevron-down text-[10px] group-open:rotate-180 transition-transform"></i>
+                            </summary>
+                            <div class="mt-4 space-y-3 p-4 bg-black/5 border border-theme rounded-xl text-xs text-base">
+                                <p><strong class="text-strong">S:</strong> ${meta.smart.s || 'N/A'}</p>
+                                <p><strong class="text-strong">M:</strong> ${meta.smart.m || 'N/A'}</p>
+                                <p><strong class="text-strong">A:</strong> ${meta.smart.a || 'N/A'}</p>
+                                <p><strong class="text-strong">R:</strong> ${meta.smart.r || 'N/A'}</p>
+                                <p><strong class="text-strong">T:</strong> <span class="text-accent font-bold">${formataData(meta.smart.t)}</span></p>
+                            </div>
+                        </details>
+
+                        <div>
+                            <div class="flex justify-between items-center border-b border-theme pb-2 mb-2">
+                                <h4 class="text-[10px] font-black uppercase tracking-widest text-muted">Passos de Ação / Tarefas</h4>
+                                <button onclick="adicionarSubmeta(${index})" class="text-[10px] font-bold text-blue-500 hover:text-blue-400"><i class="fa-solid fa-plus"></i> ADICIONAR</button>
+                            </div>
+                            <div class="max-h-40 overflow-y-auto pr-2 space-y-1">
+                                ${submetasHTML}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- LÓGICA DE MODAL ---
+        const modal = document.getElementById('modal-meta');
+        const modalContent = document.getElementById('modal-content');
+
+        function abrirModalMeta() {
+            // Limpa campos
+            document.getElementById('meta-titulo').value = '';
+            document.getElementById('meta-s').value = '';
+            document.getElementById('meta-m').value = '';
+            document.getElementById('meta-a').value = '';
+            document.getElementById('meta-r').value = '';
+            document.getElementById('meta-t').value = '';
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalMeta() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // --- CRUD METAS ---
+        function salvarMeta() {
+            const titulo = document.getElementById('meta-titulo').value.trim();
+            if (!titulo) { alert('Dê um título à sua meta!'); return; }
+
+            const novaMeta = {
+                id: Date.now(),
+                titulo: titulo,
+                prioridade: document.getElementById('meta-prioridade').value,
+                smart: {
+                    s: document.getElementById('meta-s').value,
+                    m: document.getElementById('meta-m').value,
+                    a: document.getElementById('meta-a').value,
+                    r: document.getElementById('meta-r').value,
+                    t: document.getElementById('meta-t').value,
+                },
+                submetas: [],
+                anotacoes: ''
+            };
+
+            metas.push(novaMeta);
+            localStorage.setItem(METAS_KEY, JSON.stringify(metas));
+            renderMetas();
+            fecharModalMeta();
+        }
+
+        function excluirMeta(index) {
+            if (confirm(`Tem certeza que deseja excluir a meta "${metas[index].titulo}"?`)) {
+                metas.splice(index, 1);
+                localStorage.setItem(METAS_KEY, JSON.stringify(metas));
+                renderMetas();
+            }
+        }
+
+        // --- SUBMETAS (CHECKLIST) ---
+        function adicionarSubmeta(metaIndex) {
+            const texto = prompt("Digite o novo passo ou tarefa para esta meta:");
+            if (texto && texto.trim()) {
+                if (!metas[metaIndex].submetas) metas[metaIndex].submetas = [];
+                metas[metaIndex].submetas.push({ id: Date.now(), texto: texto.trim(), concluida: false });
+                localStorage.setItem(METAS_KEY, JSON.stringify(metas));
+                renderMetas();
+            }
+        }
+
+        function toggleSubmeta(metaIndex, subIndex) {
+            metas[metaIndex].submetas[subIndex].concluida = !metas[metaIndex].submetas[subIndex].concluida;
+            localStorage.setItem(METAS_KEY, JSON.stringify(metas));
+            renderMetas();
+        }
+
+        function removerSubmeta(metaIndex, subIndex) {
+            metas[metaIndex].submetas.splice(subIndex, 1);
+            localStorage.setItem(METAS_KEY, JSON.stringify(metas));
+            renderMetas();
+        }
+
+        // --- HELPERS ---
+        function formataData(dataStr) {
+            if (!dataStr) return 'Sem prazo';
+            const partes = dataStr.split('-');
+            return `${partes[2]}/${partes[1]}/${partes[0]}`; // DD/MM/AAAA
+        }
+
+        // Iniciar
+        window.addEventListener('DOMContentLoaded', renderMetas);
+
+    </script>
+</body>
+</html>
