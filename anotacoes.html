@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-pt" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS | Anotações</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { accent: 'var(--accent)' } } }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Sistema Masonry (Estilo Google Keep) */
+        .masonry-grid {
+            column-count: 1;
+            column-gap: 1.5rem;
+        }
+        @media (min-width: 768px) { .masonry-grid { column-count: 2; } }
+        @media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
+        @media (min-width: 1280px) { .masonry-grid { column-count: 4; } }
+        
+        .masonry-item {
+            break-inside: avoid; /* Impede que a nota seja cortada no meio da coluna */
+            margin-bottom: 1.5rem;
+        }
+
+        /* Editor Rich Text Customizado */
+        .rich-text-content { outline: none; }
+        .rich-text-content[contentempty="true"]:before {
+            content: attr(placeholder);
+            color: var(--text-muted);
+            opacity: 0.6;
+            pointer-events: none;
+            display: block; /* Para Webkit */
+        }
+        /* Estilos aplicados ao texto dentro da nota e do editor */
+        .nota-render b, .nota-render strong { color: var(--blue-500); font-weight: 800; }
+        .nota-render i, .nota-render em { color: var(--accent); }
+        .nota-render ul { list-style-type: disc; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        .nota-render img { max-width: 100%; border-radius: 0.75rem; margin-top: 0.5rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-bg-color text-base transition-colors duration-300">
+
+    <div id="sidebar-container" class="shrink-0 z-50 h-full flex flex-col transition-all duration-300"></div>
+
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative flex flex-col h-full w-full">
+        
+        <header class="sticky top-0 z-30 bg-bg-color/80 backdrop-blur-md border-b border-theme p-5 lg:p-8 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button id="mobile-menu-btn" class="md:hidden text-strong text-2xl hover:text-blue-500 transition-colors"><i class="fa-solid fa-bars"></i></button>
+                <div class="w-px h-8 bg-border-theme md:hidden"></div>
+                <div>
+                    <h2 class="text-2xl lg:text-3xl font-black text-strong uppercase tracking-tight">Anotações</h2>
+                    <p class="text-[10px] lg:text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">O seu segundo cérebro</p>
+                </div>
+            </div>
+            <button id="theme-toggle" class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-blue-500 transition-all shadow-sm"><i class="fa-solid fa-moon text-lg"></i></button>
+        </header>
+
+        <div class="p-5 lg:p-8 max-w-[1600px] mx-auto w-full space-y-6">
+
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-panel border border-theme p-4 rounded-2xl sticky top-[88px] z-20 shadow-sm">
+                
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="relative flex-1 md:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-muted text-xs"></i>
+                        <input type="text" id="busca-nota" onkeyup="filtrarNotas()" placeholder="Pesquisar notas..." class="w-full bg-bg-color border border-theme rounded-xl pl-8 pr-3 py-2.5 text-xs font-semibold text-strong focus:outline-none focus:border-blue-500 transition-colors">
+                    </div>
+                    
+                    <select id="filtro-tag" onchange="filtrarNotas()" class="bg-bg-color border border-theme rounded-xl px-3 py-2.5 text-xs font-bold text-strong focus:outline-none focus:border-blue-500 cursor-pointer appearance-none">
+                        <option value="Todas">Todas as Tags</option>
+                        <option value="Ideias">💡 Ideias</option>
+                        <option value="Rascunhos">📝 Rascunhos</option>
+                        <option value="Profissional">💼 Profissional</option>
+                        <option value="Pessoal">👤 Pessoal</option>
+                        <option value="Estudos">📚 Estudos</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-2 w-full md:w-auto justify-end">
+                    <div class="flex bg-bg-color border border-theme rounded-xl p-1">
+                        <button onclick="mudarStatus('Ativas')" id="btn-ativas" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-blue-500 text-white shadow-sm">Ativas</button>
+                        <button onclick="mudarStatus('Arquivadas')" id="btn-arquivadas" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-muted hover:text-strong">Arquivadas</button>
+                    </div>
+                    <button onclick="abrirModalNota()" class="px-5 py-2.5 rounded-xl text-xs font-black bg-blue-500 text-white shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 ml-2">
+                        <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">NOVA NOTA</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="grid-notas" class="masonry-grid pb-12 pt-4">
+                </div>
+
+        </div>
+    </main>
+
+    <div id="modal-nota" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-panel border border-theme rounded-3xl w-full max-w-2xl shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="nota-content">
+            
+            <div class="p-6 border-b border-theme flex justify-between items-center bg-bg-color/50 rounded-t-3xl shrink-0">
+                <input type="text" id="nota-titulo" class="bg-transparent border-none text-xl font-black text-strong focus:outline-none placeholder-muted w-full" placeholder="Título da Anotação...">
+                <button onclick="fecharModalNota()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-bg-color border border-theme text-muted hover:text-red-500 transition-colors ml-4 shrink-0"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="px-6 py-3 border-b border-theme bg-bg-color flex gap-2 overflow-x-auto no-scrollbar shrink-0">
+                <button type="button" onclick="formatarTexto('bold')" class="w-8 h-8 rounded hover:bg-black/10 dark:hover:bg-white/10 text-strong flex items-center justify-center transition-colors" title="Negrito (Ctrl+B)"><i class="fa-solid fa-bold"></i></button>
+                <button type="button" onclick="formatarTexto('italic')" class="w-8 h-8 rounded hover:bg-black/10 dark:hover:bg-white/10 text-strong flex items-center justify-center transition-colors" title="Itálico (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
+                <div class="w-px h-6 bg-theme my-auto mx-1"></div>
+                <button type="button" onclick="formatarTexto('insertUnorderedList')" class="w-8 h-8 rounded hover:bg-black/10 dark:hover:bg-white/10 text-strong flex items-center justify-center transition-colors" title="Lista com Marcadores"><i class="fa-solid fa-list-ul"></i></button>
+                <button type="button" onclick="formatarTexto('insertOrderedList')" class="w-8 h-8 rounded hover:bg-black/10 dark:hover:bg-white/10 text-strong flex items-center justify-center transition-colors" title="Lista Numerada"><i class="fa-solid fa-list-ol"></i></button>
+                <div class="w-px h-6 bg-theme my-auto mx-1"></div>
+                <button type="button" onclick="inserirImagem()" class="w-8 h-8 rounded hover:bg-black/10 dark:hover:bg-white/10 text-blue-500 flex items-center justify-center transition-colors" title="Inserir Imagem (URL)"><i class="fa-solid fa-image"></i></button>
+                
+                <div class="ml-auto">
+                    <select id="nota-tag" class="bg-panel border border-theme rounded-lg px-2 py-1.5 text-xs font-bold text-muted focus:outline-none focus:border-blue-500 cursor-pointer">
+                        <option value="Ideias">💡 Ideias</option>
+                        <option value="Rascunhos">📝 Rascunhos</option>
+                        <option value="Profissional">💼 Profissional</option>
+                        <option value="Pessoal">👤 Pessoal</option>
+                        <option value="Estudos">📚 Estudos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="p-6 flex-1 overflow-y-auto custom-scrollbar bg-bg-color/30">
+                <input type="hidden" id="nota-id">
+                <div id="nota-editor" contenteditable="true" class="rich-text-content nota-render min-h-[200px] text-sm font-medium text-strong leading-relaxed" placeholder="Comece a escrever livremente aqui..."></div>
+            </div>
+
+            <div class="p-5 border-t border-theme flex justify-end gap-3 bg-bg-color/50 rounded-b-3xl shrink-0">
+                <span id="nota-data-info" class="text-[10px] text-muted font-bold my-auto mr-auto uppercase tracking-widest hidden md:block"></span>
+                <button onclick="fecharModalNota()" class="px-5 py-2.5 rounded-xl text-sm font-bold text-muted hover:bg-panel transition-colors">Cancelar</button>
+                <button onclick="salvarNota()" class="bg-blue-500 text-white px-8 py-2.5 rounded-xl text-sm font-black shadow-lg hover:scale-105 transition-transform">Guardar Nota</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        // ==========================================
+        // BANCO DE DADOS
+        // ==========================================
+        const NOTAS_KEY = 'lifeos_anotacoes_v1';
+        let notas = JSON.parse(localStorage.getItem(NOTAS_KEY)) || [];
+        
+        let statusFiltro = 'Ativas'; // 'Ativas' ou 'Arquivadas'
+
+        // Cores das Tags para os Cards
+        const tagColors = {
+            'Ideias': 'text-yellow-500 border-yellow-500/30 bg-yellow-500/10',
+            'Rascunhos': 'text-orange-500 border-orange-500/30 bg-orange-500/10',
+            'Profissional': 'text-blue-500 border-blue-500/30 bg-blue-500/10',
+            'Pessoal': 'text-accent border-accent/30 bg-accent/10',
+            'Estudos': 'text-purple-500 border-purple-500/30 bg-purple-500/10'
+        };
+
+        function salvarDB() {
+            localStorage.setItem(NOTAS_KEY, JSON.stringify(notas));
+        }
+
+        // ==========================================
+        // EDITOR RICH TEXT (FUNÇÕES)
+        // ==========================================
+        function formatarTexto(comando) {
+            document.execCommand(comando, false, null);
+            document.getElementById('nota-editor').focus();
+        }
+
+        function inserirImagem() {
+            const url = prompt("Cole o link (URL) da imagem que deseja inserir:");
+            if (url && url.trim() !== '') {
+                document.execCommand('insertImage', false, url);
+            }
+            document.getElementById('nota-editor').focus();
+        }
+
+        // Simula o comportamento do placeholder no div contenteditable
+        const editor = document.getElementById('nota-editor');
+        editor.addEventListener('input', function() {
+            if (this.innerHTML.trim() === '' || this.innerHTML === '<br>') {
+                this.setAttribute('contentempty', 'true');
+                this.innerHTML = '';
+            } else {
+                this.removeAttribute('contentempty');
+            }
+        });
+
+        // ==========================================
+        // RENDERIZAÇÃO DO QUADRO
+        // ==========================================
+        function renderNotas() {
+            const grid = document.getElementById('grid-notas');
+            grid.innerHTML = '';
+
+            const busca = document.getElementById('busca-nota').value.toLowerCase();
+            const tag = document.getElementById('filtro-tag').value;
+
+            // Filtragem
+            let filtradas = notas.filter(n => statusFiltro === 'Arquivadas' ? n.arquivada : !n.arquivada);
+            
+            if (tag !== 'Todas') filtradas = filtradas.filter(n => n.tag === tag);
+            
+            if (busca) {
+                filtradas = filtradas.filter(n => 
+                    (n.titulo && n.titulo.toLowerCase().includes(busca)) || 
+                    (n.conteudo && n.conteudo.toLowerCase().includes(busca))
+                );
+            }
+
+            // Ordenação (Mais recentes primeiro)
+            filtradas.sort((a, b) => b.id - a.id);
+
+            if(filtradas.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center text-muted w-full"><i class="fa-regular fa-note-sticky text-5xl mb-4 opacity-30"></i><p class="text-sm font-bold uppercase tracking-widest">Nenhuma anotação encontrada.</p></div>`;
+                return;
+            }
+
+            filtradas.forEach(n => {
+                const corTag = tagColors[n.tag] || 'text-muted border-theme bg-panel';
+                const dataFormatada = new Date(n.id).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+                const card = document.createElement('div');
+                card.className = `masonry-item glass-card p-6 relative group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl fade-in ${n.arquivada ? 'opacity-70' : 'bg-panel'}`;
+                
+                // Botões de Ação que aparecem no Hover
+                const acoes = `
+                    <div class="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-bg-color/80 backdrop-blur-sm p-1 rounded-lg border border-theme shadow-sm">
+                        <button onclick="editarNota(${n.id})" class="w-8 h-8 rounded flex items-center justify-center text-muted hover:text-blue-500 hover:bg-blue-500/10 transition-colors" title="Editar"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="arquivarNota(${n.id})" class="w-8 h-8 rounded flex items-center justify-center text-muted hover:text-orange-500 hover:bg-orange-500/10 transition-colors" title="${n.arquivada ? 'Desarquivar' : 'Arquivar'}"><i class="fa-solid fa-box-archive text-xs"></i></button>
+                        <button onclick="excluirNota(${n.id})" class="w-8 h-8 rounded flex items-center justify-center text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors" title="Excluir"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                `;
+
+                card.innerHTML = `
+                    ${acoes}
+                    <div class="mb-4 pr-24">
+                        <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${corTag} inline-block mb-2">${n.tag}</span>
+                        <h3 class="text-lg font-black text-strong leading-tight">${n.titulo || 'Sem Título'}</h3>
+                    </div>
+                    
+                    <div class="nota-render text-sm text-strong font-medium opacity-90 overflow-hidden relative max-h-64 mb-4">
+                        ${n.conteudo}
+                        <div class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-panel to-transparent"></div>
+                    </div>
+                    
+                    <div class="mt-auto pt-3 border-t border-theme/50 flex justify-between items-center">
+                        <span class="text-[9px] font-bold text-muted uppercase tracking-widest"><i class="fa-regular fa-clock mr-1"></i> ${dataFormatada}</span>
+                    </div>
+                `;
+                
+                // Clicar no card inteiro (exceto nos botões) abre a edição
+                card.addEventListener('click', (e) => {
+                    if(e.target.closest('button')) return;
+                    editarNota(n.id);
+                });
+
+                grid.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // FILTROS DA TELA PRINCIPAL
+        // ==========================================
+        function mudarStatus(status) {
+            statusFiltro = status;
+            document.getElementById('btn-ativas').className = `px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${status === 'Ativas' ? 'bg-blue-500 text-white shadow-sm' : 'text-muted hover:text-strong'}`;
+            document.getElementById('btn-arquivadas').className = `px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${status === 'Arquivadas' ? 'bg-blue-500 text-white shadow-sm' : 'text-muted hover:text-strong'}`;
+            renderNotas();
+        }
+
+        function filtrarNotas() {
+            renderNotas();
+        }
+
+        // ==========================================
+        // MODAL NOTA (CRUD)
+        // ==========================================
+        const modalNota = document.getElementById('modal-nota');
+        const notaContent = document.getElementById('nota-content');
+
+        function abrirModalNota() {
+            document.getElementById('nota-id').value = '';
+            document.getElementById('nota-titulo').value = '';
+            document.getElementById('nota-editor').innerHTML = '';
+            document.getElementById('nota-editor').setAttribute('contentempty', 'true');
+            document.getElementById('nota-tag').value = 'Ideias';
+            document.getElementById('nota-data-info').innerText = 'Nova Anotação';
+
+            modalNota.classList.remove('hidden');
+            modalNota.classList.add('flex');
+            setTimeout(() => { modalNota.classList.remove('opacity-0'); notaContent.classList.remove('scale-95'); }, 10);
+            
+            // Foca no editor automaticamente
+            setTimeout(() => { document.getElementById('nota-editor').focus(); }, 350);
+        }
+
+        function editarNota(id) {
+            const n = notas.find(x => x.id === id);
+            if(!n) return;
+
+            document.getElementById('nota-id').value = n.id;
+            document.getElementById('nota-titulo').value = n.titulo;
+            document.getElementById('nota-editor').innerHTML = n.conteudo;
+            document.getElementById('nota-tag').value = n.tag;
+            
+            const dataStr = new Date(n.id).toLocaleString('pt-BR');
+            document.getElementById('nota-data-info').innerText = `Criada em: ${dataStr}`;
+
+            if (n.conteudo.trim() === '') document.getElementById('nota-editor').setAttribute('contentempty', 'true');
+            else document.getElementById('nota-editor').removeAttribute('contentempty');
+
+            modalNota.classList.remove('hidden');
+            modalNota.classList.add('flex');
+            setTimeout(() => { modalNota.classList.remove('opacity-0'); notaContent.classList.remove('scale-95'); }, 10);
+        }
+
+        function fecharModalNota() {
+            modalNota.classList.add('opacity-0');
+            notaContent.classList.add('scale-95');
+            setTimeout(() => { modalNota.classList.remove('flex'); modalNota.classList.add('hidden'); }, 300);
+        }
+
+        function salvarNota() {
+            const titulo = document.getElementById('nota-titulo').value.trim();
+            const conteudo = document.getElementById('nota-editor').innerHTML.trim();
+            
+            // Não salva nota totalmente vazia
+            if(!titulo && (conteudo === '' || conteudo === '<br>')) {
+                fecharModalNota();
+                return; 
+            }
+
+            const idAtual = document.getElementById('nota-id').value;
+            const dados = {
+                titulo: titulo,
+                conteudo: conteudo,
+                tag: document.getElementById('nota-tag').value
+            };
+
+            if(idAtual) {
+                // Atualizar
+                const idx = notas.findIndex(x => x.id == idAtual);
+                notas[idx] = { ...notas[idx], ...dados };
+            } else {
+                // Criar Nova
+                notas.push({ id: Date.now(), arquivada: false, ...dados });
+            }
+
+            salvarDB();
+            fecharModalNota();
+            renderNotas();
+        }
+
+        function excluirNota(id) {
+            if(confirm("Deseja realmente apagar esta nota definitivamente?")) {
+                notas = notas.filter(x => x.id !== id);
+                salvarDB();
+                renderNotas();
+            }
+        }
+
+        function arquivarNota(id) {
+            const idx = notas.findIndex(x => x.id === id);
+            notas[idx].arquivada = !notas[idx].arquivada;
+            salvarDB();
+            renderNotas();
+        }
+
+        // Boot
+        window.onload = renderNotas;
+
+    </script>
+</body>
+</html>

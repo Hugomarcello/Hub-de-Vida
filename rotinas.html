@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-pt" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS | Rotinas e Hábitos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { accent: 'var(--accent)' } } }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .xp-pop { animation: xpPop 0.5s ease-out forwards; }
+        @keyframes xpPop { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-20px) scale(1.2); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Animação do Gráfico */
+        .bar-grow { transition: height 1s ease-out; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-bg-color text-base transition-colors duration-300">
+
+    <div id="sidebar-container" class="shrink-0 z-50 h-full flex flex-col transition-all duration-300"></div>
+
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative flex flex-col h-full w-full">
+        
+        <header class="sticky top-0 z-30 bg-bg-color/80 backdrop-blur-md border-b border-theme p-5 lg:p-8 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button id="mobile-menu-btn" class="md:hidden text-strong text-2xl hover:text-blue-500 transition-colors"><i class="fa-solid fa-bars"></i></button>
+                <div class="w-px h-8 bg-border-theme md:hidden"></div>
+                <div>
+                    <h2 class="text-2xl lg:text-3xl font-black text-strong uppercase tracking-tight">Rotinas & Hábitos</h2>
+                    <p class="text-[10px] lg:text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">Disciplina é Liberdade</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="abrirModalHistorico()" class="bg-panel border border-theme text-muted hover:text-accent px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-vault"></i> <span class="hidden sm:inline">Histórico Arquivado</span>
+                </button>
+                <button id="theme-toggle" class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-blue-500 transition-all shadow-sm"><i class="fa-solid fa-moon text-lg"></i></button>
+            </div>
+        </header>
+
+        <div class="p-5 lg:p-8 max-w-7xl mx-auto w-full space-y-6 lg:space-y-8 fade-in">
+
+            <div class="glass-card p-6 md:p-8 bg-gradient-to-br from-panel to-blue-500/5 relative overflow-hidden border-t-4 border-blue-500">
+                <i class="fa-solid fa-gamepad absolute -bottom-6 -right-6 text-9xl text-blue-500 opacity-5"></i>
+                <div class="flex flex-col md:flex-row items-center gap-6 relative z-10">
+                    <div class="relative shrink-0">
+                        <div class="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-bg-color bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                            <span class="text-3xl md:text-4xl">🧑‍💻</span>
+                        </div>
+                        <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-strong text-bg-color px-3 py-1 rounded-full text-xs font-black tracking-widest border-2 border-bg-color shadow-sm">
+                            LVL <span id="ui-level">1</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 w-full">
+                        <div class="flex justify-between items-end mb-2">
+                            <div>
+                                <h3 class="text-xl md:text-2xl font-black text-strong uppercase tracking-tight">Mestre da Execução</h3>
+                                <p class="text-xs text-muted font-bold tracking-widest">Rumo ao próximo nível</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg md:text-xl font-black text-blue-500" id="ui-xp-atual">0</span>
+                                <span class="text-xs text-muted font-bold">/ <span id="ui-xp-max">500</span> XP</span>
+                            </div>
+                        </div>
+                        <div class="w-full h-3 md:h-4 bg-bg-color border border-theme rounded-full overflow-hidden shadow-inner relative">
+                            <div id="ui-xp-bar" class="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-1000 ease-out" style="width: 0%"></div>
+                            <div class="absolute top-0 left-0 right-0 h-1 bg-white/20"></div>
+                        </div>
+                    </div>
+                    <div class="shrink-0 bg-bg-color border border-theme rounded-2xl p-4 flex flex-col items-center justify-center min-w-[120px] shadow-sm">
+                        <i class="fa-solid fa-fire text-3xl text-orange-500 mb-1 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]"></i>
+                        <p class="text-2xl font-black text-strong leading-none" id="ui-streak">0</p>
+                        <p class="text-[10px] font-bold text-muted uppercase tracking-widest mt-1">Dias Seguidos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass-card p-6 border-l-4 border-purple-500 flex flex-col justify-center">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-muted mb-5 border-b border-theme pb-2"><i class="fa-solid fa-ranking-star text-purple-500 mr-2"></i> Pódio de Hábitos</h3>
+                    
+                    <div class="flex items-center justify-between bg-bg-color border border-theme rounded-xl p-3 mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-accent/20 text-accent flex items-center justify-center"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                            <div><p class="text-[10px] font-bold text-muted uppercase">Melhor Desempenho</p><p id="stat-melhor-nome" class="text-sm font-black text-strong truncate w-32 md:w-40">---</p></div>
+                        </div>
+                        <span id="stat-melhor-val" class="text-lg font-black text-accent">0/7</span>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-bg-color border border-theme rounded-xl p-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-red-500/20 text-red-500 flex items-center justify-center"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                            <div><p class="text-[10px] font-bold text-muted uppercase">Pior Desempenho</p><p id="stat-pior-nome" class="text-sm font-black text-strong truncate w-32 md:w-40">---</p></div>
+                        </div>
+                        <span id="stat-pior-val" class="text-lg font-black text-red-500">0/7</span>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 glass-card p-6 border-l-4 border-accent flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xs font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-chart-simple text-accent mr-2"></i> Produtividade da Semana</h3>
+                        <span class="text-[10px] font-bold text-muted bg-panel px-2 py-1 rounded border border-theme">Conclusão de Hábitos (%)</span>
+                    </div>
+                    
+                    <div class="flex-1 flex items-end justify-between gap-2 pt-4 h-32 relative">
+                        <div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20 z-0">
+                            <div class="w-full border-t border-theme border-dashed"></div>
+                            <div class="w-full border-t border-theme border-dashed"></div>
+                            <div class="w-full border-t border-theme border-dashed"></div>
+                        </div>
+                        
+                        <div id="chart-bars" class="w-full h-full flex items-end justify-between gap-2 md:gap-6 px-2 relative z-10"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm md:text-base font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-sun text-orange-500 mr-2"></i> Rituais Diários</h3>
+                    <button onclick="arquivarDia()" class="text-[10px] md:text-xs font-black uppercase tracking-widest bg-orange-500 text-white px-4 py-2 rounded-lg shadow-md hover:scale-105 transition-transform"><i class="fa-solid fa-box-archive mr-1"></i> Arquivar Hoje</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-card p-5 border-t-4 border-orange-500 flex flex-col"><div class="flex justify-between items-center mb-4 border-b border-theme pb-2"><h4 class="text-xs font-black uppercase tracking-widest text-muted">Manhã</h4><button onclick="addRotina('manha')" class="text-orange-500 hover:text-orange-400 text-xs font-bold"><i class="fa-solid fa-plus"></i></button></div><ul id="lista-manha" class="space-y-2 flex-1"></ul></div>
+                    <div class="glass-card p-5 border-t-4 border-blue-500 flex flex-col"><div class="flex justify-between items-center mb-4 border-b border-theme pb-2"><h4 class="text-xs font-black uppercase tracking-widest text-muted">Tarde</h4><button onclick="addRotina('tarde')" class="text-blue-500 hover:text-blue-400 text-xs font-bold"><i class="fa-solid fa-plus"></i></button></div><ul id="lista-tarde" class="space-y-2 flex-1"></ul></div>
+                    <div class="glass-card p-5 border-t-4 border-purple-500 flex flex-col"><div class="flex justify-between items-center mb-4 border-b border-theme pb-2"><h4 class="text-xs font-black uppercase tracking-widest text-muted">Noite</h4><button onclick="addRotina('noite')" class="text-purple-500 hover:text-purple-400 text-xs font-bold"><i class="fa-solid fa-plus"></i></button></div><ul id="lista-noite" class="space-y-2 flex-1"></ul></div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 md:p-8 border-l-4 border-accent">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-theme pb-4">
+                    <div>
+                        <h3 class="text-sm md:text-base font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-calendar-week text-accent mr-2"></i> Rastreador Semanal</h3>
+                        <p class="text-[10px] font-bold text-muted mt-1 uppercase tracking-widest">Semana atual: <span id="label-semana-atual" class="text-accent"></span></p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="arquivarSemana()" class="px-4 py-2 bg-panel border border-theme text-muted hover:text-accent rounded-lg text-xs font-bold transition-colors shadow-sm"><i class="fa-solid fa-box-archive mr-1"></i> Arquivar Semana</button>
+                        <button onclick="addHabito()" class="px-4 py-2 bg-accent text-bg-color rounded-lg text-xs font-black shadow-md hover:scale-105 transition-transform"><i class="fa-solid fa-plus mr-1"></i> Add Hábito</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto no-scrollbar">
+                    <div class="min-w-[600px]">
+                        <div class="flex items-center mb-3 text-[10px] font-black uppercase tracking-widest text-muted text-center">
+                            <div class="w-1/3 text-left pl-2">Hábito</div>
+                            <div class="flex-1 grid grid-cols-7 gap-2"><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div><div>DOM</div></div>
+                            <div class="w-16 text-right pr-2">Total</div>
+                        </div>
+                        <div id="lista-habitos" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 md:p-8 border-t-4 border-purple-500">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm md:text-base font-black uppercase tracking-widest text-strong flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-purple-500"></i> Playbook de Comportamento
+                    </h3>
+                </div>
+                <textarea id="playbook-texto" onblur="salvarPlaybook()" class="w-full h-40 bg-bg-color border border-theme rounded-xl p-4 text-sm font-semibold text-strong focus:outline-none focus:border-purple-500 resize-none placeholder-muted mt-2" placeholder="Suas regras inegociáveis para vencer a procrastinação..."></textarea>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="modal-historico" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-panel border border-theme rounded-3xl w-full max-w-2xl shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="mh-content">
+            
+            <div class="p-6 border-b border-theme flex justify-between items-center bg-bg-color/50 rounded-t-3xl shrink-0">
+                <div>
+                    <h3 class="text-xl font-black text-strong uppercase tracking-tight flex items-center gap-2"><i class="fa-solid fa-vault text-accent"></i> Cofre do Tempo</h3>
+                    <p class="text-[10px] text-muted font-bold uppercase tracking-widest mt-1">Resgate e visualize o seu passado.</p>
+                </div>
+                <button onclick="fecharModalHistorico()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-bg-color border border-theme text-muted hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-6 flex-1 overflow-y-auto custom-scrollbar space-y-6">
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-muted mb-3 border-b border-theme pb-2"><i class="fa-solid fa-calendar-week mr-1"></i> Semanas de Hábitos</h4>
+                    <ul id="lista-hist-semanas" class="space-y-2">
+                        </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-muted mb-3 border-b border-theme pb-2"><i class="fa-solid fa-sun mr-1"></i> Dias (Rotinas)</h4>
+                    <ul id="lista-hist-dias" class="space-y-2">
+                        </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="xp-floater" class="fixed pointer-events-none opacity-0 font-black text-xl z-[9999] drop-shadow-md"></div>
+
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        // ==========================================
+        // BANCO DE DADOS E GAMIFICAÇÃO
+        // ==========================================
+        const DB_HABITOS = 'lifeos_habitos_v4';
+        const XP_POR_ROTINA = 25;
+        const XP_POR_HABITO = 15;
+        const BONUS_DIARIO = 100;
+
+        let db = JSON.parse(localStorage.getItem(DB_HABITOS)) || {
+            stats: { xp: 0, level: 1, streak: 0, lastLogin: '' },
+            rotinas: {
+                manha: [{ id: 11, texto: "Beber 500ml de Água", feita: false }],
+                tarde: [{ id: 21, texto: "Revisar Tarefas", feita: false }],
+                noite: [{ id: 31, texto: "Planejar amanhã", feita: false }]
+            },
+            habitos: [
+                { id: 1, nome: "Dormir 8h", dias: [0,0,0,0,0,0,0] },
+                { id: 2, nome: "Treino", dias: [0,0,0,0,0,0,0] }
+            ],
+            playbook: "",
+            historico: { semanas: [], dias: [] }
+        };
+
+        function salvarDB() { localStorage.setItem(DB_HABITOS, JSON.stringify(db)); }
+
+        // --- Utils de Data ---
+        function getNumeroSemanaAno() {
+            const data = new Date();
+            const inicio = new Date(data.getFullYear(), 0, 1);
+            const diff = Math.floor((data - inicio) / (24 * 60 * 60 * 1000));
+            return Math.ceil((diff + inicio.getDay() + 1) / 7);
+        }
+
+        // ==========================================
+        // SISTEMA DE ESTATÍSTICAS E GRÁFICOS
+        // ==========================================
+        function atualizarEstatisticas() {
+            // 1. Melhor / Pior Hábito
+            let ranking = db.habitos.map(h => {
+                let feitos = h.dias.filter(d => d === 1).length;
+                return { nome: h.nome, feitos: feitos };
+            });
+
+            if (ranking.length > 0) {
+                ranking.sort((a, b) => b.feitos - a.feitos); // Ordena do maior pro menor
+                
+                let melhor = ranking[0];
+                let pior = ranking[ranking.length - 1];
+
+                document.getElementById('stat-melhor-nome').innerText = melhor.nome;
+                document.getElementById('stat-melhor-val').innerText = `${melhor.feitos}/7`;
+
+                document.getElementById('stat-pior-nome').innerText = pior.nome;
+                document.getElementById('stat-pior-val').innerText = `${pior.feitos}/7`;
+            } else {
+                document.getElementById('stat-melhor-nome').innerText = "Sem dados";
+                document.getElementById('stat-pior-nome').innerText = "Sem dados";
+            }
+
+            // 2. Gráfico CSS de Barras (Desempenho Semanal)
+            const diasSemana = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];
+            let conclusoesPorDia = [0, 0, 0, 0, 0, 0, 0];
+            let maxHabitos = db.habitos.length || 1; // Evita dividir por zero
+
+            db.habitos.forEach(h => {
+                h.dias.forEach((estado, idx) => {
+                    if(estado === 1) conclusoesPorDia[idx]++;
+                });
+            });
+
+            const chartContainer = document.getElementById('chart-bars');
+            chartContainer.innerHTML = '';
+
+            conclusoesPorDia.forEach((total, idx) => {
+                let porcentagem = (total / maxHabitos) * 100;
+                let corBarra = porcentagem > 75 ? 'bg-accent' : (porcentagem > 40 ? 'bg-blue-500' : 'bg-red-500');
+                if (total === 0) porcentagem = 2; // Mostrar pelo menos um traço se for 0
+
+                chartContainer.innerHTML += `
+                    <div class="flex flex-col items-center justify-end h-full flex-1 group">
+                        <span class="text-[9px] font-black opacity-0 group-hover:opacity-100 transition-opacity mb-1 text-strong">${Math.round(porcentagem)}%</span>
+                        <div class="w-full max-w-[32px] rounded-t-md bar-grow shadow-md relative overflow-hidden ${corBarra}" style="height: ${porcentagem}%">
+                            <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </div>
+                        <span class="text-[9px] font-bold text-muted mt-2">${diasSemana[idx]}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // ==========================================
+        // MOTOR DE XP (GAMIFICAÇÃO)
+        // ==========================================
+        function calcularMaxXP(level) { return level * 500; }
+        function adicionarXP(quantidade, event) {
+            db.stats.xp += quantidade;
+            if (db.stats.xp < 0) db.stats.xp = 0; 
+            
+            let maxXP = calcularMaxXP(db.stats.level);
+            if (db.stats.xp >= maxXP) {
+                db.stats.xp -= maxXP;
+                db.stats.level += 1;
+                alert(`🎉 LEVEL UP! Parabéns, Nível ${db.stats.level}!`);
+            }
+            salvarDB(); atualizarUIGamificacao();
+            if(event) animarXPPop(quantidade, event.clientX, event.clientY);
+        }
+        function atualizarUIGamificacao() {
+            const maxXP = calcularMaxXP(db.stats.level);
+            const p = Math.min(100, Math.max(0, (db.stats.xp / maxXP) * 100));
+            document.getElementById('ui-level').innerText = db.stats.level;
+            document.getElementById('ui-xp-atual').innerText = db.stats.xp;
+            document.getElementById('ui-xp-max').innerText = maxXP;
+            document.getElementById('ui-xp-bar').style.width = `${p}%`;
+            document.getElementById('ui-streak').innerText = db.stats.streak;
+        }
+        function animarXPPop(qtd, x, y) {
+            const f = document.getElementById('xp-floater');
+            f.innerText = qtd < 0 ? `${qtd} XP` : `+${qtd} XP`;
+            f.className = `fixed pointer-events-none opacity-0 font-black text-xl z-[9999] drop-shadow-md ${qtd < 0 ? 'text-red-500' : 'text-blue-500'}`;
+            f.style.left = `${x}px`; f.style.top = `${y - 20}px`;
+            f.classList.remove('xp-pop'); void f.offsetWidth; f.classList.add('xp-pop');
+        }
+
+        // ==========================================
+        // RENDERIZAÇÃO: ROTINAS
+        // ==========================================
+        function renderRotinas() {
+            ['manha', 'tarde', 'noite'].forEach(p => {
+                const ul = document.getElementById(`lista-${p}`);
+                ul.innerHTML = '';
+                db.rotinas[p].forEach((item, idx) => {
+                    const chk = item.feita ? 'bg-accent border-accent text-white' : 'border-theme text-transparent hover:border-accent';
+                    const txt = item.feita ? 'text-muted line-through opacity-50' : 'text-strong';
+                    ul.innerHTML += `
+                        <li class="flex items-start gap-3 p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg group border border-transparent hover:border-theme transition-colors">
+                            <div onclick="toggleRotina('${p}', ${idx}, event)" class="w-5 h-5 mt-0.5 rounded-md border-2 flex items-center justify-center cursor-pointer transition-colors shrink-0 ${chk}"><i class="fa-solid fa-check text-[10px]"></i></div>
+                            <span onclick="editarRotina('${p}', ${idx})" class="text-sm font-semibold flex-1 cursor-pointer transition-colors ${txt}">${item.texto}</span>
+                            <button onclick="excluirRotina('${p}', ${idx})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                        </li>`;
+                });
+            });
+        }
+        function addRotina(p) { let t = prompt(`Nova rotina (${p}):`); if(t) { db.rotinas[p].push({ id: Date.now(), texto: t, feita: false }); salvarDB(); renderRotinas(); } }
+        function editarRotina(p, i) { let t = prompt("Editar:", db.rotinas[p][i].texto); if(t) { db.rotinas[p][i].texto = t; salvarDB(); renderRotinas(); } }
+        function excluirRotina(p, i) { db.rotinas[p].splice(i, 1); salvarDB(); renderRotinas(); }
+        function toggleRotina(p, i, event) {
+            db.rotinas[p][i].feita = !db.rotinas[p][i].feita;
+            if(db.rotinas[p][i].feita) adicionarXP(XP_POR_ROTINA, event);
+            salvarDB(); renderRotinas();
+        }
+
+        // ==========================================
+        // RENDERIZAÇÃO: HÁBITOS (3 ESTADOS)
+        // ==========================================
+        function renderHabitos() {
+            document.getElementById('label-semana-atual').innerText = `${getNumeroSemanaAno()}/52`;
+            const container = document.getElementById('lista-habitos');
+            container.innerHTML = '';
+
+            db.habitos.forEach((h, hIdx) => {
+                let diasHTML = ''; let totalFeitos = 0;
+
+                h.dias.forEach((estado, dIdx) => {
+                    let box = 'bg-bg-color border-theme text-transparent hover:border-accent';
+                    let icon = '';
+                    if (estado === 1) { totalFeitos++; box = 'bg-accent border-accent text-white shadow-md'; icon = '<i class="fa-solid fa-check text-xs"></i>'; } 
+                    else if (estado === 2) { box = 'bg-red-500 border-red-500 text-white shadow-md'; icon = '<i class="fa-solid fa-xmark text-xs"></i>'; }
+
+                    diasHTML += `<div onclick="toggleHabitoDia(${hIdx}, ${dIdx}, event)" class="w-8 h-8 rounded-lg border-2 flex items-center justify-center cursor-pointer transition-all mx-auto ${box}">${icon}</div>`;
+                });
+
+                const p = Math.round((totalFeitos / 7) * 100);
+
+                container.innerHTML += `
+                    <div class="flex items-center p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-theme transition-colors group">
+                        <div class="w-1/3 flex items-center gap-2 pl-2">
+                            <span onclick="editarHabito(${hIdx})" class="text-sm font-bold text-strong cursor-pointer truncate flex-1 hover:text-blue-500 transition-colors">${h.nome}</span>
+                            <button onclick="excluirHabito(${hIdx})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                        </div>
+                        <div class="flex-1 grid grid-cols-7 gap-2">${diasHTML}</div>
+                        <div class="w-16 text-right pr-2 flex flex-col items-end justify-center">
+                            <span class="text-xs font-black text-strong">${totalFeitos}/7</span>
+                            <div class="w-full h-1.5 bg-bg-color border border-theme rounded-full mt-1 overflow-hidden"><div class="h-full bg-accent transition-all" style="width: ${p}%"></div></div>
+                        </div>
+                    </div>`;
+            });
+            
+            // Sempre atualiza o gráfico quando renderiza os hábitos
+            atualizarEstatisticas();
+        }
+
+        function addHabito() { let n = prompt("Nome do Hábito:"); if(n) { db.habitos.push({ id: Date.now(), nome: n, dias: [0,0,0,0,0,0,0] }); salvarDB(); renderHabitos(); } }
+        function editarHabito(i) { let n = prompt("Novo nome:", db.habitos[i].nome); if(n) { db.habitos[i].nome = n; salvarDB(); renderHabitos(); } }
+        function excluirHabito(i) { if(confirm("Excluir hábito?")) { db.habitos.splice(i, 1); salvarDB(); renderHabitos(); } }
+        
+        function toggleHabitoDia(hIdx, dIdx, event) {
+            let estado = db.habitos[hIdx].dias[dIdx];
+            if (estado === 0) { db.habitos[hIdx].dias[dIdx] = 1; adicionarXP(XP_POR_HABITO, event); } 
+            else if (estado === 1) { db.habitos[hIdx].dias[dIdx] = 2; adicionarXP(-XP_POR_HABITO, event); } 
+            else { db.habitos[hIdx].dias[dIdx] = 0; }
+            salvarDB(); renderHabitos();
+        }
+
+        // ==========================================
+        // SISTEMA DE ARQUIVAMENTO (O COFRE)
+        // ==========================================
+        function arquivarSemana() {
+            const s = getNumeroSemanaAno();
+            if(confirm(`Deseja salvar e arquivar o rastreador da Semana ${s}/52? Isso limpará a tela para a próxima semana.`)) {
+                // Salva uma cópia profunda no histórico
+                db.historico.semanas.unshift({ id: Date.now(), semanaStr: `Semana ${s}/52`, data: new Date().toLocaleDateString('pt-BR'), habitos: JSON.parse(JSON.stringify(db.habitos)) });
+                // Reseta atuais
+                db.habitos.forEach(h => h.dias = [0,0,0,0,0,0,0]);
+                salvarDB(); renderHabitos(); alert("Semana arquivada com sucesso! Você pode resgatá-la no Cofre do Tempo.");
+            }
+        }
+
+        function arquivarDia() {
+            const dataHoje = new Date().toLocaleDateString('pt-BR');
+            if(confirm(`Arquivar as rotinas de hoje (${dataHoje}) e limpar para amanhã? Você ganhará +100 XP.`)) {
+                // Calcula percentual para o histórico
+                let total=0, feitas=0;
+                ['manha','tarde','noite'].forEach(p => { db.rotinas[p].forEach(r => { total++; if(r.feita) feitas++; }); });
+                let perc = total > 0 ? Math.round((feitas/total)*100) : 0;
+                
+                db.historico.dias.unshift({ id: Date.now(), data: dataHoje, p: perc, rotinas: JSON.parse(JSON.stringify(db.rotinas)) });
+                
+                // Limpa as rotinas atuais
+                ['manha', 'tarde', 'noite'].forEach(p => db.rotinas[p].forEach(item => item.feita = false));
+                
+                adicionarXP(BONUS_DIARIO);
+                db.stats.streak += 1; // Aumenta ofensiva
+
+                salvarDB(); renderRotinas(); atualizarUIGamificacao();
+                
+                document.body.insertAdjacentHTML('beforeend', `<div id="overlay-sucesso" class="fixed inset-0 bg-accent/20 backdrop-blur-sm z-[9999] flex items-center justify-center fade-in"><div class="glass-card p-12 text-center"><i class="fa-solid fa-trophy text-7xl text-accent mb-6"></i><h2 class="text-3xl font-black text-strong uppercase">Dia Arquivado!</h2><p class="text-muted font-bold mt-2">+100 XP de Bônus adicionado.</p></div></div>`);
+                setTimeout(() => { document.getElementById('overlay-sucesso').remove(); }, 2500);
+            }
+        }
+
+        // ==========================================
+        // MODAL DO COFRE (HISTÓRICO)
+        // ==========================================
+        function abrirModalHistorico() {
+            const ulSem = document.getElementById('lista-hist-semanas');
+            const ulDia = document.getElementById('lista-hist-dias');
+            ulSem.innerHTML = ''; ulDia.innerHTML = '';
+
+            // Render Semanas
+            if(db.historico.semanas.length === 0) ulSem.innerHTML = '<p class="text-xs text-muted">Nenhuma semana arquivada ainda.</p>';
+            db.historico.semanas.forEach((s, idx) => {
+                ulSem.innerHTML += `
+                    <li class="flex items-center justify-between p-3 bg-bg-color border border-theme rounded-xl">
+                        <div><p class="text-sm font-bold text-strong text-accent">${s.semanaStr}</p><p class="text-[10px] text-muted font-bold">Arquivado em: ${s.data}</p></div>
+                        <button onclick="resgatarSemana(${idx})" class="text-xs font-bold text-bg-color bg-strong px-3 py-1.5 rounded-lg hover:scale-105 transition-transform">Resgatar</button>
+                    </li>`;
+            });
+
+            // Render Dias
+            if(db.historico.dias.length === 0) ulDia.innerHTML = '<p class="text-xs text-muted">Nenhum dia arquivado ainda.</p>';
+            db.historico.dias.forEach((d, idx) => {
+                ulDia.innerHTML += `
+                    <li class="flex items-center justify-between p-3 bg-bg-color border border-theme rounded-xl">
+                        <div><p class="text-sm font-bold text-strong text-orange-500">${d.data}</p><p class="text-[10px] text-muted font-bold">Desempenho: ${d.p}% concluído</p></div>
+                        <button onclick="resgatarDia(${idx})" class="text-xs font-bold text-bg-color bg-strong px-3 py-1.5 rounded-lg hover:scale-105 transition-transform">Resgatar</button>
+                    </li>`;
+            });
+
+            document.getElementById('modal-historico').classList.remove('hidden');
+            document.getElementById('modal-historico').classList.add('flex');
+            setTimeout(() => { document.getElementById('modal-historico').classList.remove('opacity-0'); document.getElementById('mh-content').classList.remove('scale-95'); }, 10);
+        }
+
+        function fecharModalHistorico() {
+            document.getElementById('modal-historico').classList.add('opacity-0');
+            document.getElementById('mh-content').classList.add('scale-95');
+            setTimeout(() => { document.getElementById('modal-historico').classList.remove('flex'); document.getElementById('modal-historico').classList.add('hidden'); }, 300);
+        }
+
+        function resgatarSemana(idx) {
+            if(confirm("Isso irá APAGAR os hábitos da semana atual e substituir pelos desta semana arquivada. Tem certeza?")) {
+                db.habitos = JSON.parse(JSON.stringify(db.historico.semanas[idx].habitos));
+                db.historico.semanas.splice(idx, 1); // Tira do arquivo
+                salvarDB(); renderHabitos(); fecharModalHistorico();
+            }
+        }
+
+        function resgatarDia(idx) {
+            if(confirm("Isso irá APAGAR as rotinas ativas de hoje e substituir pelas deste dia arquivado. Tem certeza?")) {
+                db.rotinas = JSON.parse(JSON.stringify(db.historico.dias[idx].rotinas));
+                db.historico.dias.splice(idx, 1);
+                salvarDB(); renderRotinas(); fecharModalHistorico();
+            }
+        }
+
+        // ==========================================
+        // PLAYBOOK
+        // ==========================================
+        function carregarPlaybook() { document.getElementById('playbook-texto').value = db.playbook || ""; }
+        function salvarPlaybook() { db.playbook = document.getElementById('playbook-texto').value; salvarDB(); }
+
+        window.onload = () => {
+            atualizarUIGamificacao();
+            carregarPlaybook();
+            renderRotinas();
+            renderHabitos();
+        };
+    </script>
+</body>
+</html>

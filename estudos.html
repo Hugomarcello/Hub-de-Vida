@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-pt" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS | Academia do Conhecimento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { accent: 'var(--accent)' } } }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .star-rating i { cursor: pointer; transition: color 0.2s; }
+        .star-rating i.active { color: #f59e0b; }
+        .bar-grow { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .book-cover { width: 60px; height: 85px; object-fit: cover; border-radius: 4px; }
+        .timeline-arrow { animation: pulseArrow 2s infinite; }
+        @keyframes pulseArrow { 0% { transform: translateX(0); opacity: 0.5; } 50% { transform: translateX(5px); opacity: 1; } 100% { transform: translateX(0); opacity: 0.5; } }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-bg-color text-base transition-colors duration-300">
+
+    <div id="sidebar-container" class="shrink-0 z-50 h-full flex flex-col transition-all duration-300"></div>
+
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative flex flex-col h-full w-full">
+        
+        <header class="sticky top-0 z-30 bg-bg-color/80 backdrop-blur-md border-b border-theme p-5 lg:p-8 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button id="mobile-menu-btn" class="md:hidden text-strong text-2xl hover:text-blue-500 transition-colors"><i class="fa-solid fa-bars"></i></button>
+                <div class="w-px h-8 bg-border-theme md:hidden"></div>
+                <div>
+                    <h2 class="text-2xl lg:text-3xl font-black text-strong uppercase tracking-tight">Academia</h2>
+                    <p class="text-[10px] lg:text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">Expansão Cognitiva</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="abrirModalAcervo()" class="bg-panel border border-theme text-muted hover:text-accent px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-book-journal-whills"></i> <span class="hidden sm:inline">Acervo (Arquivo)</span>
+                </button>
+                <button id="theme-toggle" class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-blue-500 transition-all shadow-sm"><i class="fa-solid fa-moon text-lg"></i></button>
+            </div>
+        </header>
+
+        <div class="p-5 lg:p-8 max-w-[1600px] mx-auto w-full space-y-6">
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 fade-in">
+                <div class="bg-bg-color border border-theme rounded-xl p-4 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center text-lg"><i class="fa-solid fa-book-open"></i></div>
+                    <div><p class="text-[9px] uppercase font-black tracking-widest text-muted">Livros Lidos</p><p id="tel-livros" class="text-2xl font-black text-strong">0</p></div>
+                </div>
+                <div class="bg-bg-color border border-theme rounded-xl p-4 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center text-lg"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div><p class="text-[9px] uppercase font-black tracking-widest text-muted">Cursos Finalizados</p><p id="tel-cursos" class="text-2xl font-black text-strong">0</p></div>
+                </div>
+                <div class="bg-bg-color border border-theme rounded-xl p-4 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center text-lg"><i class="fa-solid fa-trophy"></i></div>
+                    <div><p class="text-[9px] uppercase font-black tracking-widest text-muted">Módulos de Trilhas</p><p id="tel-trilhas" class="text-2xl font-black text-strong">0</p></div>
+                </div>
+                <div class="bg-bg-color border border-theme rounded-xl p-4 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center text-lg"><i class="fa-solid fa-flask"></i></div>
+                    <div><p class="text-[9px] uppercase font-black tracking-widest text-muted">Sessões Livres</p><p id="tel-sessoes" class="text-2xl font-black text-strong">0</p></div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 md:p-8 border-t-4 border-yellow-500 fade-in">
+                <div class="flex flex-col lg:flex-row gap-8 items-center">
+                    <div class="relative shrink-0 flex flex-col items-center">
+                        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-4 border-bg-color flex items-center justify-center text-4xl shadow-lg shadow-yellow-500/20 z-10 text-white"><i class="fa-solid fa-brain"></i></div>
+                        <div class="absolute -bottom-3 bg-strong text-bg-color px-4 py-1 rounded-full text-xs font-black tracking-widest border-2 border-bg-color z-20">LVL <span id="ui-global-lvl">1</span></div>
+                        <p class="mt-5 text-[10px] font-black uppercase tracking-widest text-muted"><span id="ui-global-xp">0</span> / <span id="ui-global-max">500</span> XP Global</p>
+                    </div>
+                    <div class="flex-1 w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-bg-color border border-theme rounded-xl p-4"><div class="flex justify-between items-end mb-2"><h4 class="text-xs font-black uppercase tracking-widest text-blue-500"><i class="fa-solid fa-book-open mr-1"></i> Leitura</h4><span class="text-[10px] font-bold text-muted">Nível <span id="ui-lvl-read">1</span></span></div><div class="w-full h-1.5 bg-panel rounded-full overflow-hidden"><div id="ui-bar-read" class="h-full bg-blue-500 bar-grow" style="width: 0%"></div></div></div>
+                        <div class="bg-bg-color border border-theme rounded-xl p-4"><div class="flex justify-between items-end mb-2"><h4 class="text-xs font-black uppercase tracking-widest text-purple-500"><i class="fa-solid fa-graduation-cap mr-1"></i> Cursos</h4><span class="text-[10px] font-bold text-muted">Nível <span id="ui-lvl-course">1</span></span></div><div class="w-full h-1.5 bg-panel rounded-full overflow-hidden"><div id="ui-bar-course" class="h-full bg-purple-500 bar-grow" style="width: 0%"></div></div></div>
+                        <div class="bg-bg-color border border-theme rounded-xl p-4"><div class="flex justify-between items-end mb-2"><h4 class="text-xs font-black uppercase tracking-widest text-green-500"><i class="fa-solid fa-flask mr-1"></i> Laboratório</h4><span class="text-[10px] font-bold text-muted">Nível <span id="ui-lvl-free">1</span></span></div><div class="w-full h-1.5 bg-panel rounded-full overflow-hidden"><div id="ui-bar-free" class="h-full bg-green-500 bar-grow" style="width: 0%"></div></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 border-b border-theme sticky top-[88px] z-20 bg-bg-color/90 backdrop-blur-sm pt-2">
+                <button onclick="mudarAba('livros')" id="tab-livros" class="tab-btn px-5 py-2.5 rounded-t-xl text-xs font-black transition-all bg-blue-500 text-white shadow-md border-none"><i class="fa-solid fa-book mr-2"></i> Biblioteca</button>
+                <button onclick="mudarAba('cursos')" id="tab-cursos" class="tab-btn px-5 py-2.5 rounded-t-xl text-xs font-bold transition-all bg-panel border border-theme border-b-0 text-muted hover:text-strong"><i class="fa-solid fa-laptop-code mr-2"></i> Universidade</button>
+                <button onclick="mudarAba('trilhas')" id="tab-trilhas" class="tab-btn px-5 py-2.5 rounded-t-xl text-xs font-bold transition-all bg-panel border border-theme border-b-0 text-muted hover:text-strong"><i class="fa-solid fa-route mr-2"></i> Trilhas (Planos)</button>
+                <button onclick="mudarAba('livres')" id="tab-livres" class="tab-btn px-5 py-2.5 rounded-t-xl text-xs font-bold transition-all bg-panel border border-theme border-b-0 text-muted hover:text-strong"><i class="fa-solid fa-microscope mr-2"></i> Laboratório</button>
+            </div>
+
+            <div id="conteudo-livros" class="aba-conteudo space-y-8 fade-in block">
+                <div>
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong text-blue-500"><i class="fa-solid fa-book-open-reader mr-2"></i> Leituras Ativas</h3>
+                        <button onclick="abrirModalNovoLivro()" class="bg-blue-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:scale-105 transition-transform"><i class="fa-solid fa-plus mr-1"></i> Novo Livro</button>
+                    </div>
+                    <div id="grid-livros" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
+                <div class="pt-8 border-t border-theme">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-strong text-yellow-500 mb-6 flex items-center gap-2"><i class="fa-solid fa-trophy"></i> Ranking: Melhores Leituras</h3>
+                    <div id="grid-ranking-livros" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+                </div>
+            </div>
+
+            <div id="conteudo-cursos" class="aba-conteudo space-y-6 fade-in hidden">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-strong text-purple-500"><i class="fa-solid fa-chalkboard-user mr-2"></i> Cursos em Andamento</h3>
+                    <button onclick="abrirModalCurso()" class="bg-purple-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:scale-105 transition-transform"><i class="fa-solid fa-plus mr-1"></i> Novo Curso</button>
+                </div>
+                <div id="grid-cursos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+            <div id="conteudo-trilhas" class="aba-conteudo space-y-6 fade-in hidden">
+                <div class="flex justify-between items-center bg-panel border border-theme p-4 rounded-xl">
+                    <div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong text-yellow-500"><i class="fa-solid fa-map-location-dot mr-2"></i> Cronogramas de Ensino</h3>
+                        <p class="text-[10px] text-muted font-bold mt-1 uppercase tracking-widest">Crie mapas de estudo passo a passo</p>
+                    </div>
+                    <button onclick="addTrilha()" class="bg-yellow-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:scale-105 transition-transform"><i class="fa-solid fa-plus mr-1"></i> Nova Trilha</button>
+                </div>
+                <div id="container-trilhas" class="space-y-8">
+                    </div>
+            </div>
+
+            <div id="conteudo-livres" class="aba-conteudo space-y-6 fade-in hidden">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong text-green-500"><i class="fa-solid fa-flask-vial mr-2"></i> Laboratório & Pesquisas</h3>
+                    </div>
+                    <button onclick="addEstudoLivre()" class="bg-green-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:scale-105 transition-transform"><i class="fa-solid fa-plus mr-1"></i> Novo Tópico</button>
+                </div>
+                <div id="grid-livres" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="modal-novo-livro" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-panel border border-theme rounded-3xl w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="mnl-content">
+            <div class="p-6 border-b border-theme flex justify-between items-center bg-bg-color/50 rounded-t-3xl shrink-0">
+                <h3 class="text-lg font-black text-strong uppercase tracking-tight text-blue-500"><i class="fa-solid fa-book mr-2"></i> Adicionar Livro</h3>
+                <button onclick="fecharModalNovoLivro()" class="text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto custom-scrollbar space-y-4">
+                <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Título do Livro</label><input type="text" id="inp-nl-titulo" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:border-blue-500"></div>
+                <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Autor</label><input type="text" id="inp-nl-autor" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:border-blue-500"></div>
+                
+                <div class="p-4 border border-theme border-dashed rounded-xl bg-bg-color">
+                    <label class="block text-[10px] font-black uppercase text-muted mb-2"><i class="fa-solid fa-image mr-1"></i> Capa do Livro (Upload)</label>
+                    <input type="file" id="inp-nl-file" accept="image/*" class="w-full text-xs text-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-black file:uppercase file:bg-blue-500/10 file:text-blue-500 hover:file:bg-blue-500/20 cursor-pointer">
+                    <p class="text-[8px] text-muted mt-2 italic">* A imagem será comprimida automaticamente para economizar memória.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Total de Páginas</label><input type="number" id="inp-nl-total" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:border-blue-500"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Página Atual</label><input type="number" id="inp-nl-atual" value="0" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:border-blue-500"></div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-theme shrink-0"><button onclick="salvarNovoLivro()" class="w-full bg-blue-500 text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg hover:scale-105 transition-transform">Iniciar Leitura</button></div>
+        </div>
+    </div>
+
+    <div id="modal-detalhes-livro" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[110] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-panel border border-theme rounded-3xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="mdl-content">
+            <div class="p-6 border-b border-theme flex justify-between items-center bg-bg-color/50 rounded-t-3xl shrink-0">
+                <h3 class="text-lg font-black text-strong uppercase tracking-tight text-blue-500"><i class="fa-solid fa-sliders mr-2"></i> Detalhes & Avaliação</h3>
+                <button onclick="fecharModalDetalhesLivro()" class="text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto custom-scrollbar space-y-5">
+                <input type="hidden" id="det-livro-id">
+                
+                <div class="text-center bg-bg-color border border-theme p-4 rounded-xl">
+                    <label class="block text-[10px] font-black uppercase text-muted mb-2">Sua Avaliação</label>
+                    <div class="star-rating text-2xl text-muted/30 flex justify-center gap-2" id="det-star-container">
+                        <i class="fa-solid fa-star" onclick="setDetStar(1)"></i><i class="fa-solid fa-star" onclick="setDetStar(2)"></i><i class="fa-solid fa-star" onclick="setDetStar(3)"></i><i class="fa-solid fa-star" onclick="setDetStar(4)"></i><i class="fa-solid fa-star" onclick="setDetStar(5)"></i>
+                    </div>
+                    <input type="hidden" id="det-livro-stars" value="0">
+                </div>
+
+                <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Título do Livro</label><input type="text" id="det-livro-titulo" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:border-blue-500"></div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Página Atual</label><input type="number" id="det-livro-atual" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-blue-500 focus:border-blue-500"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Total de Páginas</label><input type="number" id="det-livro-total" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:border-blue-500"></div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-muted mb-1">Resumo / Aprendizados / Notas</label>
+                    <textarea id="det-livro-notas" class="w-full h-32 bg-bg-color border border-theme rounded-xl p-3 text-sm font-semibold text-strong focus:outline-none focus:border-blue-500 resize-none placeholder-muted/50" placeholder="O que você está achando da leitura?"></textarea>
+                </div>
+            </div>
+            <div class="p-6 border-t border-theme flex flex-col gap-3 shrink-0">
+                <button onclick="salvarDetalhesLivro()" class="w-full bg-blue-500 text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg hover:scale-105 transition-transform">Salvar Alterações</button>
+                <button id="btn-concluir-livro" onclick="forcarConclusaoLivro()" class="w-full bg-panel border border-theme text-yellow-500 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-yellow-500 transition-colors"><i class="fa-solid fa-trophy mr-1"></i> Marcar como Concluído</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-curso" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-panel border border-theme rounded-3xl w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300" id="mc-content">
+            <div class="p-6 border-b border-theme flex justify-between items-center bg-bg-color/50 rounded-t-3xl">
+                <h3 class="text-lg font-black text-strong uppercase tracking-tight text-purple-500"><i class="fa-solid fa-laptop-code mr-2"></i> Adicionar Curso</h3><button onclick="fecharModalCurso()" class="text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Nome do Curso</label><input type="text" id="inp-curso-titulo" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:border-purple-500"></div>
+                <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Plataforma / Professor</label><input type="text" id="inp-curso-plat" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:border-purple-500"></div>
+                <div><label class="block text-[10px] font-black uppercase text-muted mb-1">URL / Link das Aulas</label><input type="text" id="inp-curso-url" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:border-purple-500" placeholder="https://..."></div>
+                <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Total de Aulas</label><input type="number" id="inp-curso-total" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:border-purple-500"></div>
+            </div>
+            <div class="p-6 border-t border-theme"><button onclick="salvarCurso()" class="w-full bg-purple-500 text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg hover:scale-105 transition-transform">Iniciar Jornada</button></div>
+        </div>
+    </div>
+
+    <div id="modal-acervo" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[120] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-panel border border-theme rounded-3xl w-full max-w-4xl shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="mac-content">
+            <div class="p-6 border-b border-theme flex justify-between items-center bg-bg-color/50 rounded-t-3xl shrink-0">
+                <div><h3 class="text-xl font-black text-strong uppercase tracking-tight text-yellow-500"><i class="fa-solid fa-book-journal-whills mr-2"></i> Acervo de Conhecimento</h3><p class="text-[10px] text-muted font-bold uppercase tracking-widest mt-1">Histórico Completo</p></div>
+                <button onclick="fecharModalAcervo()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-bg-color border border-theme text-muted hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 flex-1 overflow-y-auto custom-scrollbar space-y-8">
+                <div><h4 class="text-xs font-black uppercase tracking-widest text-blue-500 mb-4 border-b border-theme pb-2"><i class="fa-solid fa-book mr-1"></i> Livros Lidos</h4><div id="lista-acervo-livros" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div></div>
+                <div><h4 class="text-xs font-black uppercase tracking-widest text-purple-500 mb-4 border-b border-theme pb-2"><i class="fa-solid fa-graduation-cap mr-1"></i> Cursos Finalizados</h4><div id="lista-acervo-cursos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div></div>
+                <div><h4 class="text-xs font-black uppercase tracking-widest text-green-500 mb-4 border-b border-theme pb-2"><i class="fa-solid fa-flask mr-1"></i> Laboratórios Arquivados</h4><div id="lista-acervo-livres" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="xp-floater" class="fixed pointer-events-none opacity-0 font-black text-xl z-[9999] drop-shadow-md"></div>
+
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        // ==========================================
+        // SISTEMA DE DADOS (DATABASE)
+        // ==========================================
+        const DB_ESTUDOS = 'lifeos_estudos_v3';
+        let db = JSON.parse(localStorage.getItem(DB_ESTUDOS)) || {
+            stats: { globalXp: 0, globalLevel: 1, readXp: 0, readLevel: 1, courseXp: 0, courseLevel: 1, freeXp: 0, freeLevel: 1 },
+            livros: [], cursos: [], livres: [],
+            trilhas: [] // { id, titulo, passos: [{id, nome, concluido}] }
+        };
+
+        function salvarDB() { localStorage.setItem(DB_ESTUDOS, JSON.stringify(db)); atualizarTelemetria(); }
+
+        // ==========================================
+        // COMPRESSOR DE IMAGEM (BASE64)
+        // ==========================================
+        function comprimirImagem(fileInputId, callback) {
+            const fileInput = document.getElementById(fileInputId);
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+                        const maxW = 120, maxH = 180; let w = img.width, h = img.height;
+                        if(w > h) { if(w > maxW) { h *= maxW/w; w = maxW; } } else { if(h > maxH) { w *= maxH/h; h = maxH; } }
+                        canvas.width = w; canvas.height = h; ctx.drawImage(img, 0, 0, w, h);
+                        callback(canvas.toDataURL('image/jpeg', 0.6)); // Comprime para 60% qualidade JPG
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            } else { callback(null); }
+        }
+
+        // ==========================================
+        // UI & GAMIFICAÇÃO & TELEMETRIA
+        // ==========================================
+        function mudarAba(aba) {
+            document.querySelectorAll('.aba-conteudo').forEach(el => { el.classList.remove('block'); el.classList.add('hidden'); });
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-5 py-2.5 rounded-t-xl text-xs font-bold transition-all bg-panel border border-theme border-b-0 text-muted hover:text-strong");
+            document.getElementById(`conteudo-${aba}`).classList.remove('hidden'); document.getElementById(`conteudo-${aba}`).classList.add('block');
+            
+            let cor = 'bg-blue-500'; if(aba==='cursos') cor = 'bg-purple-500'; if(aba==='trilhas') cor = 'bg-yellow-500'; if(aba==='livres') cor = 'bg-green-500'; 
+            document.getElementById(`tab-${aba}`).className = `tab-btn px-5 py-2.5 rounded-t-xl text-xs font-black transition-all text-white shadow-md border-none ${cor}`;
+        }
+
+        function animarXP(qtd, colorClass, event) {
+            if(!event) return; const f = document.getElementById('xp-floater');
+            f.innerText = `+${qtd} XP`; f.className = `fixed pointer-events-none opacity-0 font-black text-xl z-[9999] drop-shadow-md ${colorClass}`;
+            f.style.left = `${event.clientX}px`; f.style.top = `${event.clientY - 20}px`;
+            f.classList.remove('xp-pop'); void f.offsetWidth; f.classList.add('xp-pop');
+        }
+
+        function addXP(tipo, qtd, event) {
+            let color = 'text-yellow-500';
+            if(tipo === 'read') { db.stats.readXp += qtd; checkLevel('read'); color = 'text-blue-500'; }
+            if(tipo === 'course') { db.stats.courseXp += qtd; checkLevel('course'); color = 'text-purple-500'; }
+            if(tipo === 'free') { db.stats.freeXp += qtd; checkLevel('free'); color = 'text-green-500'; }
+            db.stats.globalXp += qtd; checkLevel('global');
+            salvarDB(); atualizarUIStats(); if(event) animarXP(qtd, color, event);
+        }
+
+        function checkLevel(tipo) {
+            let max;
+            if(tipo === 'global') { max = db.stats.globalLevel * 1000; if(db.stats.globalXp >= max) { db.stats.globalXp -= max; db.stats.globalLevel++; alert(`🎓 NÍVEL GLOBAL AUMENTOU: ${db.stats.globalLevel}!`); } } 
+            else if (tipo === 'read') { max = db.stats.readLevel * 200; if(db.stats.readXp >= max) { db.stats.readXp -= max; db.stats.readLevel++; } } 
+            else if (tipo === 'course') { max = db.stats.courseLevel * 300; if(db.stats.courseXp >= max) { db.stats.courseXp -= max; db.stats.courseLevel++; } } 
+            else if (tipo === 'free') { max = db.stats.freeLevel * 150; if(db.stats.freeXp >= max) { db.stats.freeXp -= max; db.stats.freeLevel++; } }
+        }
+
+        function atualizarUIStats() {
+            document.getElementById('ui-global-lvl').innerText = db.stats.globalLevel; document.getElementById('ui-global-xp').innerText = db.stats.globalXp; document.getElementById('ui-global-max').innerText = db.stats.globalLevel * 1000;
+            document.getElementById('ui-lvl-read').innerText = db.stats.readLevel; document.getElementById('ui-xp-read').innerText = db.stats.readXp; document.getElementById('ui-bar-read').style.width = `${(db.stats.readXp / (db.stats.readLevel * 200)) * 100}%`;
+            document.getElementById('ui-lvl-course').innerText = db.stats.courseLevel; document.getElementById('ui-xp-course').innerText = db.stats.courseXp; document.getElementById('ui-bar-course').style.width = `${(db.stats.courseXp / (db.stats.courseLevel * 300)) * 100}%`;
+            document.getElementById('ui-lvl-free').innerText = db.stats.freeLevel; document.getElementById('ui-xp-free').innerText = db.stats.freeXp; document.getElementById('ui-bar-free').style.width = `${(db.stats.freeXp / (db.stats.freeLevel * 150)) * 100}%`;
+        }
+
+        function atualizarTelemetria() {
+            document.getElementById('tel-livros').innerText = db.livros.filter(x => x.status === 'concluido').length;
+            document.getElementById('tel-cursos').innerText = db.cursos.filter(x => x.status === 'concluido').length;
+            let countModulos = 0; db.trilhas.forEach(t => countModulos += t.passos.filter(p => p.concluido).length);
+            document.getElementById('tel-trilhas').innerText = countModulos;
+            let countSessoes = 0; db.livres.forEach(l => countSessoes += l.sessoes);
+            document.getElementById('tel-sessoes').innerText = countSessoes;
+        }
+
+        // ==========================================
+        // MÓDULO 1: BIBLIOTECA (LIVROS E CAPAS)
+        // ==========================================
+        function abrirModalNovoLivro() {
+            document.getElementById('modal-novo-livro').classList.remove('hidden'); document.getElementById('modal-novo-livro').classList.add('flex');
+            setTimeout(() => { document.getElementById('modal-novo-livro').classList.remove('opacity-0'); document.getElementById('mnl-content').classList.remove('scale-95'); }, 10);
+        }
+        function fecharModalNovoLivro() {
+            document.getElementById('modal-novo-livro').classList.add('opacity-0'); document.getElementById('mnl-content').classList.add('scale-95');
+            setTimeout(() => { document.getElementById('modal-novo-livro').classList.remove('flex'); document.getElementById('modal-novo-livro').classList.add('hidden'); }, 300);
+        }
+        function salvarNovoLivro() {
+            let t = document.getElementById('inp-nl-titulo').value; let a = document.getElementById('inp-nl-autor').value;
+            let tot = parseInt(document.getElementById('inp-nl-total').value); let atu = parseInt(document.getElementById('inp-nl-atual').value) || 0;
+            if(!t || !tot) { alert("Título e Total de páginas são obrigatórios!"); return; }
+
+            comprimirImagem('inp-nl-file', (base64Img) => {
+                db.livros.unshift({ id: Date.now(), titulo: t, autor: a, capa: base64Img, atual: atu, total: tot, status: 'ativo', stars: 0, notas: '' });
+                salvarDB(); renderLivros(); fecharModalNovoLivro(); 
+                document.querySelectorAll('#modal-novo-livro input[type="text"], #modal-novo-livro input[type="number"]').forEach(i => i.value='');
+                document.getElementById('inp-nl-file').value = '';
+            });
+        }
+
+        function renderLivros() {
+            const grid = document.getElementById('grid-livros'); grid.innerHTML = '';
+            let ativos = db.livros.filter(l => l.status === 'ativo');
+            if(ativos.length === 0) grid.innerHTML = `<p class="text-xs text-muted">Nenhum livro em leitura no momento.</p>`;
+            
+            ativos.forEach((l) => {
+                let perc = Math.min(100, (l.atual / l.total) * 100).toFixed(1);
+                let visualCapa = l.capa ? `<img src="${l.capa}" class="book-cover shrink-0 shadow-sm border border-theme">` : `<div class="book-cover bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-500 text-xl shrink-0"><i class="fa-solid fa-book"></i></div>`;
+                let e = '★'.repeat(l.stars) + '☆'.repeat(5-l.stars);
+
+                grid.innerHTML += `
+                    <div class="glass-card p-5 border-t-4 border-blue-500 flex flex-col group relative">
+                        <div class="absolute top-4 right-4 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="abrirModalDetalhesLivro(${l.id})" class="text-muted hover:text-blue-500" title="Editar / Avaliar"><i class="fa-solid fa-sliders text-xs"></i></button>
+                            <button onclick="excluirLivro(${l.id})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                        <div class="flex items-start gap-4 mb-4">
+                            ${visualCapa}
+                            <div><h4 class="text-sm font-black text-strong leading-tight pr-10">${l.titulo}</h4><p class="text-[10px] font-bold text-muted uppercase mt-1 mb-1">${l.autor}</p><p class="text-[10px] text-yellow-500 tracking-widest">${l.stars > 0 ? e : '<span class="text-muted/30">☆☆☆☆☆</span>'}</p></div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-end mb-1"><span class="text-[10px] font-black uppercase tracking-widest text-muted">Progresso</span><span class="text-xs font-black text-blue-500">${l.atual} / ${l.total}</span></div>
+                            <div class="w-full h-2 bg-bg-color border border-theme rounded-full overflow-hidden mb-4"><div class="h-full bg-blue-500 bar-grow" style="width: ${perc}%"></div></div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="lerPaginas(${l.id}, 10, event)" class="flex-1 bg-panel border border-theme text-xs font-bold text-strong py-2 rounded-lg hover:border-blue-500 hover:text-blue-500 transition-colors">+10 Páginas</button>
+                            <button onclick="abrirModalDetalhesLivro(${l.id})" class="w-10 bg-panel border border-theme text-xs font-bold text-strong rounded-lg hover:border-blue-500 hover:text-blue-500" title="Editar página exata"><i class="fa-solid fa-pen"></i></button>
+                        </div>
+                    </div>`;
+            });
+
+            // Ranking
+            const rankGrid = document.getElementById('grid-ranking-livros'); rankGrid.innerHTML = '';
+            let concluidos = db.livros.filter(l => l.status === 'concluido').sort((a,b) => b.stars - a.stars);
+            if(concluidos.length === 0) rankGrid.innerHTML = `<p class="text-xs text-muted col-span-full">Nenhum livro concluído para rankear.</p>`;
+            
+            concluidos.slice(0, 4).forEach((l, index) => {
+                let e = '★'.repeat(l.stars) + '☆'.repeat(5-l.stars);
+                let visualCapa = l.capa ? `<img src="${l.capa}" class="w-12 h-16 object-cover rounded shadow-md border border-theme shrink-0">` : `<div class="w-12 h-16 bg-panel border border-theme rounded flex items-center justify-center text-muted shrink-0"><i class="fa-solid fa-book"></i></div>`;
+                let medalha = index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : index === 2 ? 'text-orange-700' : 'text-muted';
+                
+                rankGrid.innerHTML += `
+                    <div class="bg-bg-color border border-theme p-3 rounded-xl flex items-center gap-3 relative overflow-hidden group">
+                        <button onclick="abrirModalDetalhesLivro(${l.id})" class="absolute top-2 right-2 text-muted hover:text-blue-500 opacity-0 group-hover:opacity-100 z-20"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                        <div class="absolute -right-2 -top-2 text-4xl opacity-10 ${medalha}"><i class="fa-solid fa-medal"></i></div>
+                        ${visualCapa}
+                        <div class="z-10 flex-1 truncate"><h4 class="text-xs font-black text-strong truncate">${l.titulo}</h4><p class="text-[9px] text-yellow-500 mt-1">${e}</p></div>
+                        <div class="text-lg font-black ${medalha} w-6 text-center z-10">#${index+1}</div>
+                    </div>`;
+            });
+        }
+
+        function lerPaginas(id, qtd, event) {
+            let l = db.livros.find(x => x.id === id); l.atual += qtd;
+            if(l.atual >= l.total) { l.atual = l.total; abrirModalDetalhesLivro(id); alert("Você chegou na última página! Dê a sua avaliação para finalizar a leitura."); } 
+            else { addXP('read', 1, event); salvarDB(); renderLivros(); }
+        }
+        function excluirLivro(id) { if(confirm("Apagar livro permanentemente?")) { db.livros = db.livros.filter(x => x.id !== id); salvarDB(); renderLivros(); renderAcervo(); } }
+
+        function setDetStar(n) {
+            document.getElementById('det-livro-stars').value = n;
+            const stars = document.getElementById('det-star-container').children;
+            for(let i=0; i<5; i++) { if(i<n) stars[i].classList.add('active'); else stars[i].classList.remove('active'); }
+        }
+        function abrirModalDetalhesLivro(id) {
+            let l = db.livros.find(x => x.id === id);
+            document.getElementById('det-livro-id').value = id;
+            document.getElementById('det-livro-titulo').value = l.titulo;
+            document.getElementById('det-livro-atual').value = l.atual;
+            document.getElementById('det-livro-total').value = l.total;
+            document.getElementById('det-livro-notas').value = l.notas || '';
+            setDetStar(l.stars || 0);
+            
+            // Oculta botão de concluir se já estiver concluído
+            document.getElementById('btn-concluir-livro').classList.toggle('hidden', l.status === 'concluido');
+            
+            document.getElementById('modal-detalhes-livro').classList.remove('hidden'); document.getElementById('modal-detalhes-livro').classList.add('flex');
+            setTimeout(() => { document.getElementById('modal-detalhes-livro').classList.remove('opacity-0'); document.getElementById('mdl-content').classList.remove('scale-95'); }, 10);
+        }
+        function fecharModalDetalhesLivro() {
+            document.getElementById('modal-detalhes-livro').classList.add('opacity-0'); document.getElementById('mdl-content').classList.add('scale-95');
+            setTimeout(() => { document.getElementById('modal-detalhes-livro').classList.remove('flex'); document.getElementById('modal-detalhes-livro').classList.add('hidden'); }, 300);
+        }
+        function salvarDetalhesLivro() {
+            let id = parseInt(document.getElementById('det-livro-id').value); let l = db.livros.find(x => x.id === id);
+            l.titulo = document.getElementById('det-livro-titulo').value;
+            l.atual = parseInt(document.getElementById('det-livro-atual').value);
+            l.total = parseInt(document.getElementById('det-livro-total').value);
+            l.notas = document.getElementById('det-livro-notas').value;
+            l.stars = parseInt(document.getElementById('det-livro-stars').value);
+            if(l.atual > l.total) l.atual = l.total;
+            salvarDB(); renderLivros(); renderAcervo(); fecharModalDetalhesLivro();
+        }
+        function forcarConclusaoLivro() {
+            let id = parseInt(document.getElementById('det-livro-id').value); let l = db.livros.find(x => x.id === id);
+            if(confirm("Marcar como 100% concluído e enviar para o Ranking? (+50 XP)")) {
+                l.titulo = document.getElementById('det-livro-titulo').value; l.notas = document.getElementById('det-livro-notas').value;
+                l.stars = parseInt(document.getElementById('det-livro-stars').value); l.atual = l.total; l.status = 'concluido';
+                addXP('read', 50); salvarDB(); renderLivros(); fecharModalDetalhesLivro();
+            }
+        }
+
+        // ==========================================
+        // MÓDULO 2: TRILHAS DE ESTUDO (PLANOS VISUAIS)
+        // ==========================================
+        function addTrilha() {
+            let t = prompt("Nome da Trilha (Ex: Finclass Intermediário):");
+            if(t) { db.trilhas.push({ id: Date.now(), titulo: t, passos: [] }); salvarDB(); renderTrilhas(); }
+        }
+        function addPassoTrilha(idTrilha) {
+            let n = prompt("Nome do Módulo (Ex: Aulas 01 a 03 - Renda Fixa):");
+            if(n) { db.trilhas.find(x => x.id === idTrilha).passos.push({ id: Date.now(), nome: n, concluido: false }); salvarDB(); renderTrilhas(); }
+        }
+        function togglePassoTrilha(idTrilha, idPasso, event) {
+            let p = db.trilhas.find(x => x.id === idTrilha).passos.find(y => y.id === idPasso);
+            p.concluido = !p.concluido;
+            if(p.concluido) addXP('course', 20, event); // +20 XP por módulo concluído na jornada
+            salvarDB(); renderTrilhas();
+        }
+        function excluirTrilha(id) { if(confirm("Apagar trilha inteira?")) { db.trilhas = db.trilhas.filter(x => x.id !== id); salvarDB(); renderTrilhas(); } }
+        
+        function renderTrilhas() {
+            const container = document.getElementById('container-trilhas'); container.innerHTML = '';
+            if(db.trilhas.length === 0) container.innerHTML = '<p class="text-xs text-muted text-center py-8">Nenhuma trilha criada. Crie a sua jornada de aprendizado!</p>';
+
+            db.trilhas.forEach(t => {
+                let passosHTML = t.passos.map((p, i) => {
+                    let isLast = i === t.passos.length - 1;
+                    let bg = p.concluido ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/20 border-yellow-500' : 'bg-bg-color border-theme text-strong hover:border-yellow-500';
+                    let ic = p.concluido ? '<i class="fa-solid fa-check-circle"></i>' : '<i class="fa-regular fa-circle"></i>';
+                    
+                    let arrow = !isLast ? `<div class="flex items-center justify-center w-8 text-yellow-500/50 timeline-arrow"><i class="fa-solid fa-arrow-right"></i></div>` : '';
+                    
+                    return `
+                        <div class="flex items-center shrink-0">
+                            <div onclick="togglePassoTrilha(${t.id}, ${p.id}, event)" class="w-40 p-4 border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${bg}">
+                                <div class="text-lg mb-2">${ic}</div>
+                                <h5 class="text-[10px] font-black uppercase tracking-widest">${p.nome}</h5>
+                            </div>
+                            ${arrow}
+                        </div>`;
+                }).join('');
+
+                container.innerHTML += `
+                    <div class="glass-card p-6 border-l-4 border-yellow-500 relative group">
+                        <button onclick="excluirTrilha(${t.id})" class="absolute top-4 right-4 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <h4 class="text-sm font-black text-strong uppercase tracking-widest mb-4 flex items-center gap-2"><i class="fa-solid fa-map"></i> ${t.titulo}</h4>
+                        <div class="flex overflow-x-auto no-scrollbar pb-4 gap-2 items-center">
+                            ${passosHTML}
+                            <button onclick="addPassoTrilha(${t.id})" class="w-12 h-12 shrink-0 rounded-full bg-panel border border-theme border-dashed flex items-center justify-center text-muted hover:text-yellow-500 hover:border-yellow-500 transition-colors ml-2"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // ==========================================
+        // MÓDULO 3: CURSOS E LABORATÓRIO (MANTIDOS E COMPACTADOS)
+        // ==========================================
+        function abrirModalCurso() { document.getElementById('modal-curso').classList.remove('hidden'); document.getElementById('modal-curso').classList.add('flex'); setTimeout(() => { document.getElementById('modal-curso').classList.remove('opacity-0'); document.getElementById('mc-content').classList.remove('scale-95'); }, 10); }
+        function fecharModalCurso() { document.getElementById('modal-curso').classList.add('opacity-0'); document.getElementById('mc-content').classList.add('scale-95'); setTimeout(() => { document.getElementById('modal-curso').classList.remove('flex'); document.getElementById('modal-curso').classList.add('hidden'); }, 300); }
+        function salvarCurso() {
+            let t = document.getElementById('inp-curso-titulo').value; let p = document.getElementById('inp-curso-plat').value;
+            let u = document.getElementById('inp-curso-url').value; let tot = parseInt(document.getElementById('inp-curso-total').value);
+            if(!t || !tot) return;
+            db.cursos.unshift({ id: Date.now(), titulo: t, plat: p, url: u, atual: 0, total: tot, status: 'ativo' });
+            salvarDB(); renderCursos(); fecharModalCurso(); document.querySelectorAll('#modal-curso input').forEach(i => i.value='');
+        }
+        function renderCursos() {
+            const grid = document.getElementById('grid-cursos'); grid.innerHTML = '';
+            let ativos = db.cursos.filter(c => c.status === 'ativo');
+            ativos.forEach((c) => {
+                let perc = Math.min(100, (c.atual / c.total) * 100).toFixed(1);
+                let btnUrl = c.url ? `<a href="${c.url}" target="_blank" class="text-purple-500 hover:underline text-[10px] font-black uppercase tracking-widest"><i class="fa-solid fa-link mr-1"></i> Acessar</a>` : '';
+                grid.innerHTML += `<div class="glass-card p-5 border-t-4 border-purple-500 flex flex-col group relative"><div class="absolute top-4 right-4 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="editarCurso(${c.id})" class="text-muted hover:text-purple-500"><i class="fa-solid fa-pen text-xs"></i></button><button onclick="excluirCurso(${c.id})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button></div><h4 class="text-sm font-black text-strong leading-tight pr-12">${c.titulo}</h4><div class="flex justify-between items-center mt-1 mb-4"><p class="text-[10px] font-bold text-muted uppercase"><i class="fa-solid fa-graduation-cap mr-1"></i> ${c.plat}</p>${btnUrl}</div><div class="flex-1"><div class="flex justify-between items-end mb-1"><span class="text-[10px] font-black uppercase tracking-widest text-muted">Aulas Assistidas</span><span class="text-xs font-black text-purple-500">${c.atual} / ${c.total}</span></div><div class="w-full h-2 bg-bg-color border border-theme rounded-full overflow-hidden mb-4"><div class="h-full bg-purple-500 bar-grow" style="width: ${perc}%"></div></div></div><button onclick="fazerAula(${c.id}, event)" class="w-full bg-purple-500/10 border border-purple-500/30 text-purple-500 text-xs font-bold py-2 rounded-lg hover:bg-purple-500 hover:text-white transition-colors"><i class="fa-solid fa-check mr-1"></i> Aula Concluída</button></div>`;
+            });
+        }
+        function fazerAula(id, event) { let c = db.cursos.find(x => x.id === id); c.atual++; addXP('course', 5, event); if(c.atual >= c.total) { if(confirm(`Concluiu ${c.titulo}? Arquivar? (+100 XP)`)) { c.status = 'concluido'; addXP('course', 100, event); } else { c.atual = c.total; } } salvarDB(); renderCursos(); }
+        function editarCurso(id) { let c = db.cursos.find(x => x.id === id); let t = prompt("Título:", c.titulo); if(t) c.titulo = t; let u = prompt("URL:", c.url || ''); if(u !== null) c.url = u; let tot = prompt("Total de Aulas:", c.total); if(tot) c.total = parseInt(tot); let atu = prompt("Aulas Feitas:", c.atual); if(atu) c.atual = parseInt(atu); salvarDB(); renderCursos(); }
+        function excluirCurso(id) { if(confirm("Apagar curso?")) { db.cursos = db.cursos.filter(x => x.id !== id); salvarDB(); renderCursos(); } }
+
+        function addEstudoLivre() { let t = prompt("Tema:"); if(t) { db.livres.unshift({ id: Date.now(), tema: t, sessoes: 0, notas: '', status: 'ativo' }); salvarDB(); renderLivres(); } }
+        function renderLivres() {
+            const grid = document.getElementById('grid-livres'); grid.innerHTML = '';
+            db.livres.filter(l => l.status === 'ativo').forEach((l) => {
+                grid.innerHTML += `<div class="glass-card p-5 border-t-4 border-green-500 flex flex-col group relative"><div class="absolute top-4 right-4 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="editarLivre(${l.id})" class="text-muted hover:text-green-500"><i class="fa-solid fa-pen text-xs"></i></button><button onclick="resetarLivre(${l.id})" class="text-muted hover:text-yellow-500"><i class="fa-solid fa-rotate text-xs"></i></button><button onclick="arquivarLivre(${l.id})" class="text-muted hover:text-accent"><i class="fa-solid fa-box-archive text-xs"></i></button><button onclick="excluirLivre(${l.id})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button></div><h4 class="text-sm font-black text-strong leading-tight pr-24 mb-1">${l.tema}</h4><p class="text-[10px] font-bold text-muted uppercase tracking-widest mb-4">Sessões: <span class="text-green-500 font-black">${l.sessoes}</span></p><textarea id="nt-${l.id}" onblur="salvarNotaLivre(${l.id})" class="w-full h-24 bg-bg-color border border-theme rounded-xl p-3 text-[10px] font-semibold text-strong focus:outline-none focus:border-green-500 resize-none mb-4 custom-scrollbar" placeholder="Anotações rápidas da pesquisa...">${l.notas}</textarea><button onclick="sessaoLivre(${l.id}, event)" class="w-full bg-green-500 text-white text-xs font-black py-2 rounded-lg shadow-md hover:scale-105 transition-transform"><i class="fa-solid fa-stopwatch mr-1"></i> Registrar Sessão (+10 XP)</button></div>`;
+            });
+        }
+        function salvarNotaLivre(id) { db.livres.find(x => x.id === id).notas = document.getElementById(`nt-${id}`).value; salvarDB(); }
+        function sessaoLivre(id, event) { db.livres.find(x => x.id === id).sessoes++; addXP('free', 10, event); salvarDB(); renderLivres(); }
+        function editarLivre(id) { let t = prompt("Editar Título/Tema:", db.livres.find(x => x.id === id).tema); if(t) { db.livres.find(x => x.id === id).tema = t; salvarDB(); renderLivres(); } }
+        function resetarLivre(id) { if(confirm("Zerar sessões?")) { db.livres.find(x => x.id === id).sessoes = 0; salvarDB(); renderLivres(); } }
+        function arquivarLivre(id) { if(confirm("Mover para o Acervo?")) { db.livres.find(x => x.id === id).status = 'arquivado'; salvarDB(); renderLivres(); } }
+        function excluirLivre(id) { if(confirm("Apagar permanentemente?")) { db.livres = db.livres.filter(x => x.id !== id); salvarDB(); renderLivres(); } }
+
+        // ACERVO (Reutiliza as funções de exibição do HTML)
+        function abrirModalAcervo() { renderAcervo(); document.getElementById('modal-acervo').classList.remove('hidden'); document.getElementById('modal-acervo').classList.add('flex'); setTimeout(() => { document.getElementById('modal-acervo').classList.remove('opacity-0'); document.getElementById('mac-content').classList.remove('scale-95'); }, 10); }
+        function fecharModalAcervo() { document.getElementById('modal-acervo').classList.add('opacity-0'); document.getElementById('mac-content').classList.add('scale-95'); setTimeout(() => { document.getElementById('modal-acervo').classList.remove('flex'); document.getElementById('modal-acervo').classList.add('hidden'); }, 300); }
+        function renderAcervo() {
+            const listL = document.getElementById('lista-acervo-livros'); listL.innerHTML = '';
+            db.livros.filter(x => x.status === 'concluido').forEach(l => {
+                let e = '★'.repeat(l.stars) + '☆'.repeat(5-l.stars); let visualCapa = l.capa ? `<img src="${l.capa}" class="w-10 h-14 object-cover rounded border border-theme">` : `<div class="w-10 h-14 bg-panel border border-theme rounded flex items-center justify-center text-muted"><i class="fa-solid fa-book text-[10px]"></i></div>`;
+                listL.innerHTML += `<div class="bg-bg-color border border-theme p-4 rounded-xl relative group"><button onclick="abrirModalDetalhesLivro(${l.id})" class="absolute top-2 right-8 text-muted hover:text-blue-500 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-pen text-[10px]"></i></button><button onclick="deletarAcervoLivro(${l.id})" class="absolute top-2 right-2 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash text-[10px]"></i></button><div class="flex gap-3 items-start">${visualCapa}<div><h4 class="text-sm font-black text-strong">${l.titulo}</h4><p class="text-[9px] text-muted uppercase font-bold mb-1">${l.autor}</p><p class="text-[10px] text-yellow-500">${e}</p></div></div>${l.notas ? `<p class="text-[10px] text-muted italic border-l-2 border-theme pl-2 mt-3">"${l.notas}"</p>` : ''}</div>`;
+            });
+            const listC = document.getElementById('lista-acervo-cursos'); listC.innerHTML = '';
+            db.cursos.filter(x => x.status === 'concluido').forEach(c => { listC.innerHTML += `<div class="bg-bg-color border border-theme p-4 rounded-xl relative group"><button onclick="deletarAcervoCurso(${c.id})" class="absolute top-2 right-2 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash text-[10px]"></i></button><h4 class="text-sm font-black text-strong">${c.titulo}</h4><p class="text-[9px] text-muted uppercase font-bold mb-2">${c.plat}</p><p class="text-[10px] font-bold text-purple-500"><i class="fa-solid fa-check-circle mr-1"></i> ${c.total} Aulas Concluídas</p></div>`; });
+            const listF = document.getElementById('lista-acervo-livres'); listF.innerHTML = '';
+            db.livres.filter(x => x.status === 'arquivado').forEach(f => { listF.innerHTML += `<div class="bg-bg-color border border-theme p-4 rounded-xl relative group"><button onclick="deletarAcervoLivre(${f.id})" class="absolute top-2 right-2 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash text-[10px]"></i></button><h4 class="text-sm font-black text-strong">${f.tema}</h4><p class="text-[9px] text-green-500 font-bold mb-2 uppercase">${f.sessoes} Sessões Feitas</p>${f.notas ? `<p class="text-[10px] text-muted italic border-l-2 border-theme pl-2">"${f.notas}"</p>` : ''}</div>`; });
+        }
+        function deletarAcervoLivro(id) { if(confirm("Apagar histórico do livro?")) { db.livros = db.livros.filter(x => x.id !== id); salvarDB(); renderAcervo(); renderLivros(); } }
+        function deletarAcervoCurso(id) { if(confirm("Apagar histórico do curso?")) { db.cursos = db.cursos.filter(x => x.id !== id); salvarDB(); renderAcervo(); } }
+        function deletarAcervoLivre(id) { if(confirm("Apagar tópico do acervo?")) { db.livres = db.livres.filter(x => x.id !== id); salvarDB(); renderAcervo(); } }
+
+        // Boot
+        window.onload = () => { atualizarUIStats(); atualizarTelemetria(); renderLivros(); renderCursos(); renderTrilhas(); renderLivres(); };
+    </script>
+</body>
+</html>

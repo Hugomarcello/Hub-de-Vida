@@ -3,389 +3,440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeOS | Gestão de Tarefas</title>
+    <title>LifeOS | Central de Tarefas</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { accent: 'var(--accent)' } } }
+        }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        /* Esconder barra de rolagem mas manter funcional */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
-<body class="overflow-hidden"> <aside id="sidebar">
-        <div class="p-6 flex items-center justify-between border-b border-theme">
-            <h1 class="logo-text font-bold text-accent uppercase tracking-tighter text-xl">Life<span class="text-strong">OS</span></h1>
-            <button id="toggle-menu" class="text-muted hover:text-accent transition-colors"><i class="fa-solid fa-indent"></i></button>
-        </div>
-        <div class="flex-1 overflow-y-auto mt-4">
-            <nav class="space-y-2">
-                <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> <span class="menu-text">Voltar ao Início</span></a>
-                <a href="tarefas.html" class="nav-link active"><i class="fa-solid fa-list-check"></i> <span class="menu-text">Tarefas</span></a>
-            </nav>
-        </div>
-    </aside>
+<body class="flex h-screen overflow-hidden bg-bg-color text-base transition-colors duration-300">
 
-    <main class="flex flex-col h-screen p-6">
+    <div id="sidebar-container" class="shrink-0 z-50 h-full flex flex-col transition-all duration-300"></div>
+
+    <main class="flex-1 overflow-hidden relative flex flex-col h-full w-full">
         
-        <header class="mb-6 flex justify-between items-end shrink-0">
-            <div>
-                <h2 class="text-3xl font-black text-strong uppercase tracking-tight">Caixa de Entrada</h2>
-                <p class="text-[11px] font-bold uppercase tracking-widest mt-1 text-muted">Ação > Planejamento</p>
-            </div>
+        <header class="shrink-0 bg-bg-color/80 backdrop-blur-md border-b border-theme p-5 lg:p-8 flex items-center justify-between z-30">
             <div class="flex items-center gap-4">
-                <button id="theme-toggle" title="Alternar Tema" class="bg-panel border border-theme p-2 rounded-xl text-strong hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-moon"></i>
-                </button>
+                <button id="mobile-menu-btn" class="md:hidden text-strong text-2xl hover:text-blue-500 transition-colors"><i class="fa-solid fa-bars"></i></button>
+                <div class="w-px h-8 bg-border-theme md:hidden"></div>
+                <div>
+                    <h2 class="text-2xl lg:text-3xl font-black text-strong uppercase tracking-tight">Caixa de Ação</h2>
+                    <p class="text-[10px] lg:text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">Transformando intenção em execução</p>
+                </div>
             </div>
+            <button id="theme-toggle" class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-blue-500 transition-all shadow-sm"><i class="fa-solid fa-moon text-lg"></i></button>
         </header>
 
-        <div class="flex flex-col lg:flex-row gap-6 flex-1 overflow-hidden pb-4">
+        <div class="flex-1 flex flex-col lg:flex-row overflow-hidden max-w-[1600px] w-full mx-auto">
             
-            <div class="w-full lg:w-1/3 flex flex-col glass-card overflow-hidden border-t-4 border-accent">
+            <div class="w-full lg:w-1/3 flex flex-col border-r border-theme bg-bg-color h-full">
                 
-                <div class="p-4 border-b border-theme bg-panel z-10">
-                    <form id="form-nova-tarefa" class="relative flex items-center">
-                        <i class="fa-solid fa-plus absolute left-3 text-muted"></i>
-                        <input type="text" id="input-nova-tarefa" class="w-full bg-black/5 dark:bg-white/5 border border-theme rounded-xl py-3 pl-10 pr-4 text-sm text-strong focus:outline-none focus:border-accent transition-colors placeholder-muted" placeholder="Adicionar tarefa rápida (Enter)..." autocomplete="off">
+                <div class="p-5 border-b border-theme shrink-0 space-y-4">
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                        <button onclick="filtrarTarefas('Pendentes')" id="filtro-Pendentes" class="filtro-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-accent text-bg-color whitespace-nowrap shadow-md">Pendentes</button>
+                        <button onclick="filtrarTarefas('Concluídas')" id="filtro-Concluídas" class="filtro-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-panel border border-theme text-muted hover:text-strong whitespace-nowrap">Arquivadas</button>
+                    </div>
+                    
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                        <button onclick="filtrarTag('Todas')" id="tag-Todas" class="tag-btn px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-blue-500 text-white transition-colors">Todas</button>
+                        <button onclick="filtrarTag('Profissional')" id="tag-Profissional" class="tag-btn px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-panel border border-theme text-muted hover:text-blue-500 transition-colors">Profissional</button>
+                        <button onclick="filtrarTag('Saúde')" id="tag-Saúde" class="tag-btn px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-panel border border-theme text-muted hover:text-red-500 transition-colors">Saúde</button>
+                        <button onclick="filtrarTag('Estudos')" id="tag-Estudos" class="tag-btn px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-panel border border-theme text-muted hover:text-purple-500 transition-colors">Estudos</button>
+                        <button onclick="filtrarTag('Pessoal')" id="tag-Pessoal" class="tag-btn px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-panel border border-theme text-muted hover:text-accent transition-colors">Pessoal</button>
+                    </div>
+                </div>
+
+                <div class="p-5 border-b border-theme shrink-0">
+                    <form onsubmit="event.preventDefault(); criarTarefaRapida();" class="flex gap-2">
+                        <input type="text" id="nova-tarefa-input" class="flex-1 bg-panel border border-theme rounded-xl p-3 text-sm font-semibold text-strong focus:outline-none focus:border-blue-500 transition-colors" placeholder="Adicionar nova tarefa... (Enter)">
+                        <button type="submit" class="bg-blue-500 text-white w-12 rounded-xl flex items-center justify-center hover:bg-blue-600 transition-colors"><i class="fa-solid fa-plus"></i></button>
                     </form>
                 </div>
 
-                <div class="flex items-center gap-2 p-3 border-b border-theme bg-panel/50 text-xs font-bold text-muted">
-                    <button onclick="setFiltro('hoje')" id="filter-hoje" class="px-3 py-1.5 rounded-lg bg-accent/10 text-accent transition-colors">Hoje / Pendentes</button>
-                    <button onclick="setFiltro('concluidas')" id="filter-concluidas" class="px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors">Concluídas</button>
-                </div>
-
-                <div id="lista-tarefas" class="flex-1 overflow-y-auto p-2 space-y-1">
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2" id="lista-tarefas">
                     </div>
             </div>
 
-            <div class="w-full lg:w-2/3 glass-card flex flex-col overflow-hidden relative border-t-4 border-zinc-500">
+            <div class="w-full lg:w-2/3 h-full bg-panel/30 overflow-y-auto custom-scrollbar p-5 lg:p-8 relative">
                 
-                <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center opacity-40 select-none">
-                    <i class="fa-solid fa-list-check text-6xl mb-4 text-muted"></i>
-                    <p class="text-sm font-bold text-strong uppercase tracking-widest">Selecione uma tarefa</p>
-                    <p class="text-xs text-muted mt-2">Clique em uma tarefa na lista para ver os detalhes e executar.</p>
+                <div id="estado-vazio" class="absolute inset-0 flex flex-col items-center justify-center text-center opacity-50 z-10">
+                    <i class="fa-solid fa-list-check text-6xl text-muted mb-4"></i>
+                    <h3 class="text-xl font-black text-strong uppercase tracking-widest">Cérebro de Execução</h3>
+                    <p class="text-sm text-muted font-bold mt-2">Selecione uma tarefa ao lado para focar e resolver.</p>
                 </div>
 
-                <div id="painel-detalhes" class="hidden flex-col h-full bg-panel">
+                <div id="painel-tarefa" class="hidden fade-in space-y-8 max-w-3xl mx-auto relative z-20 pb-20">
                     
-                    <div class="p-6 border-b border-theme flex justify-between items-start gap-4">
-                        <div class="flex-1">
-                            <input type="text" id="detalhe-titulo" class="w-full bg-transparent border-none text-xl font-black text-strong focus:outline-none focus:ring-2 focus:ring-accent/50 rounded px-2 -ml-2 transition-all" placeholder="Título da Tarefa">
-                            <div class="flex items-center gap-4 mt-3">
-                                <div class="flex items-center gap-2 text-xs text-muted font-bold">
-                                    <i class="fa-regular fa-calendar"></i>
-                                    <input type="date" id="detalhe-data" class="bg-transparent border-none focus:outline-none text-strong cursor-pointer">
-                                </div>
-                                <div class="flex items-center gap-2 text-xs text-muted font-bold">
-                                    <i class="fa-solid fa-flag"></i>
-                                    <select id="detalhe-prio" class="bg-transparent border-none focus:outline-none text-strong cursor-pointer font-bold">
-                                        <option value="Baixa" class="text-blue-500">🟢 Baixa</option>
-                                        <option value="Media" class="text-yellow-500">🟡 Média</option>
-                                        <option value="Alta" class="text-red-500">🔴 Alta</option>
-                                    </select>
-                                </div>
+                    <div class="glass-card p-6 border-t-4 border-blue-500">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 border-b border-theme pb-4">
+                            <input type="text" id="detalhe-titulo" onblur="salvarDetalhes()" class="flex-1 bg-transparent border-none text-xl md:text-2xl font-black text-strong focus:outline-none focus:border-b focus:border-blue-500 transition-colors" placeholder="Título da Tarefa">
+                            
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button onclick="excluirTarefaAtual()" class="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center" title="Excluir"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="salvarDetalhes()" class="bg-accent/10 text-accent hover:bg-accent hover:text-white px-3 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm"><i class="fa-solid fa-save mr-1"></i> SALVAR</button>
-                            <button onclick="excluirTarefaAtual()" class="text-muted hover:text-red-500 px-2 py-2 transition-colors"><i class="fa-solid fa-trash"></i></button>
-                            <button onclick="fecharDetalhes()" class="text-muted hover:text-strong px-2 py-2 transition-colors lg:hidden"><i class="fa-solid fa-xmark text-lg"></i></button>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1"><i class="fa-solid fa-tag mr-1"></i> Categoria</label>
+                                <select id="detalhe-tag" onchange="salvarDetalhes()" class="w-full bg-bg-color border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:outline-none focus:border-blue-500 cursor-pointer appearance-none">
+                                    <option value="Sem Tag">Sem Tag</option>
+                                    <option value="Profissional">Profissional</option>
+                                    <option value="Saúde">Saúde</option>
+                                    <option value="Estudos">Estudos</option>
+                                    <option value="Pessoal">Pessoal</option>
+                                    <option value="Financeiro">Financeiro</option>
+                                    <option value="Moto/Garagem">Moto/Garagem</option>
+                                    <option value="Casa">Casa</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1"><i class="fa-solid fa-fire mr-1"></i> Prioridade</label>
+                                <select id="detalhe-prioridade" onchange="salvarDetalhes()" class="w-full bg-bg-color border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:outline-none focus:border-blue-500 cursor-pointer appearance-none">
+                                    <option value="Baixa">Baixa (Pode esperar)</option>
+                                    <option value="Média">Média (Importante)</option>
+                                    <option value="Alta">Alta (Urgente)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1"><i class="fa-solid fa-calendar-day mr-1"></i> Data Alvo</label>
+                                <input type="date" id="detalhe-data" onchange="salvarDetalhes()" class="w-full bg-bg-color border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:outline-none focus:border-blue-500 cursor-pointer">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex-1 overflow-y-auto p-6 space-y-8">
+                    <div>
+                        <h4 class="text-xs font-black uppercase tracking-widest text-muted mb-3 flex items-center gap-2"><i class="fa-solid fa-brain text-blue-500"></i> Como Resolver? (Plano de Ação)</h4>
+                        <textarea id="detalhe-resolver" onblur="salvarDetalhes()" class="w-full h-32 glass-card p-4 text-sm font-semibold text-strong focus:outline-none focus:border-blue-500 resize-none placeholder-muted/50" placeholder="Escreva aqui os passos mentais, links úteis, ou a estratégia para matar essa tarefa sem travar..."></textarea>
+                    </div>
+
+                    <div class="glass-card p-6 border-t-4 border-accent">
+                        <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
+                            <h4 class="text-xs font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-list-check text-accent mr-2"></i> Subtarefas (Micro-passos)</h4>
+                        </div>
                         
-                        <div>
-                            <h3 class="text-[10px] font-black uppercase tracking-widest text-muted mb-3 flex items-center gap-2">
-                                <i class="fa-solid fa-align-left text-accent"></i> Descrição / Como Resolver
-                            </h3>
-                            <textarea id="detalhe-desc" class="w-full h-24 bg-black/5 dark:bg-white/5 border border-theme rounded-xl p-4 text-sm text-strong focus:outline-none focus:border-accent resize-none placeholder-muted" placeholder="Escreva o passo a passo mental ou recursos necessários para resolver isso de forma rápida..."></textarea>
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between items-center mb-3">
-                                <h3 class="text-[10px] font-black uppercase tracking-widest text-muted flex items-center gap-2">
-                                    <i class="fa-solid fa-list-ul text-accent"></i> Subtarefas
-                                </h3>
+                        <div id="lista-subtarefas" class="space-y-2 mb-4">
                             </div>
-                            <div class="w-full bg-black/10 dark:bg-white/5 h-1.5 rounded-full mb-3 overflow-hidden">
-                                <div id="progresso-subtarefas" class="bg-accent h-full transition-all duration-300" style="width: 0%"></div>
-                            </div>
-                            <div id="lista-subtarefas" class="space-y-1 mb-3">
-                                </div>
-                            <form id="form-subtarefa" class="flex gap-2">
-                                <input type="text" id="input-subtarefa" class="flex-1 bg-transparent border-b border-theme py-1 text-sm text-strong focus:outline-none focus:border-accent placeholder-muted" placeholder="Adicionar passo menor (Enter)...">
-                            </form>
-                        </div>
 
-                        <div>
-                            <h3 class="text-[10px] font-black uppercase tracking-widest text-muted mb-3 flex items-center gap-2">
-                                <i class="fa-solid fa-pen text-accent"></i> Anotações de Fechamento
-                            </h3>
-                            <textarea id="detalhe-notas" class="w-full h-20 bg-black/5 dark:bg-white/5 border border-theme rounded-xl p-4 text-sm text-strong focus:outline-none focus:border-accent resize-none placeholder-muted" placeholder="O que aconteceu? Teve algum bloqueio? Registre aqui..."></textarea>
-                        </div>
-
+                        <form onsubmit="event.preventDefault(); adicionarSubtarefa();" class="flex gap-2 mt-4 pt-4 border-t border-theme border-dashed">
+                            <input type="text" id="nova-subtarefa-input" class="flex-1 bg-bg-color border border-theme rounded-lg p-2.5 text-xs font-semibold text-strong focus:outline-none focus:border-accent" placeholder="Adicionar micro-passo...">
+                            <button type="submit" class="bg-panel border border-theme text-muted hover:text-accent px-4 rounded-lg transition-colors font-bold text-xs">Add</button>
+                        </form>
                     </div>
-                </div>
 
+                    <div>
+                        <h4 class="text-xs font-black uppercase tracking-widest text-muted mb-3 flex items-center gap-2"><i class="fa-solid fa-flag-checkered text-orange-500"></i> Anotações de Fechamento</h4>
+                        <textarea id="detalhe-fechamento" onblur="salvarDetalhes()" class="w-full h-24 glass-card p-4 text-sm font-semibold text-strong focus:outline-none focus:border-orange-500 resize-none placeholder-muted/50" placeholder="O que aprendeu? Algum problema que ocorreu durante a execução? Registre aqui antes de arquivar..."></textarea>
+                    </div>
+
+                    <div class="pt-6">
+                        <button id="btn-arquivar" onclick="toggleArquivarAtual()" class="w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-box-archive"></i> <span id="txt-btn-arquivar">Marcar como Concluída & Arquivar</span>
+                        </button>
+                    </div>
+
+                </div>
             </div>
         </div>
-
     </main>
 
+    <script src="components.js"></script>
     <script src="script.js"></script>
     
     <script>
-        const TAREFAS_KEY = 'lifeos_tarefas';
+        // ==========================================
+        // BANCO DE DADOS E ESTADO
+        // ==========================================
+        const TAREFAS_KEY = 'lifeos_tarefas_v1';
         let tarefas = JSON.parse(localStorage.getItem(TAREFAS_KEY)) || [];
-        let tarefaSelecionadaId = null;
-        let filtroAtual = 'hoje'; // 'hoje' ou 'concluidas'
+        
+        // Estado atual da UI
+        let statusFiltro = 'Pendentes'; // 'Pendentes' ou 'Concluídas'
+        let tagFiltro = 'Todas';
+        let tarefaAtivaId = null;
 
-        const coresPrio = {
-            'Alta': 'border-red-500 text-red-500 bg-red-500/10',
-            'Media': 'border-yellow-500 text-yellow-500 bg-yellow-500/10',
-            'Baixa': 'border-blue-500 text-blue-500 bg-blue-500/10'
+        // Configuração visual das tags e prioridades
+        const tagCores = {
+            'Profissional': 'text-blue-500 border-blue-500/30 bg-blue-500/10',
+            'Saúde': 'text-red-500 border-red-500/30 bg-red-500/10',
+            'Estudos': 'text-purple-500 border-purple-500/30 bg-purple-500/10',
+            'Pessoal': 'text-accent border-accent/30 bg-accent/10',
+            'Financeiro': 'text-orange-500 border-orange-500/30 bg-orange-500/10',
+            'Moto/Garagem': 'text-zinc-400 border-zinc-400/30 bg-zinc-400/10',
+            'Casa': 'text-teal-500 border-teal-500/30 bg-teal-500/10',
+            'Sem Tag': 'text-muted border-theme bg-panel'
         };
 
-        // --- RENDERIZAÇÃO DA LISTA ---
-        function renderListaTarefas() {
-            const lista = document.getElementById('lista-tarefas');
-            lista.innerHTML = '';
+        const prioCores = { 'Alta': 'text-red-500', 'Média': 'text-orange-500', 'Baixa': 'text-blue-500' };
 
-            const tarefasFiltradas = tarefas.filter(t => filtroAtual === 'concluidas' ? t.concluida : !t.concluida);
-            const ordemPrio = { 'Alta': 1, 'Media': 2, 'Baixa': 3 };
-            tarefasFiltradas.sort((a, b) => (ordemPrio[a.prioridade] || 3) - (ordemPrio[b.prioridade] || 3));
+        // ==========================================
+        // RENDERIZAÇÃO DA LISTA (LADO ESQUERDO)
+        // ==========================================
+        function renderLista() {
+            const container = document.getElementById('lista-tarefas');
+            container.innerHTML = '';
 
-            if (tarefasFiltradas.length === 0) {
-                lista.innerHTML = `<p class="text-xs text-muted italic p-4 text-center">Nenhuma tarefa encontrada.</p>`;
+            // Filtragem
+            let filtradas = tarefas.filter(t => statusFiltro === 'Concluídas' ? t.arquivada : !t.arquivada);
+            if (tagFiltro !== 'Todas') filtradas = filtradas.filter(t => t.tag === tagFiltro);
+
+            // Ordenação (Prioridade Alta primeiro, depois data)
+            filtradas.sort((a, b) => {
+                const peso = {'Alta': 3, 'Média': 2, 'Baixa': 1};
+                if(peso[b.prioridade] !== peso[a.prioridade]) return peso[b.prioridade] - peso[a.prioridade];
+                return new Date(a.data || '2999-12-31') - new Date(b.data || '2999-12-31');
+            });
+
+            if(filtradas.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-muted"><i class="fa-solid fa-ghost text-3xl mb-3 opacity-50"></i><p class="text-xs font-bold uppercase tracking-widest">Lista Vazia</p></div>`;
                 return;
             }
 
-            tarefasFiltradas.forEach(tarefa => {
-                const isSelected = tarefa.id === tarefaSelecionadaId;
-                const corPrio = coresPrio[tarefa.prioridade] || coresPrio['Baixa'];
+            filtradas.forEach(t => {
+                const isActive = tarefaAtivaId === t.id;
+                const activeClass = isActive ? 'border-blue-500 bg-blue-500/5 scale-[1.02]' : 'border-transparent hover:border-theme hover:bg-panel';
+                const corTag = tagCores[t.tag] || tagCores['Sem Tag'];
+                const corPrio = prioCores[t.prioridade] || 'text-muted';
                 
-                const div = document.createElement('div');
-                div.className = `flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer group 
-                    ${isSelected ? 'border-accent bg-accent/5' : 'border-transparent hover:border-theme hover:bg-black/5 dark:hover:bg-white/5'}
-                    ${tarefa.concluida ? 'opacity-60' : ''}`;
+                // Formatação de data
+                const dataStr = t.data ? t.data.split('-').reverse().join('/') : 'Sem prazo';
                 
-                div.onclick = (e) => {
-                    if(!e.target.closest('.checkbox-area')) {
-                        abrirDetalhes(tarefa.id);
-                    }
-                };
+                // Progresso Subtarefas
+                const totalSub = t.subtarefas.length;
+                const feitasSub = t.subtarefas.filter(s => s.feita).length;
+                const subBadge = totalSub > 0 ? `<span class="text-[9px] font-bold text-muted ml-2"><i class="fa-solid fa-list-check mr-1"></i>${feitasSub}/${totalSub}</span>` : '';
 
-                const checkboxCls = tarefa.concluida ? 'bg-accent border-accent text-white' : 'border-theme bg-panel text-transparent group-hover:border-accent';
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border transition-all cursor-pointer shadow-sm ${activeClass} ${t.arquivada ? 'opacity-60' : 'bg-panel'}`;
+                card.onclick = () => abrirTarefa(t.id);
                 
-                div.innerHTML = `
-                    <div class="checkbox-area w-5 h-5 rounded mt-0.5 border flex items-center justify-center transition-colors ${checkboxCls}" onclick="toggleConcluirTarefa(${tarefa.id})">
-                        <i class="fa-solid fa-check text-[10px]"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold truncate ${tarefa.concluida ? 'line-through text-muted' : 'text-strong'}">${tarefa.titulo}</p>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${corPrio}">${tarefa.prioridade || 'Baixa'}</span>
-                            ${tarefa.data ? `<span class="text-[9px] text-muted font-bold"><i class="fa-regular fa-calendar mr-1"></i>${formataDataDisplay(tarefa.data)}</span>` : ''}
-                            ${tarefa.submetas && tarefa.submetas.length > 0 ? `<span class="text-[9px] text-muted font-bold"><i class="fa-solid fa-list-ul mr-1"></i>${tarefa.submetas.filter(s=>s.concluida).length}/${tarefa.submetas.length}</span>` : ''}
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${corTag}">${t.tag}</span>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-fire text-[10px] ${corPrio}" title="Prioridade ${t.prioridade}"></i>
                         </div>
                     </div>
+                    <h4 class="text-sm font-bold text-strong leading-tight mb-2 ${t.arquivada ? 'line-through text-muted' : ''}">${t.titulo}</h4>
+                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-theme/50">
+                        <span class="text-[10px] font-bold text-muted"><i class="fa-regular fa-calendar mr-1"></i> ${dataStr}</span>
+                        ${subBadge}
+                    </div>
                 `;
-                lista.appendChild(div);
+                container.appendChild(card);
             });
         }
 
-        // --- ADICIONAR TAREFA RÁPIDA ---
-        document.getElementById('form-nova-tarefa').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const input = document.getElementById('input-nova-tarefa');
-            const titulo = input.value.trim();
-            
-            if (titulo) {
-                const novaTarefa = {
-                    id: Date.now(),
-                    titulo: titulo,
-                    concluida: false,
-                    prioridade: 'Baixa',
-                    data: new Date().toISOString().split('T')[0],
-                    descricao: '',
-                    notas: '',
-                    submetas: []
-                };
-                tarefas.unshift(novaTarefa);
-                salvarDados();
-                input.value = '';
-                renderListaTarefas();
-            }
-        });
-
-        function toggleConcluirTarefa(id) {
-            const index = tarefas.findIndex(t => t.id === id);
-            if (index !== -1) {
-                tarefas[index].concluida = !tarefas[index].concluida;
-                salvarDados();
-                renderListaTarefas();
-                
-                if(tarefaSelecionadaId === id && tarefas[index].concluida && filtroAtual === 'hoje') {
-                    fecharDetalhes();
-                }
-            }
-        }
-
-        // --- PAINEL DE DETALHES ---
-        function abrirDetalhes(id) {
-            tarefaSelecionadaId = id;
+        // ==========================================
+        // CÉREBRO DE EXECUÇÃO (LADO DIREITO)
+        // ==========================================
+        function abrirTarefa(id) {
+            tarefaAtivaId = id;
             const tarefa = tarefas.find(t => t.id === id);
-            if (!tarefa) return;
+            if(!tarefa) return;
 
-            document.getElementById('empty-state').classList.add('hidden');
-            document.getElementById('painel-detalhes').classList.replace('hidden', 'flex');
-            
-            renderListaTarefas();
+            // Esconder vazio, mostrar painel
+            document.getElementById('estado-vazio').classList.add('hidden');
+            document.getElementById('painel-tarefa').classList.remove('hidden');
 
+            // Preencher campos
             document.getElementById('detalhe-titulo').value = tarefa.titulo;
+            document.getElementById('detalhe-tag').value = tarefa.tag || 'Sem Tag';
+            document.getElementById('detalhe-prioridade').value = tarefa.prioridade || 'Média';
             document.getElementById('detalhe-data').value = tarefa.data || '';
-            document.getElementById('detalhe-prio').value = tarefa.prioridade || 'Baixa';
-            document.getElementById('detalhe-desc').value = tarefa.descricao || '';
-            document.getElementById('detalhe-notas').value = tarefa.notas || '';
+            document.getElementById('detalhe-resolver').value = tarefa.comoResolver || '';
+            document.getElementById('detalhe-fechamento').value = tarefa.fechamento || '';
+
+            // Estilo do Botão Arquivar
+            const btnArq = document.getElementById('btn-arquivar');
+            const txtArq = document.getElementById('txt-btn-arquivar');
+            if(tarefa.arquivada) {
+                btnArq.className = "w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2 bg-panel border border-theme text-muted hover:text-strong";
+                txtArq.innerText = "Desarquivar Tarefa";
+            } else {
+                btnArq.className = "w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2 bg-accent text-bg-color";
+                txtArq.innerText = "Marcar como Concluída & Arquivar";
+            }
 
             renderSubtarefas();
-        }
-
-        function fecharDetalhes() {
-            tarefaSelecionadaId = null;
-            document.getElementById('empty-state').classList.remove('hidden');
-            document.getElementById('painel-detalhes').classList.replace('flex', 'hidden');
-            renderListaTarefas();
+            renderLista(); // Atualiza a lista da esquerda para mostrar a seleção
         }
 
         function salvarDetalhes() {
-            if (!tarefaSelecionadaId) return;
-            const index = tarefas.findIndex(t => t.id === tarefaSelecionadaId);
-            if (index !== -1) {
-                const tituloNovo = document.getElementById('detalhe-titulo').value.trim();
-                if(!tituloNovo) { alert("A tarefa precisa de um título."); return; }
-
-                tarefas[index].titulo = tituloNovo;
-                tarefas[index].data = document.getElementById('detalhe-data').value;
-                tarefas[index].prioridade = document.getElementById('detalhe-prio').value;
-                tarefas[index].descricao = document.getElementById('detalhe-desc').value;
-                tarefas[index].notas = document.getElementById('detalhe-notas').value;
-                
-                salvarDados();
-                renderListaTarefas();
-
-                const btn = event.currentTarget;
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> SALVO';
-                btn.classList.replace('bg-accent/10', 'bg-accent');
-                btn.classList.replace('text-accent', 'text-white');
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.classList.replace('bg-accent', 'bg-accent/10');
-                    btn.classList.replace('text-white', 'text-accent');
-                }, 1500);
-            }
-        }
-
-        function excluirTarefaAtual() {
-            if (!tarefaSelecionadaId) return;
-            if (confirm("Deletar esta tarefa permanentemente?")) {
-                tarefas = tarefas.filter(t => t.id !== tarefaSelecionadaId);
-                salvarDados();
-                fecharDetalhes();
-            }
+            if(!tarefaAtivaId) return;
+            const idx = tarefas.findIndex(t => t.id === tarefaAtivaId);
+            
+            tarefas[idx].titulo = document.getElementById('detalhe-titulo').value || 'Tarefa sem título';
+            tarefas[idx].tag = document.getElementById('detalhe-tag').value;
+            tarefas[idx].prioridade = document.getElementById('detalhe-prioridade').value;
+            tarefas[idx].data = document.getElementById('detalhe-data').value;
+            tarefas[idx].comoResolver = document.getElementById('detalhe-resolver').value;
+            tarefas[idx].fechamento = document.getElementById('detalhe-fechamento').value;
+            
+            salvarBD();
+            renderLista();
         }
 
         // --- SUBTAREFAS ---
         function renderSubtarefas() {
-            if (!tarefaSelecionadaId) return;
-            const tarefa = tarefas.find(t => t.id === tarefaSelecionadaId);
-            const lista = document.getElementById('lista-subtarefas');
-            const barra = document.getElementById('progresso-subtarefas');
-            
-            lista.innerHTML = '';
-            
-            if (!tarefa.submetas) tarefa.submetas = [];
-            
-            const total = tarefa.submetas.length;
-            const concluidas = tarefa.submetas.filter(s => s.concluida).length;
-            barra.style.width = total === 0 ? '0%' : `${(concluidas/total)*100}%`;
+            const tarefa = tarefas.find(t => t.id === tarefaAtivaId);
+            const container = document.getElementById('lista-subtarefas');
+            container.innerHTML = '';
 
-            tarefa.submetas.forEach((sub, sIdx) => {
-                const chkClass = sub.concluida ? 'bg-accent border-accent text-white' : 'border-theme bg-panel text-transparent';
-                lista.innerHTML += `
-                    <div class="flex items-center gap-3 p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg group transition-colors">
-                        <div onclick="toggleSubtarefa(${sIdx})" class="w-4 h-4 rounded border flex items-center justify-center cursor-pointer transition-colors ${chkClass}">
-                            <i class="fa-solid fa-check text-[8px]"></i>
+            if(tarefa.subtarefas.length === 0) {
+                container.innerHTML = `<p class="text-xs text-muted font-bold italic py-2">Nenhum micro-passo definido.</p>`;
+                return;
+            }
+
+            tarefa.subtarefas.forEach((sub, index) => {
+                const boxClass = sub.feita ? 'bg-accent border-accent text-white' : 'border-theme text-transparent hover:border-accent';
+                const textClass = sub.feita ? 'text-muted line-through opacity-60' : 'text-strong';
+
+                container.innerHTML += `
+                    <div class="flex items-center gap-3 p-2 hover:bg-bg-color rounded-lg group border border-transparent hover:border-theme transition-colors">
+                        <div onclick="toggleSubtarefa(${index})" class="w-5 h-5 rounded flex items-center justify-center cursor-pointer border transition-colors shrink-0 ${boxClass}">
+                            <i class="fa-solid fa-check text-[10px]"></i>
                         </div>
-                        <span class="flex-1 text-xs ${sub.concluida ? 'text-muted line-through' : 'text-strong'}">${sub.texto}</span>
-                        <button onclick="removerSubtarefa(${sIdx})" class="opacity-0 group-hover:opacity-100 text-muted hover:text-red-500 transition-opacity"><i class="fa-solid fa-xmark text-[10px]"></i></button>
+                        <span class="text-sm font-semibold flex-1 ${textClass}">${sub.texto}</span>
+                        <button onclick="excluirSubtarefa(${index})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
                     </div>
                 `;
             });
         }
 
-        document.getElementById('form-subtarefa').addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (!tarefaSelecionadaId) return;
-            const input = document.getElementById('input-subtarefa');
+        function adicionarSubtarefa() {
+            const input = document.getElementById('nova-subtarefa-input');
             const texto = input.value.trim();
+            if(!texto || !tarefaAtivaId) return;
+
+            const idx = tarefas.findIndex(t => t.id === tarefaAtivaId);
+            tarefas[idx].subtarefas.push({ texto: texto, feita: false });
+            input.value = '';
             
-            if (texto) {
-                const index = tarefas.findIndex(t => t.id === tarefaSelecionadaId);
-                if (!tarefas[index].submetas) tarefas[index].submetas = [];
-                tarefas[index].submetas.push({ texto: texto, concluida: false });
-                
-                salvarDados();
-                renderSubtarefas();
-                renderListaTarefas();
-                input.value = '';
-            }
-        });
+            salvarBD();
+            renderSubtarefas();
+            renderLista();
+        }
 
         function toggleSubtarefa(subIndex) {
-            const index = tarefas.findIndex(t => t.id === tarefaSelecionadaId);
-            tarefas[index].submetas[subIndex].concluida = !tarefas[index].submetas[subIndex].concluida;
-            salvarDados();
+            const idx = tarefas.findIndex(t => t.id === tarefaAtivaId);
+            tarefas[idx].subtarefas[subIndex].feita = !tarefas[idx].subtarefas[subIndex].feita;
+            salvarBD();
             renderSubtarefas();
-            renderListaTarefas();
+            renderLista();
         }
 
-        function removerSubtarefa(subIndex) {
-            const index = tarefas.findIndex(t => t.id === tarefaSelecionadaId);
-            tarefas[index].submetas.splice(subIndex, 1);
-            salvarDados();
+        function excluirSubtarefa(subIndex) {
+            const idx = tarefas.findIndex(t => t.id === tarefaAtivaId);
+            tarefas[idx].subtarefas.splice(subIndex, 1);
+            salvarBD();
             renderSubtarefas();
-            renderListaTarefas();
+            renderLista();
         }
 
-        // --- UTILIDADES ---
-        function setFiltro(tipo) {
-            filtroAtual = tipo;
-            const btnHoje = document.getElementById('filter-hoje');
-            const btnConcluidas = document.getElementById('filter-concluidas');
-            
-            if (tipo === 'hoje') {
-                btnHoje.className = 'px-3 py-1.5 rounded-lg bg-accent/10 text-accent transition-colors';
-                btnConcluidas.className = 'px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-muted';
-            } else {
-                btnConcluidas.className = 'px-3 py-1.5 rounded-lg bg-accent/10 text-accent transition-colors';
-                btnHoje.className = 'px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-muted';
+        // ==========================================
+        // AÇÕES PRINCIPAIS (CRUD TAREFA)
+        // ==========================================
+        function criarTarefaRapida() {
+            const input = document.getElementById('nova-tarefa-input');
+            const texto = input.value.trim();
+            if(!texto) return;
+
+            const novaTarefa = {
+                id: Date.now(),
+                titulo: texto,
+                tag: tagFiltro === 'Todas' ? 'Sem Tag' : tagFiltro,
+                prioridade: 'Média',
+                data: '',
+                comoResolver: '',
+                subtarefas: [],
+                fechamento: '',
+                arquivada: false
+            };
+
+            tarefas.unshift(novaTarefa);
+            input.value = '';
+            salvarBD();
+            renderLista();
+            abrirTarefa(novaTarefa.id); // Já abre a tarefa para detalhamento
+        }
+
+        function excluirTarefaAtual() {
+            if(!tarefaAtivaId) return;
+            if(confirm("Tem certeza que deseja apagar esta tarefa definitivamente?")) {
+                tarefas = tarefas.filter(t => t.id !== tarefaAtivaId);
+                tarefaAtivaId = null;
+                document.getElementById('painel-tarefa').classList.add('hidden');
+                document.getElementById('estado-vazio').classList.remove('hidden');
+                salvarBD();
+                renderLista();
             }
-            
-            fecharDetalhes();
-            renderListaTarefas();
         }
 
-        function salvarDados() {
+        function toggleArquivarAtual() {
+            if(!tarefaAtivaId) return;
+            const idx = tarefas.findIndex(t => t.id === tarefaAtivaId);
+            
+            tarefas[idx].arquivada = !tarefas[idx].arquivada;
+            salvarBD();
+            
+            // Se arquivou e a gente está vendo 'Pendentes', tira da tela
+            if(tarefas[idx].arquivada && statusFiltro === 'Pendentes') {
+                tarefaAtivaId = null;
+                document.getElementById('painel-tarefa').classList.add('hidden');
+                document.getElementById('estado-vazio').classList.remove('hidden');
+            } else {
+                abrirTarefa(tarefas[idx].id); // Atualiza botões
+            }
+            renderLista();
+        }
+
+        function salvarBD() {
             localStorage.setItem(TAREFAS_KEY, JSON.stringify(tarefas));
         }
 
-        function formataDataDisplay(dataISO) {
-            if(!dataISO) return '';
-            const p = dataISO.split('-');
-            return `${p[2]}/${p[1]}`;
+        // ==========================================
+        // FILTROS DA UI
+        // ==========================================
+        function filtrarTarefas(status) {
+            statusFiltro = status;
+            document.getElementById('filtro-Pendentes').className = `filtro-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${status === 'Pendentes' ? 'bg-accent text-bg-color shadow-md' : 'bg-panel border border-theme text-muted hover:text-strong'}`;
+            document.getElementById('filtro-Concluídas').className = `filtro-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${status === 'Concluídas' ? 'bg-accent text-bg-color shadow-md' : 'bg-panel border border-theme text-muted hover:text-strong'}`;
+            tarefaAtivaId = null;
+            document.getElementById('painel-tarefa').classList.add('hidden');
+            document.getElementById('estado-vazio').classList.remove('hidden');
+            renderLista();
         }
 
-        renderListaTarefas();
+        function filtrarTag(tag) {
+            tagFiltro = tag;
+            document.querySelectorAll('.tag-btn').forEach(btn => {
+                if(btn.id === `tag-${tag}`) {
+                    btn.className = `tag-btn px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-white transition-colors bg-blue-500 shadow-md`;
+                } else {
+                    btn.className = `tag-btn px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-panel border border-theme text-muted hover:text-strong transition-colors`;
+                }
+            });
+            tarefaAtivaId = null;
+            document.getElementById('painel-tarefa').classList.add('hidden');
+            document.getElementById('estado-vazio').classList.remove('hidden');
+            renderLista();
+        }
+
+        // Boot
+        window.onload = renderLista;
     </script>
 </body>
 </html>

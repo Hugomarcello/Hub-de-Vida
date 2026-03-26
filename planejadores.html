@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-pt" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS | Planejadores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { accent: 'var(--accent)' } } }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Animação suave para transição de meses/trimestres */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-bg-color text-base transition-colors duration-300">
+
+    <div id="sidebar-container" class="shrink-0 z-50 h-full flex flex-col transition-all duration-300"></div>
+
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative flex flex-col h-full w-full">
+        
+        <header class="sticky top-0 z-30 bg-bg-color/80 backdrop-blur-md border-b border-theme p-5 lg:p-8 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button id="mobile-menu-btn" class="md:hidden text-strong text-2xl hover:text-blue-500 transition-colors"><i class="fa-solid fa-bars"></i></button>
+                <div class="w-px h-8 bg-border-theme md:hidden"></div>
+                <div>
+                    <h2 class="text-2xl lg:text-3xl font-black text-strong uppercase tracking-tight">Planejadores</h2>
+                    <p class="text-[10px] lg:text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">Sua Bússola Temporal</p>
+                </div>
+            </div>
+            <button id="theme-toggle" class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-blue-500 transition-all shadow-sm"><i class="fa-solid fa-moon text-lg"></i></button>
+        </header>
+
+        <div class="p-5 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
+
+            <div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                <button onclick="mudarAba('anual')" id="tab-anual" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Visão Anual</button>
+                <button onclick="mudarAba('trimestral')" id="tab-trimestral" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Trimestral</button>
+                <button onclick="mudarAba('mensal')" id="tab-mensal" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-blue-500 text-white shadow-md">Mensal</button>
+                <button onclick="mudarAba('semanal')" id="tab-semanal" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Semanal</button>
+            </div>
+
+            <div id="conteudo-mensal" class="tab-conteudo block space-y-6 fade-in">
+                
+                <div class="flex justify-between items-center bg-panel border border-theme p-4 rounded-2xl">
+                    <button onclick="navegarMes(-1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-blue-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h3 id="label-mes-atual" class="text-lg md:text-xl font-black text-strong uppercase tracking-widest">Agosto 2026</h3>
+                    <button onclick="navegarMes(1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-blue-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+
+                <div class="glass-card p-6 border-t-4 border-purple-500 bg-gradient-to-br from-panel to-purple-500/5">
+                    <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="document.getElementById('m-perguntas').classList.toggle('hidden')">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong flex items-center gap-2"><i class="fa-solid fa-brain text-purple-500"></i> Alinhamento do Mês</h3>
+                        <i class="fa-solid fa-chevron-down text-muted text-xs"></i>
+                    </div>
+                    <div id="m-perguntas" class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                        <div><label class="block text-xs font-bold text-muted mb-2">1. Foco <span class="text-purple-500">PRINCIPAL</span> do mês?</label><textarea id="m-q1" onblur="salvarMensal()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-20"></textarea></div>
+                        <div><label class="block text-xs font-bold text-muted mb-2">2. Quais <span class="text-orange-500">OBSTÁCULOS</span> previstos?</label><textarea id="m-q2" onblur="salvarMensal()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-20"></textarea></div>
+                        <div><label class="block text-xs font-bold text-muted mb-2">3. Qual a sua <span class="text-accent">RECOMPENSA</span>?</label><textarea id="m-q3" onblur="salvarMensal()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-20"></textarea></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-6">
+                        <div class="glass-card p-6 border-l-4 border-blue-500">
+                            <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
+                                <h4 class="text-xs font-black uppercase tracking-widest text-muted">Objetivos do Mês</h4>
+                                <button onclick="addListaItem('mensal', 'objetivos')" class="text-blue-500 hover:text-blue-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button>
+                            </div>
+                            <ul id="m-objetivos" class="space-y-2"></ul>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="glass-card p-5 border-t-2 border-accent">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="text-[10px] font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-cart-shopping text-accent mr-1"></i> Comprar</h4>
+                                    <button onclick="addListaItem('mensal', 'comprar')" class="text-muted hover:text-accent"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                                <ul id="m-comprar" class="space-y-2"></ul>
+                            </div>
+                            <div class="glass-card p-5 border-t-2 border-red-500">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="text-[10px] font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-file-invoice-dollar text-red-500 mr-1"></i> Pagar</h4>
+                                    <button onclick="addListaItem('mensal', 'pagar')" class="text-muted hover:text-red-500"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                                <ul id="m-pagar" class="space-y-2"></ul>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6 border-l-4 border-purple-500">
+                            <h4 class="text-xs font-black uppercase tracking-widest text-muted mb-4 border-b border-theme pb-2">Fichas do Mês</h4>
+                            <div class="space-y-4 text-sm">
+                                <div class="flex items-center gap-3"><span class="w-6 text-center text-lg">📚</span><span class="font-bold text-muted w-14">Curso:</span><input type="text" id="m-f-curso" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold"></div>
+                                <div class="flex items-center gap-3"><span class="w-6 text-center text-lg">📕</span><span class="font-bold text-muted w-14">Livro:</span><input type="text" id="m-f-livro" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold"></div>
+                                <div class="flex items-center gap-3"><span class="w-6 text-center text-lg">🎮</span><span class="font-bold text-muted w-14">Jogo:</span><input type="text" id="m-f-jogo" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold"></div>
+                                <div class="flex items-center gap-3"><span class="w-6 text-center text-lg">📌</span><span class="font-bold text-muted w-14">Passeio:</span><input type="text" id="m-f-passeio" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold"></div>
+                                <div class="flex items-center gap-3"><span class="w-6 text-center text-lg">🎬</span><span class="font-bold text-muted w-14">Séries:</span><input type="text" id="m-f-serie" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="glass-card p-6 border-l-4 border-orange-500">
+                            <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
+                                <h4 class="text-xs font-black uppercase tracking-widest text-muted">Datas Importantes</h4>
+                                <button onclick="addListaData('mensal')" class="text-orange-500 hover:text-orange-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button>
+                            </div>
+                            <ul id="m-datas" class="space-y-2"></ul>
+                        </div>
+
+                        <div class="glass-card p-6 flex flex-col">
+                            <h4 class="text-xs font-black uppercase tracking-widest text-muted mb-4 border-b border-theme pb-2"><i class="fa-solid fa-pen-nib text-muted mr-2"></i> Anotações Livres</h4>
+                            <textarea id="m-notas" onblur="salvarMensal()" class="w-full h-32 bg-transparent border-none text-sm text-strong font-semibold focus:outline-none resize-none placeholder-muted" placeholder="(Livre • Reflexões • Ideias soltas...)"></textarea>
+                        </div>
+
+                        <div class="glass-card p-6 border-t-4 border-theme">
+                            <div class="flex justify-between items-center mb-6 border-b border-theme pb-2">
+                                <h4 class="text-xs font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-pen-ruler text-muted mr-2"></i> Rastreadores</h4>
+                                <button onclick="addRastreadorMensal()" class="text-muted hover:text-strong text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Novo</button>
+                            </div>
+                            <div id="m-rastreadores" class="space-y-8"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="conteudo-trimestral" class="tab-conteudo hidden space-y-6 fade-in">
+                
+                <div class="flex justify-between items-center bg-panel border border-theme p-4 rounded-2xl">
+                    <button onclick="navegarTrimestre(-1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-purple-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
+                    <div class="text-center">
+                        <h3 id="label-trimestre" class="text-lg md:text-xl font-black text-strong uppercase tracking-widest">Q3 - Terceiro Trimestre</h3>
+                        <p id="label-meses-trimestre" class="text-[10px] text-muted font-bold uppercase tracking-widest mt-0.5">Julho • Agosto • Setembro</p>
+                    </div>
+                    <button onclick="navegarTrimestre(1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-purple-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+
+                <div class="glass-card p-6 border-t-4 border-purple-500">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-4"><i class="fa-solid fa-chess-knight text-purple-500 mr-2"></i> Estratégia de 90 Dias</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div><label class="block text-xs font-bold text-muted mb-2">1. Foco PRINCIPAL destes 90 dias?</label><textarea id="t-q1" onblur="salvarTrimestral()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-24"></textarea></div>
+                        <div><label class="block text-xs font-bold text-muted mb-2">2. O que tem que MELHORAR do passado?</label><textarea id="t-q2" onblur="salvarTrimestral()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-24"></textarea></div>
+                        <div><label class="block text-xs font-bold text-muted mb-2">3. Métrica de SUCESSO final?</label><textarea id="t-q3" onblur="salvarTrimestral()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-24"></textarea></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card p-6 border-l-4 border-blue-500">
+                        <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
+                            <h4 class="text-xs font-black uppercase tracking-widest text-muted">Grandes Objetivos (OKR)</h4>
+                            <button onclick="addListaItem('trimestral', 'objetivos')" class="text-blue-500 hover:text-blue-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button>
+                        </div>
+                        <ul id="t-objetivos" class="space-y-2"></ul>
+                    </div>
+                    <div class="glass-card p-6 border-l-4 border-orange-500">
+                        <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
+                            <h4 class="text-xs font-black uppercase tracking-widest text-muted">Lembretes & Marcos</h4>
+                            <button onclick="addListaItem('trimestral', 'lembretes')" class="text-orange-500 hover:text-orange-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button>
+                        </div>
+                        <ul id="t-lembretes" class="space-y-2"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="conteudo-anual" class="tab-conteudo hidden space-y-6 fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-center bg-panel border border-theme p-6 rounded-2xl gap-4">
+                    <div class="text-center md:text-left">
+                        <h3 class="text-xl font-black text-strong uppercase tracking-widest">Listas de Longo Prazo</h3>
+                        <p class="text-xs text-muted font-bold mt-1">Crie coleções anuais (Ex: 12 Livros, 5 Viagens)</p>
+                    </div>
+                    <button onclick="addListaAnual()" class="px-5 py-2.5 bg-accent text-bg-color rounded-xl text-sm font-black shadow-lg hover:scale-105 transition-transform"><i class="fa-solid fa-plus mr-2"></i>Nova Lista</button>
+                </div>
+
+                <div id="grid-anual" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    </div>
+            </div>
+
+            <div id="conteudo-semanal" class="tab-conteudo hidden space-y-6 fade-in">
+                <div class="glass-card p-6 bg-gradient-to-r from-panel to-accent/5">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div class="w-full md:w-1/2">
+                            <div class="flex justify-between items-end mb-2">
+                                <h3 class="text-2xl font-black text-strong uppercase tracking-widest">Semana <span id="week-number" class="text-accent">0</span></h3>
+                                <span class="text-xs font-bold text-muted">de 52 Semanas</span>
+                            </div>
+                            <div class="w-full h-3 bg-bg-color border border-theme rounded-full overflow-hidden relative shadow-inner">
+                                <div id="week-progress" class="h-full bg-accent" style="width: 0%"></div>
+                                <div class="absolute inset-0 flex justify-between px-1"><div class="w-0.5 h-full bg-theme/50 mx-auto"></div><div class="w-0.5 h-full bg-theme/50 mx-auto"></div><div class="w-0.5 h-full bg-theme/50 mx-auto"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 border-t-4 border-blue-500">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-4"><i class="fa-solid fa-crosshairs text-blue-500 mr-2"></i> Alinhamento Semanal</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-muted mb-2">1. Quais as <span class="text-blue-500">3 Prioridades</span> inegociáveis?</label>
+                            <div class="space-y-2">
+                                <input type="text" id="s-p1" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-lg p-2.5 text-sm font-semibold text-strong focus:outline-none focus:border-blue-500" placeholder="1. ...">
+                                <input type="text" id="s-p2" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-lg p-2.5 text-sm font-semibold text-strong focus:outline-none focus:border-blue-500" placeholder="2. ...">
+                                <input type="text" id="s-p3" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-lg p-2.5 text-sm font-semibold text-strong focus:outline-none focus:border-blue-500" placeholder="3. ...">
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-muted mb-2">2. O que ficou <span class="text-red-500">pendente</span> da semana passada?</label>
+                                <textarea id="s-q1" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-blue-500 resize-none h-16"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-muted mb-2">3. Como posso facilitar minha vida esta semana?</label>
+                                <textarea id="s-q2" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-blue-500 resize-none h-16"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 border-t-4 border-theme">
+                    <h4 class="text-xs font-black uppercase tracking-widest text-muted mb-4"><i class="fa-solid fa-pen-nib mr-2"></i> Caixa de Entrada (Anotações Rápidas da Semana)</h4>
+                    <textarea id="s-notas" onblur="salvarSemana()" class="w-full h-32 bg-bg-color border border-theme rounded-xl p-4 text-sm text-strong font-semibold focus:outline-none resize-none placeholder-muted" placeholder="Descarregue ideias soltas, tarefas que surgiram do nada..."></textarea>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        // ==========================================
+        // SISTEMA DE DADOS E NAVEGAÇÃO
+        // ==========================================
+        const DB_KEY = 'lifeos_planejador_v3';
+        
+        let dataAtual = new Date();
+        let mesSelecionado = dataAtual.getMonth(); // 0-11
+        let anoSelecionado = dataAtual.getFullYear();
+        let trimestreSelecionado = Math.floor(mesSelecionado / 3) + 1; // 1-4
+
+        const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const trimestresNomes = { 1: "Janeiro • Fevereiro • Março", 2: "Abril • Maio • Junho", 3: "Julho • Agosto • Setembro", 4: "Outubro • Novembro • Dezembro" };
+
+        let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
+            anual: [
+                { id: 1, titulo: "12 Livros", icone: "📚", itens: [{ id: 11, texto: "Poder do Hábito", concluido: false }] },
+                { id: 2, titulo: "12 Obras", icone: "🎬", itens: [] }
+            ],
+            trimestres: { 1: {}, 2: {}, 3: {}, 4: {} },
+            meses: {},
+            semana: { p1: "", p2: "", p3: "", q1: "", q2: "", notas: "" }
+        };
+
+        function salvarDB() { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+        // --- ABA MENSAL ---
+        function getChaveMes() { return `${anoSelecionado}-${mesSelecionado}`; }
+        function initMes() {
+            const ch = getChaveMes();
+            if(!db.meses[ch]) {
+                db.meses[ch] = { q1:"", q2:"", q3:"", notas:"", fichas:{curso:"", livro:"", jogo:"", passeio:"", serie:""}, objetivos:[], comprar:[], pagar:[], datas:[], rastreadores:[] };
+            }
+        }
+
+        function navegarMes(dir) {
+            mesSelecionado += dir;
+            if(mesSelecionado > 11) { mesSelecionado = 0; anoSelecionado++; }
+            if(mesSelecionado < 0) { mesSelecionado = 11; anoSelecionado--; }
+            renderMensal();
+        }
+
+        function renderMensal() {
+            initMes();
+            const ch = getChaveMes();
+            const dados = db.meses[ch];
+
+            document.getElementById('label-mes-atual').innerText = `${mesesNomes[mesSelecionado]} ${anoSelecionado}`;
+            
+            // Inputs
+            ['q1', 'q2', 'q3', 'notas'].forEach(k => document.getElementById(`m-${k}`).value = dados[k]);
+            ['curso', 'livro', 'jogo', 'passeio', 'serie'].forEach(k => document.getElementById(`m-f-${k}`).value = dados.fichas[k]);
+
+            // Listas
+            renderListaHTML('m-objetivos', dados.objetivos, 'mensal', 'objetivos');
+            renderListaHTML('m-comprar', dados.comprar, 'mensal', 'comprar');
+            renderListaHTML('m-pagar', dados.pagar, 'mensal', 'pagar');
+            
+            // Datas
+            const ulDatas = document.getElementById('m-datas');
+            ulDatas.innerHTML = '';
+            dados.datas.forEach((d, i) => {
+                ulDatas.innerHTML += `
+                    <li class="flex items-center gap-3 p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg group border border-transparent hover:border-theme transition-colors">
+                        <span class="bg-orange-500/10 text-orange-500 px-2 py-1 rounded text-xs font-black cursor-pointer" onclick="editarDataMensal(${i}, 'data')">${d.data}</span>
+                        <span class="text-sm font-semibold text-strong flex-1 cursor-pointer" onclick="editarDataMensal(${i}, 'texto')">${d.texto}</span>
+                        <button onclick="excluirDataMensal(${i})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </li>`;
+            });
+
+            // Rastreadores
+            const cRast = document.getElementById('m-rastreadores');
+            cRast.innerHTML = '';
+            dados.rastreadores.forEach((t, i) => {
+                let p = Math.round((t.marcados.length / (t.total/t.step)) * 100);
+                let boxes = '';
+                for(let n=t.step; n<=t.total; n+=t.step){
+                    let done = t.marcados.includes(n);
+                    boxes += `<div onclick="toggleTrackMensal(${i}, ${n})" class="w-8 h-8 flex items-center justify-center text-xs font-bold rounded-lg cursor-pointer transition-all select-none border border-transparent ${done ? 'text-muted relative opacity-50 bg-bg-color' : 'text-strong hover:bg-black/10 dark:hover:bg-white/10 bg-panel border-theme shadow-sm'}">${n} ${done ? '<div class="absolute inset-0 flex items-center justify-center text-red-500/60 pointer-events-none"><i class="fa-solid fa-xmark"></i></div>':''}</div>`;
+                }
+                cRast.innerHTML += `
+                    <div class="relative group">
+                        <div class="absolute -top-2 right-0 flex gap-2 opacity-0 group-hover:opacity-100 bg-panel px-2 py-1 rounded-lg border border-theme shadow-lg z-10 transition-opacity"><button onclick="editarRastreadorMensal(${i})" class="text-muted hover:text-blue-500 text-[10px] font-bold">Editar</button><button onclick="excluirRastreadorMensal(${i})" class="text-muted hover:text-red-500 text-[10px] font-bold">Excluir</button></div>
+                        <p class="text-sm font-bold text-strong mb-2 border-b border-theme/50 pb-1">${t.nome} <span class="text-[10px] font-bold text-muted ml-2">${p}%</span></p>
+                        <div class="flex flex-wrap gap-1.5 md:gap-2">${boxes}</div>
+                    </div>`;
+            });
+        }
+
+        function salvarMensal() {
+            initMes();
+            const d = db.meses[getChaveMes()];
+            ['q1', 'q2', 'q3', 'notas'].forEach(k => d[k] = document.getElementById(`m-${k}`).value);
+            ['curso', 'livro', 'jogo', 'passeio', 'serie'].forEach(k => d.fichas[k] = document.getElementById(`m-f-${k}`).value);
+            salvarDB();
+        }
+
+        // --- ABA TRIMESTRAL ---
+        function initTrimestre() { if(!db.trimestres[trimestreSelecionado]) db.trimestres[trimestreSelecionado] = { q1:"", q2:"", q3:"", objetivos:[], lembretes:[] }; }
+        function navegarTrimestre(dir) {
+            trimestreSelecionado += dir;
+            if(trimestreSelecionado > 4) trimestreSelecionado = 1;
+            if(trimestreSelecionado < 1) trimestreSelecionado = 4;
+            renderTrimestral();
+        }
+        function renderTrimestral() {
+            initTrimestre();
+            const d = db.trimestres[trimestreSelecionado];
+            document.getElementById('label-trimestre').innerText = `Q${trimestreSelecionado} - ${trimestreSelecionado}º Trimestre`;
+            document.getElementById('label-meses-trimestre').innerText = trimestresNomes[trimestreSelecionado];
+            
+            ['q1', 'q2', 'q3'].forEach(k => document.getElementById(`t-${k}`).value = d[k] || "");
+            renderListaHTML('t-objetivos', d.objetivos, 'trimestral', 'objetivos');
+            renderListaHTML('t-lembretes', d.lembretes, 'trimestral', 'lembretes');
+        }
+        function salvarTrimestral() {
+            initTrimestre();
+            ['q1', 'q2', 'q3'].forEach(k => db.trimestres[trimestreSelecionado][k] = document.getElementById(`t-${k}`).value);
+            salvarDB();
+        }
+
+        // --- ABA ANUAL (LISTAS CUSTOMIZADAS) ---
+        function renderAnual() {
+            const grid = document.getElementById('grid-anual');
+            grid.innerHTML = '';
+            db.anual.forEach((lista, lIdx) => {
+                let itensHTML = lista.itens.map((it, iIdx) => `
+                    <li class="flex items-start gap-2 group">
+                        <input type="checkbox" ${it.concluido ? 'checked' : ''} onchange="toggleAnualItem(${lIdx}, ${iIdx})" class="mt-1 cursor-pointer">
+                        <span class="text-sm font-semibold flex-1 cursor-pointer hover:text-blue-500 transition-colors ${it.concluido ? 'line-through text-muted opacity-60' : 'text-strong'}" onclick="editarAnualItem(${lIdx}, ${iIdx})">${it.texto}</span>
+                        <button onclick="excluirAnualItem(${lIdx}, ${iIdx})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-xmark text-xs"></i></button>
+                    </li>
+                `).join('');
+
+                grid.innerHTML += `
+                    <div class="glass-card p-6 flex flex-col h-full relative group/card">
+                        <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                            <button onclick="editarListaAnual(${lIdx})" class="text-muted hover:text-blue-500"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="excluirListaAnual(${lIdx})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                        <h4 class="text-sm font-black uppercase tracking-widest text-strong mb-4 border-b border-theme pb-2"><span class="text-xl mr-2">${lista.icone}</span> ${lista.titulo}</h4>
+                        <ol class="list-decimal list-inside space-y-3 flex-1 mb-4">${itensHTML}</ol>
+                        <button onclick="addAnualItem(${lIdx})" class="text-xs font-bold text-muted hover:text-strong bg-panel border border-theme py-2 rounded-lg w-full transition-colors"><i class="fa-solid fa-plus mr-1"></i> Adicionar Item</button>
+                    </div>
+                `;
+            });
+        }
+        
+        function addListaAnual() {
+            let titulo = prompt("Título da Lista (Ex: 12 Viagens):"); if(!titulo) return;
+            let icone = prompt("Ícone/Emoji (Ex: ✈️):") || "📌";
+            db.anual.push({ id: Date.now(), titulo, icone, itens: [] }); salvarDB(); renderAnual();
+        }
+        function editarListaAnual(lIdx) {
+            let t = prompt("Novo título:", db.anual[lIdx].titulo); if(t) db.anual[lIdx].titulo = t;
+            let i = prompt("Novo ícone:", db.anual[lIdx].icone); if(i) db.anual[lIdx].icone = i;
+            salvarDB(); renderAnual();
+        }
+        function excluirListaAnual(lIdx) { if(confirm("Excluir lista inteira?")) { db.anual.splice(lIdx, 1); salvarDB(); renderAnual(); } }
+        function addAnualItem(lIdx) { let t = prompt("Novo item:"); if(t) { db.anual[lIdx].itens.push({ id: Date.now(), texto: t, concluido: false }); salvarDB(); renderAnual(); } }
+        function editarAnualItem(lIdx, iIdx) { let t = prompt("Editar:", db.anual[lIdx].itens[iIdx].texto); if(t) { db.anual[lIdx].itens[iIdx].texto = t; salvarDB(); renderAnual(); } }
+        function excluirAnualItem(lIdx, iIdx) { db.anual[lIdx].itens.splice(iIdx, 1); salvarDB(); renderAnual(); }
+        function toggleAnualItem(lIdx, iIdx) { db.anual[lIdx].itens[iIdx].concluido = !db.anual[lIdx].itens[iIdx].concluido; salvarDB(); renderAnual(); }
+
+        // --- ABA SEMANAL ---
+        function renderSemanal() {
+            let inicioAno = new Date(dataAtual.getFullYear(), 0, 1);
+            let dias = Math.floor((dataAtual - inicioAno) / (24 * 60 * 60 * 1000));
+            let numSemana = Math.ceil((dias + inicioAno.getDay() + 1) / 7);
+            document.getElementById('week-number').innerText = numSemana;
+            document.getElementById('week-progress').style.width = `${Math.round((numSemana/52)*100)}%`;
+
+            ['p1','p2','p3','q1','q2','notas'].forEach(k => document.getElementById(`s-${k}`).value = db.semana[k] || "");
+        }
+        function salvarSemana() { ['p1','p2','p3','q1','q2','notas'].forEach(k => db.semana[k] = document.getElementById(`s-${k}`).value); salvarDB(); }
+
+        // --- FUNÇÕES GLOBAIS DE LISTA E CRUD ---
+        function getAlvo(secao, listaId) {
+            if(secao === 'mensal') return db.meses[getChaveMes()][listaId];
+            if(secao === 'trimestral') return db.trimestres[trimestreSelecionado][listaId];
+        }
+        
+        function renderListaHTML(containerId, array, secao, listaId) {
+            const ul = document.getElementById(containerId); ul.innerHTML = '';
+            array.forEach((it, i) => {
+                ul.innerHTML += `
+                    <li class="flex items-center gap-3 p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg group border border-transparent hover:border-theme transition-colors">
+                        <div class="w-4 h-4 rounded border flex items-center justify-center cursor-pointer transition-colors ${it.concluido ? 'bg-accent border-accent text-white' : 'border-theme text-transparent hover:border-accent'}" onclick="toggleGeral('${secao}', '${listaId}', ${i})"><i class="fa-solid fa-check text-[10px]"></i></div>
+                        <span class="text-sm font-semibold flex-1 cursor-pointer transition-colors ${it.concluido ? 'text-muted line-through opacity-60' : 'text-strong hover:text-blue-500'}" onclick="editarGeral('${secao}', '${listaId}', ${i})">${it.texto}</span>
+                        <button onclick="excluirGeral('${secao}', '${listaId}', ${i})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </li>`;
+            });
+        }
+
+        function addListaItem(secao, listaId) { let t = prompt("Adicionar item:"); if(t){ getAlvo(secao, listaId).push({texto: t, concluido: false}); salvarDB(); secao==='mensal'?renderMensal():renderTrimestral(); } }
+        function editarGeral(s, l, i) { let t = prompt("Editar:", getAlvo(s, l)[i].texto); if(t){ getAlvo(s, l)[i].texto = t; salvarDB(); s==='mensal'?renderMensal():renderTrimestral(); } }
+        function excluirGeral(s, l, i) { getAlvo(s, l).splice(i, 1); salvarDB(); s==='mensal'?renderMensal():renderTrimestral(); }
+        function toggleGeral(s, l, i) { getAlvo(s, l)[i].concluido = !getAlvo(s, l)[i].concluido; salvarDB(); s==='mensal'?renderMensal():renderTrimestral(); }
+
+        // Datas Mensais
+        function addListaData(secao) { let d=prompt("Data (Ex: 10.08):"); let t=prompt("Evento:"); if(d&&t){ getAlvo(secao, 'datas').push({data:d, texto:t}); salvarDB(); renderMensal(); } }
+        function editarDataMensal(i, campo) { let nv=prompt("Editar:", db.meses[getChaveMes()].datas[i][campo]); if(nv){ db.meses[getChaveMes()].datas[i][campo] = nv; salvarDB(); renderMensal(); } }
+        function excluirDataMensal(i) { db.meses[getChaveMes()].datas.splice(i,1); salvarDB(); renderMensal(); }
+
+        // Rastreadores Mensais
+        function addRastreadorMensal() { let n=prompt("Nome:"); let t=parseInt(prompt("Total? (Ex: 380)")); let s=parseInt(prompt("Pulos? (Ex: 10)")); if(n&&t&&s){ db.meses[getChaveMes()].rastreadores.push({nome:n, total:t, step:s, marcados:[]}); salvarDB(); renderMensal(); } }
+        function editarRastreadorMensal(i) { let n=prompt("Novo nome:", db.meses[getChaveMes()].rastreadores[i].nome); if(n){ db.meses[getChaveMes()].rastreadores[i].nome=n; salvarDB(); renderMensal(); } }
+        function excluirRastreadorMensal(i) { if(confirm("Excluir?")){ db.meses[getChaveMes()].rastreadores.splice(i,1); salvarDB(); renderMensal(); } }
+        function toggleTrackMensal(tIdx, num) { let t=db.meses[getChaveMes()].rastreadores[tIdx]; if(t.marcados.includes(num)) t.marcados=t.marcados.filter(x=>x!==num); else t.marcados.push(num); salvarDB(); renderMensal(); }
+
+        // Abas
+        function mudarAba(aba) {
+            document.querySelectorAll('.tab-conteudo').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong");
+            document.getElementById(`conteudo-${aba}`).classList.remove('hidden');
+            let cor = aba==='semanal'?'bg-accent':aba==='trimestral'?'bg-purple-500':'bg-blue-500';
+            document.getElementById(`tab-${aba}`).className = `tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${cor} text-white shadow-md`;
+            if(aba==='mensal') renderMensal(); if(aba==='trimestral') renderTrimestral(); if(aba==='anual') renderAnual(); if(aba==='semanal') renderSemanal();
+        }
+
+        window.onload = () => mudarAba('mensal'); // Inicia na aba mensal
+    </script>
+</body>
+</html>
