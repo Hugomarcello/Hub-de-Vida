@@ -125,3 +125,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+// ==========================================
+// CONTROLE DO MENU MOBILE
+// ==========================================
+window.toggleMobileMenu = function() {
+    const sidebar = document.getElementById('sidebar-container');
+    let overlay = document.getElementById('sidebar-overlay');
+    
+    // Se a camada escura ainda não existir no HTML, cria ela na hora
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'sidebar-overlay';
+        overlay.onclick = toggleMobileMenu; // Clicar no escuro fecha o menu
+        document.body.appendChild(overlay);
+    }
+    
+    // Alterna a classe 'active' para abrir/fechar
+    if (sidebar) sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+};

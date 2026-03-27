@@ -99,32 +99,32 @@ body {
 }
 .logo-icon { display: none; } /* Escondido por padrão */
 /* ==========================================
-   RESPONSIVIDADE DO MENU MOBILE (DRAWER)
+   COMPORTAMENTO MOBILE DA BARRA LATERAL
    ========================================== */
 
-/* 1. Comportamento no Celular (Gaveta Escondida à Esquerda) */
+/* 1. No Celular: Fica fixa, escondida à esquerda (-100%) e por cima de tudo (z-index 60) */
 #sidebar-container {
-    position: fixed;
+    position: fixed !important;
     top: 0;
-    left: -100%; /* Esconde o menu 100% para a esquerda */
+    left: -100%;
     height: 100vh;
-    z-index: 60; /* Fica por cima de tudo */
+    z-index: 60 !important;
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: var(--bg-color); 
+    background-color: var(--bg-color); /* Garante que não fica transparente */
 }
 
-/* 2. Quando o botão de menu for clicado (Javascript adiciona a classe .active) */
+/* 2. Quando ativada pelo botão, ela desliza para a posição 0 */
 #sidebar-container.active {
-    left: 0; /* Desliza o menu para dentro da tela */
+    left: 0;
 }
 
-/* 3. A película escura que fica atrás do menu no celular */
+/* 3. O fundo escuro (Overlay) que foca a atenção no menu */
 #sidebar-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.6); /* Preto transparente */
-    backdrop-filter: blur(3px); /* Deixa a página de trás desfocada */
-    z-index: 55; /* Fica abaixo do menu (60), mas acima do conteúdo */
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    z-index: 55;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
@@ -135,18 +135,15 @@ body {
     pointer-events: auto;
 }
 
-/* 4. Comportamento no Computador (Tela grande) */
+/* 4. No Computador: Volta ao normal, lado a lado com o conteúdo */
 @media (min-width: 768px) {
     #sidebar-container {
-        position: relative; /* Volta a empurrar o conteúdo lado a lado */
-        left: 0; /* Fica sempre visível */
-        height: 100vh;
-        z-index: 20;
-        transition: none; /* Tira a animação ao redimensionar a janela */
-        background-color: transparent;
+        position: relative !important;
+        left: 0;
+        z-index: 40 !important;
+        transition: none;
     }
-    
     #sidebar-overlay {
-        display: none !important; /* Nunca mostra o fundo escuro no PC */
+        display: none !important;
     }
 }
