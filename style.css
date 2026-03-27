@@ -110,10 +110,10 @@ body {
     height: 100vh;
     z-index: 60 !important;
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: var(--bg-color); /* Garante que não fica transparente */
+    background-color: var(--bg-color); 
 }
 
-/* 2. Quando ativada pelo botão, ela desliza para a posição 0 */
+/* 2. Quando ativada pelo botão, ela desliza para dentro da tela */
 #sidebar-container.active {
     left: 0;
 }

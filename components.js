@@ -126,21 +126,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 // ==========================================
-// CONTROLE DO MENU MOBILE
+// CONTROLE DO MENU MOBILE (GAVETA)
 // ==========================================
 window.toggleMobileMenu = function() {
     const sidebar = document.getElementById('sidebar-container');
     let overlay = document.getElementById('sidebar-overlay');
     
-    // Se a camada escura ainda não existir no HTML, cria ela na hora
+    // Se a camada escura ainda não existir no HTML, o sistema cria-a automaticamente
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'sidebar-overlay';
-        overlay.onclick = toggleMobileMenu; // Clicar no escuro fecha o menu
+        overlay.onclick = toggleMobileMenu; // Clicar na parte escura fecha o menu
         document.body.appendChild(overlay);
     }
     
-    // Alterna a classe 'active' para abrir/fechar
+    // Adiciona ou remove a classe 'active' para fazer a gaveta deslizar
     if (sidebar) sidebar.classList.toggle('active');
     overlay.classList.toggle('active');
 };
