@@ -2,7 +2,7 @@
 const sidebarHTML = `
     <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
     
-    <aside id="sidebar-menu" class="fixed md:static inset-y-0 left-0 z-50 w-72 bg-panel border-r border-theme flex flex-col h-screen transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+    <aside id="sidebar-menu" class="fixed md:static inset-y-0 left-0 z-50 w-72 bg-panel border-r border-theme flex flex-col h-full transform -translate-x-full md:translate-x-0 transition-transform duration-300">
         
         <div class="p-6 flex items-center justify-between border-b border-theme shrink-0 h-[88px]">
             <h1 class="font-black text-blue-500 uppercase tracking-tighter text-2xl logo-text">
@@ -19,7 +19,7 @@ const sidebarHTML = `
             </button>
         </div>
 
-        <div class="flex-1 overflow-y-auto pb-8 custom-scrollbar">
+        <div class="flex-1 overflow-y-auto pb-12 custom-scrollbar">
             
             <p class="section-label text-xs font-black text-muted uppercase tracking-[0.2em] mx-6 mt-8 mb-3">Produtividade</p>
             <nav class="space-y-1 px-3">

@@ -108,10 +108,14 @@ body {
     position: fixed !important;
     top: 0;
     left: -100%;
-    height: 100vh;
+    /* Alterado de 100vh para 100dvh para ignorar a barra de endereços do telemóvel */
+    height: 100dvh;
     z-index: 60 !important;
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background-color: var(--bg-color); 
+    /* Flexbox adicionado para permitir que o conteúdo interno ocupe o espaço correto */
+    display: flex;
+    flex-direction: column;
 }
 
 /* 2. Quando ativada pelo botão, ela desliza para dentro da tela */
