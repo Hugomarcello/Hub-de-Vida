@@ -1,8 +1,8 @@
 // components.js - O Menu Mestre do LifeOS
 const sidebarHTML = `
-    <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+    <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
     
-    <aside id="sidebar-menu" class="fixed md:static inset-y-0 left-0 z-50 w-72 bg-panel border-r border-theme flex flex-col h-screen">
+    <aside id="sidebar-menu" class="fixed md:static inset-y-0 left-0 z-50 w-72 bg-panel border-r border-theme flex flex-col h-screen transform -translate-x-full md:translate-x-0 transition-transform duration-300">
         
         <div class="p-6 flex items-center justify-between border-b border-theme shrink-0 h-[88px]">
             <h1 class="font-black text-blue-500 uppercase tracking-tighter text-2xl logo-text">
@@ -14,7 +14,7 @@ const sidebarHTML = `
                 <i class="fa-solid fa-bars-staggered"></i>
             </button>
             
-            <button id="close-mobile-menu" class="md:hidden text-muted hover:text-red-500 text-2xl transition-colors">
+            <button id="close-mobile-menu" onclick="toggleMobileMenu()" class="md:hidden text-muted hover:text-red-500 text-2xl transition-colors">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -80,67 +80,46 @@ document.addEventListener('DOMContentLoaded', () => {
         
         navLinks.forEach(link => {
             const linkHref = link.getAttribute('href');
-            // Formatação base para todos os links
             link.className = "nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all";
             
             if (linkHref === currentPage) {
-                // Estilo Ativo
                 link.classList.add('bg-blue-500/10', 'text-blue-500', 'font-black');
             } else {
-                // Estilo Inativo
                 link.classList.add('text-muted', 'hover:bg-black/5', 'dark:hover:bg-white/5', 'hover:text-strong');
             }
         });
 
-        // 3. LÓGICA MOBILE (Abrir/Fechar com o Hamburger)
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const sidebarMenu = document.getElementById('sidebar-menu');
-        const mobileOverlay = document.getElementById('mobile-overlay');
-        const closeMobileBtn = document.getElementById('close-mobile-menu');
-
-        function toggleMobileMenu() {
-            sidebarMenu.classList.toggle('-translate-x-full');
-            mobileOverlay.classList.toggle('hidden');
-        }
-
-        if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-        if(closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobileMenu);
-        if(mobileOverlay) mobileOverlay.addEventListener('click', toggleMobileMenu);
-
-        // 4. LÓGICA DESKTOP (Expandir/Recolher Sidebar)
+        // 3. LÓGICA DESKTOP (Expandir/Recolher Sidebar)
         const toggleDesktopBtn = document.getElementById('toggle-desktop-menu');
+        const sidebarMenu = document.getElementById('sidebar-menu');
         
-        // Verifica se o usuário já tinha deixado o menu encolhido na última visita
         const isCollapsed = localStorage.getItem('lifeos_sidebar_collapsed') === 'true';
-        if(isCollapsed) {
+        if(isCollapsed && sidebarMenu) {
             sidebarMenu.classList.add('sidebar-collapsed');
         }
 
-        if(toggleDesktopBtn) {
+        if(toggleDesktopBtn && sidebarMenu) {
             toggleDesktopBtn.addEventListener('click', () => {
                 sidebarMenu.classList.toggle('sidebar-collapsed');
-                // Salva a preferência
                 localStorage.setItem('lifeos_sidebar_collapsed', sidebarMenu.classList.contains('sidebar-collapsed'));
             });
         }
     }
 });
+
 // ==========================================
 // CONTROLE DO MENU MOBILE (GAVETA)
 // ==========================================
 window.toggleMobileMenu = function() {
-    const sidebar = document.getElementById('sidebar-container');
-    let overlay = document.getElementById('sidebar-overlay');
+    const sidebarMenu = document.getElementById('sidebar-menu');
+    const mobileOverlay = document.getElementById('mobile-overlay');
     
-    // Se a camada escura ainda não existir no HTML, o sistema cria-a automaticamente
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'sidebar-overlay';
-        overlay.onclick = toggleMobileMenu; // Clicar na parte escura fecha o menu
-        document.body.appendChild(overlay);
+    // Adiciona/Remove a classe do Tailwind que esconde o menu na esquerda
+    if (sidebarMenu) {
+        sidebarMenu.classList.toggle('-translate-x-full');
     }
-    
-    // Adiciona ou remove a classe 'active' para fazer a gaveta deslizar
-    if (sidebar) sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
+    // Mostra/Esconde a tela escura no fundo
+    if (mobileOverlay) {
+        mobileOverlay.classList.toggle('hidden');
+    }
 };
