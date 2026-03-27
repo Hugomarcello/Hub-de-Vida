@@ -98,3 +98,55 @@ body {
     margin: 0;
 }
 .logo-icon { display: none; } /* Escondido por padrão */
+/* ==========================================
+   RESPONSIVIDADE DO MENU MOBILE (DRAWER)
+   ========================================== */
+
+/* 1. Comportamento no Celular (Gaveta Escondida à Esquerda) */
+#sidebar-container {
+    position: fixed;
+    top: 0;
+    left: -100%; /* Esconde o menu 100% para a esquerda */
+    height: 100vh;
+    z-index: 60; /* Fica por cima de tudo */
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: var(--bg-color); 
+}
+
+/* 2. Quando o botão de menu for clicado (Javascript adiciona a classe .active) */
+#sidebar-container.active {
+    left: 0; /* Desliza o menu para dentro da tela */
+}
+
+/* 3. A película escura que fica atrás do menu no celular */
+#sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* Preto transparente */
+    backdrop-filter: blur(3px); /* Deixa a página de trás desfocada */
+    z-index: 55; /* Fica abaixo do menu (60), mas acima do conteúdo */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 4. Comportamento no Computador (Tela grande) */
+@media (min-width: 768px) {
+    #sidebar-container {
+        position: relative; /* Volta a empurrar o conteúdo lado a lado */
+        left: 0; /* Fica sempre visível */
+        height: 100vh;
+        z-index: 20;
+        transition: none; /* Tira a animação ao redimensionar a janela */
+        background-color: transparent;
+    }
+    
+    #sidebar-overlay {
+        display: none !important; /* Nunca mostra o fundo escuro no PC */
+    }
+}
