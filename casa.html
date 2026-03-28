@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeOS | Home & Casa</title>
+    <title>LifeOS | QG Casa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -27,14 +27,24 @@
         .text-muted { color: var(--text-muted); }
         .border-theme { border-color: var(--border-color); }
 
+        .f1-panel { border-left: 4px solid var(--accent, #10B981); }
+        .status-pill { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; text-transform: uppercase; }
+        .status-green { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid #10B981; }
+        .status-yellow { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid #F59E0B; }
+        .status-red { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid #EF4444; }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+        
+        /* Esconder scrollbar no carrossel de fluxos para um visual mais limpo */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
         /* Animação de XP / Checkbox */
         .checkbox-custom { appearance: none; width: 1.25rem; height: 1.25rem; border: 2px solid var(--border-color); border-radius: 0.375rem; cursor: pointer; transition: all 0.2s; position: relative; display: flex; align-items: center; justify-content: center; background-color: var(--bg-color); }
         .checkbox-custom:checked { background-color: var(--accent); border-color: var(--accent); }
-        .checkbox-custom:checked::after { content: '\\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: white; font-size: 0.75rem; }
+        .checkbox-custom:checked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: white; font-size: 0.75rem; }
         
         .xp-float { animation: floatUp 1s ease-out forwards; position: absolute; font-weight: 900; color: var(--accent); pointer-events: none; z-index: 50; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-30px) scale(1.5); } }
@@ -55,7 +65,7 @@
         
         <header class="sticky top-0 z-30 bg-bg-color/90 backdrop-blur-md border-b border-theme p-4 lg:px-8 flex items-center justify-between no-print">
             <div class="flex items-center gap-4">
-                <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden text-strong text-xl hover:text-accent transition-colors p-2"><i class="fa-solid fa-bars"></i></button>
+                <button id="mobile-menu-btn" onclick="window.toggleMobileMenu()" class="md:hidden text-strong text-xl hover:text-accent transition-colors p-2"><i class="fa-solid fa-bars"></i></button>
                 <div class="w-px h-8 bg-border-theme md:hidden"></div>
                 <div>
                     <h2 class="text-xl lg:text-3xl font-black text-strong uppercase tracking-tight italic">QG <span class="text-accent">Casa</span></h2>
@@ -83,7 +93,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-                    
                     <div class="bg-bg-color border border-theme rounded-xl p-5 relative">
                         <div class="flex justify-between items-center mb-4">
                             <span class="text-[10px] font-black uppercase text-strong"><i class="fa-solid fa-sun text-yellow-500 mr-1"></i> Diária (+5 XP)</span>
@@ -110,7 +119,6 @@
                         <div class="space-y-2 mb-4" id="lista-mensal"></div>
                         <button onclick="resetarRotinas('mensal')" class="w-full text-[9px] font-bold uppercase tracking-widest text-muted hover:text-strong py-2 border-t border-theme/50 mt-auto"><i class="fa-solid fa-rotate-right mr-1"></i> Resetar Mês</button>
                     </div>
-
                 </div>
             </div>
 
@@ -123,7 +131,7 @@
                     </div>
 
                     <div class="flex gap-2 mb-4 shrink-0">
-                        <input type="text" id="novo-item-compra" placeholder="Ex: Arroz, Sabão em pó..." class="flex-1 bg-bg-color border border-theme rounded-lg px-3 py-2 text-xs font-medium outline-none focus:border-accent" onkeypress="if(event.key === 'Enter') adicionarCompra()">
+                        <input type="text" id="novo-item-compra" placeholder="Ex: Arroz, Sabão em pó..." class="flex-1 w-full bg-bg-color border border-theme rounded-lg px-3 py-2 text-xs font-medium outline-none focus:border-accent" onkeypress="if(event.key === 'Enter') adicionarCompra()">
                         <select id="categoria-compra" class="bg-bg-color border border-theme rounded-lg px-2 text-[10px] font-bold outline-none text-muted">
                             <option value="mercado">Mercado</option>
                             <option value="limpeza">Limpeza</option>
@@ -143,7 +151,7 @@
                     <div class="glass-card bg-panel border border-theme p-6 rounded-2xl border-l-4 border-l-blue-500">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-sm font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-book-open text-blue-500 mr-2"></i> Playbook da Casa</h3>
-                            <button onclick="adicionarRegra()" class="text-xs text-muted hover:text-blue-500"><i class="fa-solid fa-plus"></i> Nova Regra</button>
+                            <button onclick="adicionarRegra()" class="text-[10px] bg-bg-color border border-theme px-2 py-1 rounded text-strong hover:border-blue-500 transition-colors"><i class="fa-solid fa-plus mr-1"></i> Regra</button>
                         </div>
                         <div class="bg-bg-color border border-theme rounded-xl p-4">
                             <ul class="space-y-3" id="playbook-lista">
@@ -151,50 +159,62 @@
                         </div>
                     </div>
 
-                    <div class="glass-card bg-panel border border-theme p-6 rounded-2xl">
-                        <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-4"><i class="fa-solid fa-diagram-project text-muted mr-2"></i> Fluxo Padrão: Chegar em Casa</h3>
-                        <div class="flex flex-col text-xs font-bold text-strong bg-bg-color border border-theme rounded-xl p-4 py-3">
-                            <div class="flow-block py-1">1. Tirar os sapatos na entrada</div>
-                            <div class="flow-block py-1">2. Guardar chaves e carteira no local certo</div>
-                            <div class="flow-block py-1">3. Organizar os itens que trouxe da rua</div>
-                            <div class="flow-block py-1">4. Lavar as mãos / Tomar banho</div>
+                    <div class="glass-card bg-panel border border-theme p-6 rounded-2xl relative overflow-hidden flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-sm font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-diagram-project text-muted mr-2"></i> Fluxos da Casa</h3>
+                            <div class="flex gap-2 items-center">
+                                <button onclick="scrollFluxo(-1)" class="w-6 h-6 rounded-full bg-bg-color border border-theme flex items-center justify-center text-muted hover:text-accent"><i class="fa-solid fa-chevron-left text-[10px]"></i></button>
+                                <button onclick="scrollFluxo(1)" class="w-6 h-6 rounded-full bg-bg-color border border-theme flex items-center justify-center text-muted hover:text-accent"><i class="fa-solid fa-chevron-right text-[10px]"></i></button>
+                                <button onclick="adicionarFluxo()" class="text-[10px] bg-bg-color border border-theme px-2 py-1 rounded text-strong hover:border-accent ml-2 transition-colors"><i class="fa-solid fa-plus mr-1"></i> Fluxo</button>
+                            </div>
                         </div>
+                        
+                        <div id="fluxos-carousel" class="flex overflow-x-auto snap-x snap-mandatory hide-scroll gap-6 scroll-smooth pb-2">
+                            </div>
                     </div>
 
                 </div>
             </div>
 
-            <div class="glass-card bg-panel border border-theme p-6 rounded-2xl border-l-4 border-l-yellow-500">
-                <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
-                    <div>
-                        <h3 class="text-sm font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-screwdriver-wrench text-yellow-500 mr-2"></i> Controle de Manutenção</h3>
-                        <p class="text-[9px] text-muted font-bold tracking-widest uppercase mt-1">Prevenir problemas estruturais</p>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <div class="lg:col-span-2 glass-card bg-panel border border-theme p-6 rounded-2xl border-l-4 border-l-yellow-500">
+                    <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
+                        <div>
+                            <h3 class="text-sm font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-screwdriver-wrench text-yellow-500 mr-2"></i> Manutenção</h3>
+                            <p class="text-[9px] text-muted font-bold tracking-widest uppercase mt-1">Prevenir problemas estruturais</p>
+                        </div>
+                        <button onclick="abrirModalManutencao()" class="bg-bg-color border border-theme text-strong hover:border-yellow-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
+                            <i class="fa-solid fa-plus mr-1"></i> Adicionar
+                        </button>
                     </div>
-                    <button onclick="abrirModalManutencao()" class="bg-bg-color border border-theme text-strong hover:border-yellow-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
-                        <i class="fa-solid fa-plus mr-1"></i> Adicionar
-                    </button>
+
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left text-xs min-w-[600px]">
+                            <thead class="text-[9px] font-black uppercase tracking-widest text-muted border-b border-theme/50">
+                                <tr>
+                                    <th class="pb-3 px-2">Item / Equipamento</th>
+                                    <th class="pb-3 px-2">Frequência</th>
+                                    <th class="pb-3 px-2">Última Revisão</th>
+                                    <th class="pb-3 px-2">Status</th>
+                                    <th class="pb-3 px-2 text-right">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manutencao-tabela" class="divide-y divide-theme/30">
+                                </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div class="overflow-x-auto custom-scrollbar">
-                    <table class="w-full text-left text-xs min-w-[600px]">
-                        <thead class="text-[9px] font-black uppercase tracking-widest text-muted border-b border-theme/50">
-                            <tr>
-                                <th class="pb-3 px-2">Item / Equipamento</th>
-                                <th class="pb-3 px-2">Frequência</th>
-                                <th class="pb-3 px-2">Última Revisão</th>
-                                <th class="pb-3 px-2">Status</th>
-                                <th class="pb-3 px-2 text-right">Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="manutencao-tabela" class="divide-y divide-theme/30">
-                            </tbody>
-                    </table>
+                <div class="lg:col-span-1 glass-card bg-panel border border-theme p-6 rounded-2xl flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong italic"><i class="fa-solid fa-pen-to-square text-muted mr-2"></i> Diário</h3>
+                        <button onclick="arquivarNota()" class="text-[9px] text-muted hover:text-blue-500 font-bold uppercase tracking-widest bg-bg-color border border-theme px-3 py-1.5 rounded transition-colors group">
+                            <i class="fa-solid fa-box-archive mr-1 group-hover:animate-bounce"></i> Arquivar
+                        </button>
+                    </div>
+                    <textarea id="casa-notas" onchange="salvarCasa()" class="w-full flex-1 min-h-[150px] bg-bg-color border border-theme rounded-xl p-4 text-sm font-medium text-strong focus:border-accent outline-none custom-scrollbar resize-none transition-colors" placeholder="Escreva observações, ideias ou problemas. Depois clique em Arquivar para enviar para a página de Notas."></textarea>
                 </div>
-            </div>
-
-            <div class="glass-card bg-panel border border-theme p-6 rounded-2xl flex flex-col">
-                <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-4 italic"><i class="fa-solid fa-pen-to-square text-muted mr-2"></i> Anotações da Casa</h3>
-                <textarea id="casa-notas" onchange="salvarCasa()" class="w-full min-h-[150px] bg-bg-color border border-theme rounded-xl p-4 text-sm font-medium text-strong focus:border-accent outline-none custom-scrollbar resize-y transition-colors" placeholder="Observações, ideias de decoração, problemas a resolver..."></textarea>
             </div>
 
         </div>
@@ -230,9 +250,35 @@
     <script src="script.js"></script>
     <script>
         // ==========================================
+        // BLINDAGEM DE FUNÇÕES GLOBAIS (Evita ReferenceError)
+        // ==========================================
+        window.salvarCasa = salvarCasa;
+        window.adicionarRotina = adicionarRotina;
+        window.toggleRotina = toggleRotina;
+        window.excluirRotina = excluirRotina;
+        window.resetarRotinas = resetarRotinas;
+        window.adicionarCompra = adicionarCompra;
+        window.toggleCompra = toggleCompra;
+        window.excluirCompra = excluirCompra;
+        window.limparCompras = limparCompras;
+        window.adicionarRegra = adicionarRegra;
+        window.excluirRegra = excluirRegra;
+        window.abrirModalManutencao = abrirModalManutencao;
+        window.fecharModalManutencao = fecharModalManutencao;
+        window.salvarManutencao = salvarManutencao;
+        window.renovarManutencao = renovarManutencao;
+        window.excluirManutencao = excluirManutencao;
+        window.arquivarNota = arquivarNota;
+        window.scrollFluxo = scrollFluxo;
+        window.adicionarFluxo = adicionarFluxo;
+        window.excluirFluxo = excluirFluxo;
+        window.adicionarPassoFluxo = adicionarPassoFluxo;
+        window.removerPassoFluxo = removerPassoFluxo;
+
+        // ==========================================
         // BANCO DE DADOS (CASA OS)
         // ==========================================
-        const DB_CASA = 'lifeos_casa_v1';
+        const DB_CASA = 'lifeos_casa_v2';
         let casaDB = JSON.parse(localStorage.getItem(DB_CASA)) || {
             xp: 0,
             rotinas: [
@@ -254,6 +300,10 @@
                 "2. Regra dos 2 minutos: Se demora menos de 2 minutos, faça agora.",
                 "3. A pia deve dormir limpa e vazia todos os dias."
             ],
+            fluxos: [
+                { id: 101, titulo: "Chegar em Casa", passos: ["Tirar sapatos na entrada", "Guardar chaves no gancho", "Lavar as mãos/banho"] },
+                { id: 102, titulo: "Sair de Casa", passos: ["Verificar janelas e luzes", "Pegar lixo", "Pegar chaves e carteira"] }
+            ],
             manutencao: [
                 { id: 1, item: 'Caixa D\'água', freqMeses: 6, ultima: '2025-10-01' },
                 { id: 2, item: 'Filtro Ar Condicionado', freqMeses: 3, ultima: '2026-01-15' },
@@ -262,14 +312,15 @@
             notas: ""
         };
 
+        // Migração de Segurança para Fluxos
+        if(!casaDB.fluxos) casaDB.fluxos = [{ id: 101, titulo: "Chegar em Casa", passos: ["Tirar sapatos", "Lavar as mãos"] }];
+
         function salvarCasa() { localStorage.setItem(DB_CASA, JSON.stringify(casaDB)); renderTudo(); }
 
-        // GAMIFICAÇÃO (Cálculo de Level)
+        // GAMIFICAÇÃO
         function calcLevel() { return Math.floor(casaDB.xp / 100) + 1; }
         function ganharXP(valor, elemento) {
             casaDB.xp += valor;
-            
-            // Efeito visual flutuante de XP
             if(elemento) {
                 const rect = elemento.getBoundingClientRect();
                 const xpFloat = document.createElement('div');
@@ -287,15 +338,11 @@
         // RENDERIZAÇÃO
         // ==========================================
         function renderTudo() {
-            // Header Stats
             document.getElementById('casa-xp').innerText = `${casaDB.xp} XP`;
             document.getElementById('casa-lvl').innerText = calcLevel();
             document.getElementById('casa-notas').value = casaDB.notas || "";
 
-            renderRotinas();
-            renderCompras();
-            renderPlaybook();
-            renderManutencao();
+            renderRotinas(); renderCompras(); renderPlaybook(); renderFluxos(); renderManutencao();
         }
 
         // --- ROTINAS ---
@@ -317,30 +364,14 @@
                 else listM.innerHTML += html;
             });
         }
-        function toggleRotina(id, el) {
-            const r = casaDB.rotinas.find(x => x.id === id);
-            r.feita = !r.feita;
-            if(r.feita) {
-                let xpGanha = r.tipo === 'diaria' ? 5 : (r.tipo === 'semanal' ? 10 : 20);
-                ganharXP(xpGanha, el);
-            } else { salvarCasa(); } // Se desmarcar, não tira XP (opcional, ou pode tirar)
-        }
-        function adicionarRotina(tipo) {
-            let nome = prompt(`Nova rotina ${tipo}:`);
-            if(nome) { casaDB.rotinas.push({ id: Date.now(), nome: nome, tipo: tipo, feita: false }); salvarCasa(); }
-        }
+        function toggleRotina(id, el) { const r = casaDB.rotinas.find(x => x.id === id); r.feita = !r.feita; if(r.feita) { let xpGanha = r.tipo === 'diaria' ? 5 : (r.tipo === 'semanal' ? 10 : 20); ganharXP(xpGanha, el); } else { salvarCasa(); } }
+        function adicionarRotina(tipo) { let nome = prompt(`Nova rotina ${tipo}:`); if(nome) { casaDB.rotinas.push({ id: Date.now(), nome: nome, tipo: tipo, feita: false }); salvarCasa(); } }
         function excluirRotina(id) { if(confirm("Apagar esta rotina?")) { casaDB.rotinas = casaDB.rotinas.filter(x => x.id !== id); salvarCasa(); } }
-        function resetarRotinas(tipo) {
-            if(confirm(`Limpar todos os checks da rotina ${tipo}?`)) {
-                casaDB.rotinas.forEach(r => { if(r.tipo === tipo) r.feita = false; }); salvarCasa();
-            }
-        }
+        function resetarRotinas(tipo) { if(confirm(`Limpar checks ${tipo}?`)) { casaDB.rotinas.forEach(r => { if(r.tipo === tipo) r.feita = false; }); salvarCasa(); } }
 
         // --- COMPRAS ---
         function renderCompras() {
             const container = document.getElementById('lista-compras-container'); container.innerHTML = '';
-            
-            // Agrupar por categoria
             const categorias = { mercado: [], limpeza: [], casa: [] };
             casaDB.compras.forEach(c => { if(categorias[c.cat]) categorias[c.cat].push(c); });
 
@@ -352,31 +383,22 @@
                 if(categorias[cat].length > 0) {
                     totalItens += categorias[cat].length;
                     container.innerHTML += `<div class="text-[9px] font-black uppercase tracking-widest text-muted mt-3 mb-1"><i class="fa-solid ${icons[cat]} mr-1"></i> ${titulos[cat]}</div>`;
-                    
                     categorias[cat].forEach(c => {
                         container.innerHTML += `
                             <div class="flex items-center justify-between p-2.5 bg-bg-color border border-theme rounded-lg group">
                                 <label class="flex items-center gap-3 cursor-pointer flex-1">
-                                    <input type="checkbox" class="checkbox-custom shrink-0" ${c.comprado ? 'checked' : ''} onchange="toggleCompra(${c.id})">
+                                    <input type="checkbox" class="checkbox-custom shrink-0" ${c.comprado ? 'checked' : ''} onchange="window.toggleCompra(${c.id})">
                                     <span class="text-xs font-bold ${c.comprado ? 'text-muted line-through opacity-50' : 'text-strong'}">${c.item}</span>
                                 </label>
-                                <button onclick="excluirCompra(${c.id})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                <button onclick="window.excluirCompra(${c.id})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash text-[10px]"></i></button>
                             </div>`;
                     });
                 }
             });
-            
-            if(totalItens === 0) container.innerHTML = `<p class="text-xs text-muted italic p-4 text-center">Lista vazia. Tudo abastecido!</p>`;
+            if(totalItens === 0) container.innerHTML = `<p class="text-xs text-muted italic p-4 text-center">Tudo abastecido!</p>`;
             document.getElementById('compras-contador').innerText = `${casaDB.compras.filter(c=>!c.comprado).length} pendentes`;
         }
-        function adicionarCompra() {
-            const item = document.getElementById('novo-item-compra').value;
-            const cat = document.getElementById('categoria-compra').value;
-            if(item.trim()) {
-                casaDB.compras.push({ id: Date.now(), item: item, cat: cat, comprado: false });
-                document.getElementById('novo-item-compra').value = ''; salvarCasa();
-            }
-        }
+        function adicionarCompra() { const item = document.getElementById('novo-item-compra').value; const cat = document.getElementById('categoria-compra').value; if(item.trim()) { casaDB.compras.push({ id: Date.now(), item: item, cat: cat, comprado: false }); document.getElementById('novo-item-compra').value = ''; salvarCasa(); } }
         function toggleCompra(id) { const c = casaDB.compras.find(x => x.id === id); c.comprado = !c.comprado; salvarCasa(); }
         function excluirCompra(id) { casaDB.compras = casaDB.compras.filter(x => x.id !== id); salvarCasa(); }
         function limparCompras() { casaDB.compras = casaDB.compras.filter(x => !x.comprado); salvarCasa(); }
@@ -393,66 +415,86 @@
                     </li>`;
             });
         }
-        function adicionarRegra() { let r = prompt("Escreva a regra ou princípio da casa:"); if(r) { casaDB.playbook.push(r); salvarCasa(); } }
-        function excluirRegra(index) { if(confirm("Apagar esta regra?")) { casaDB.playbook.splice(index, 1); salvarCasa(); } }
+        function adicionarRegra() { let r = prompt("Escreva a nova regra:"); if(r) { casaDB.playbook.push(r); salvarCasa(); } }
+        function excluirRegra(index) { if(confirm("Apagar regra?")) { casaDB.playbook.splice(index, 1); salvarCasa(); } }
 
-        // --- MANUTENÇÃO (Prevenção) ---
-        function abrirModalManutencao() { document.getElementById('manu-data').value = new Date().toISOString().split('T')[0]; document.getElementById('modal-manu').classList.remove('hidden'); document.getElementById('modal-manu').classList.add('flex'); setTimeout(() => { document.getElementById('modal-manu').classList.remove('opacity-0'); document.getElementById('mm-content').classList.remove('scale-95'); }, 10); }
-        function fecharModalManutencao() { document.getElementById('modal-manu').classList.add('opacity-0'); document.getElementById('mm-content').classList.add('scale-95'); setTimeout(() => { document.getElementById('modal-manu').classList.remove('flex'); document.getElementById('modal-manu').classList.add('hidden'); }, 300); }
-        
-        function salvarManutencao() {
-            const item = document.getElementById('manu-item').value;
-            const freq = parseInt(document.getElementById('manu-freq').value);
-            const data = document.getElementById('manu-data').value;
-            if(!item || isNaN(freq) || !data) return alert("Preencha todos os campos!");
+        // --- FLUXOS (CARROSSEL EDITÁVEL) ---
+        function renderFluxos() {
+            const container = document.getElementById('fluxos-carousel'); container.innerHTML = '';
+            casaDB.fluxos.forEach(f => {
+                let passosHTML = f.passos.map((passo, index) => `
+                    <div class="flow-block py-1 flex justify-between group/passo">
+                        <span>${index + 1}. ${passo}</span>
+                        <button onclick="removerPassoFluxo(${f.id}, ${index})" class="text-red-500 opacity-0 group-hover/passo:opacity-100"><i class="fa-solid fa-xmark text-[9px]"></i></button>
+                    </div>
+                `).join('');
 
-            casaDB.manutencao.push({ id: Date.now(), item: item, freqMeses: freq, ultima: data });
-            document.querySelectorAll('#modal-manu input').forEach(i=>i.value='');
-            salvarCasa(); fecharModalManutencao();
+                container.innerHTML += `
+                    <div class="min-w-full md:min-w-[calc(100%-1rem)] snap-center shrink-0 flex flex-col bg-bg-color border border-theme rounded-xl p-4">
+                        <div class="flex justify-between items-center border-b border-theme/50 pb-2 mb-3">
+                            <span class="text-xs font-black uppercase text-accent">${f.titulo}</span>
+                            <div class="flex gap-2">
+                                <button onclick="adicionarPassoFluxo(${f.id})" class="text-muted hover:text-accent"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                                <button onclick="excluirFluxo(${f.id})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col text-xs font-bold text-strong space-y-1">
+                            ${passosHTML || '<span class="text-muted text-[10px] italic">Nenhum passo adicionado.</span>'}
+                        </div>
+                    </div>`;
+            });
+            if(casaDB.fluxos.length === 0) container.innerHTML = `<div class="min-w-full text-center text-xs text-muted italic p-4">Nenhum fluxo criado. Crie um novo fluxo acima.</div>`;
+        }
+        function scrollFluxo(direcao) { const car = document.getElementById('fluxos-carousel'); car.scrollLeft += (car.clientWidth * direcao); }
+        function adicionarFluxo() { let t = prompt("Nome do Novo Fluxo (Ex: Ir Dormir):"); if(t) { casaDB.fluxos.push({ id: Date.now(), titulo: t, passos: [] }); salvarCasa(); } }
+        function excluirFluxo(id) { if(confirm("Apagar fluxo inteiro?")) { casaDB.fluxos = casaDB.fluxos.filter(x => x.id !== id); salvarCasa(); } }
+        function adicionarPassoFluxo(id) { let f = casaDB.fluxos.find(x => x.id === id); let p = prompt("Novo passo:"); if(p) { f.passos.push(p); salvarCasa(); } }
+        function removerPassoFluxo(id, index) { casaDB.fluxos.find(x => x.id === id).passos.splice(index, 1); salvarCasa(); }
+
+        // --- ARQUIVAMENTO PARA NOTAS ---
+        function arquivarNota() {
+            const textarea = document.getElementById('casa-notas');
+            const texto = textarea.value.trim();
+            if(!texto) return alert("Escreva algo antes de arquivar!");
+            
+            // Conecta com o DB padrão de Notas (lifeos_notas_v1 ou genérico)
+            const DB_NOTAS = 'lifeos_notas_v1';
+            let notasDB = JSON.parse(localStorage.getItem(DB_NOTAS)) || [];
+            
+            // Adiciona a nota na página de Notas
+            notasDB.push({
+                id: Date.now(),
+                titulo: "Anotação da Casa",
+                conteudo: texto,
+                data: new Date().toISOString()
+            });
+            localStorage.setItem(DB_NOTAS, JSON.stringify(notasDB));
+            
+            // Limpa a nota atual da Casa
+            casaDB.notas = "";
+            textarea.value = "";
+            salvarCasa();
+            alert("Nota enviada para a página de Notas com sucesso!");
         }
 
+        // --- MANUTENÇÃO ---
+        function abrirModalManutencao() { document.getElementById('manu-data').value = new Date().toISOString().split('T')[0]; document.getElementById('modal-manu').classList.remove('hidden'); document.getElementById('modal-manu').classList.add('flex'); setTimeout(() => { document.getElementById('modal-manu').classList.remove('opacity-0'); document.getElementById('mm-content').classList.remove('scale-95'); }, 10); }
+        function fecharModalManutencao() { document.getElementById('modal-manu').classList.add('opacity-0'); document.getElementById('mm-content').classList.add('scale-95'); setTimeout(() => { document.getElementById('modal-manu').classList.remove('flex'); document.getElementById('modal-manu').classList.add('hidden'); }, 300); }
+        function salvarManutencao() { const item = document.getElementById('manu-item').value; const freq = parseInt(document.getElementById('manu-freq').value); const data = document.getElementById('manu-data').value; if(!item || isNaN(freq) || !data) return alert("Preencha todos os campos!"); casaDB.manutencao.push({ id: Date.now(), item: item, freqMeses: freq, ultima: data }); document.querySelectorAll('#modal-manu input').forEach(i=>i.value=''); salvarCasa(); fecharModalManutencao(); }
+        
         function renderManutencao() {
-            const tbody = document.getElementById('manutencao-tabela'); tbody.innerHTML = '';
-            const hoje = new Date();
-
+            const tbody = document.getElementById('manutencao-tabela'); tbody.innerHTML = ''; const hoje = new Date();
             casaDB.manutencao.forEach(m => {
-                // Cálculo de Status baseado em Meses
-                let dataUltima = new Date(m.ultima);
-                let dataLimite = new Date(dataUltima);
-                dataLimite.setMonth(dataLimite.getMonth() + m.freqMeses);
-                
-                let diffTempo = dataLimite - hoje;
-                let diasFaltando = Math.ceil(diffTempo / (1000 * 60 * 60 * 24));
-
+                let dataUltima = new Date(m.ultima); let dataLimite = new Date(dataUltima); dataLimite.setMonth(dataLimite.getMonth() + m.freqMeses);
+                let diffTempo = dataLimite - hoje; let diasFaltando = Math.ceil(diffTempo / (1000 * 60 * 60 * 24));
                 let statusClass = 'status-green'; let statusText = 'OK';
-                if(diasFaltando <= 0) { statusClass = 'status-red animate-pulse'; statusText = 'FAZER'; }
-                else if(diasFaltando <= 15) { statusClass = 'status-yellow'; statusText = 'ATENÇÃO'; }
-
+                if(diasFaltando <= 0) { statusClass = 'status-red animate-pulse'; statusText = 'FAZER'; } else if(diasFaltando <= 15) { statusClass = 'status-yellow'; statusText = 'ATENÇÃO'; }
                 let dataBR = m.ultima.split('-').reverse().join('/');
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
-                        <td class="py-3 px-2 font-bold text-strong">${m.item}</td>
-                        <td class="py-3 px-2 text-muted font-bold">${m.freqMeses} meses</td>
-                        <td class="py-3 px-2 text-muted">${dataBR}</td>
-                        <td class="py-3 px-2"><span class="status-pill ${statusClass}">${statusText}</span></td>
-                        <td class="py-3 px-2 text-right no-print">
-                            <button onclick="renovarManutencao(${m.id})" class="text-[9px] bg-panel border border-theme hover:border-accent text-strong px-2 py-1 rounded mr-2" title="Marcar como feito hoje"><i class="fa-solid fa-check text-accent"></i></button>
-                            <button onclick="excluirManutencao(${m.id})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash text-xs"></i></button>
-                        </td>
-                    </tr>`;
+                tbody.innerHTML += `<tr class="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"><td class="py-3 px-2 font-bold text-strong">${m.item}</td><td class="py-3 px-2 text-muted font-bold">${m.freqMeses} meses</td><td class="py-3 px-2 text-muted">${dataBR}</td><td class="py-3 px-2"><span class="status-pill ${statusClass}">${statusText}</span></td><td class="py-3 px-2 text-right no-print"><button onclick="renovarManutencao(${m.id})" class="text-[9px] bg-panel border border-theme hover:border-accent text-strong px-2 py-1 rounded mr-2" title="Marcar feito"><i class="fa-solid fa-check text-accent"></i></button><button onclick="excluirManutencao(${m.id})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash text-xs"></i></button></td></tr>`;
             });
             if(casaDB.manutencao.length === 0) tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-xs text-muted italic">Nenhuma manutenção cadastrada.</td></tr>`;
         }
-
-        function renovarManutencao(id) {
-            const m = casaDB.manutencao.find(x => x.id === id);
-            if(confirm(`Renovar a manutenção de [${m.item}] para hoje?`)) {
-                m.ultima = new Date().toISOString().split('T')[0];
-                ganharXP(50); // Bônus alto por manutenção!
-                salvarCasa();
-            }
-        }
+        function renovarManutencao(id) { const m = casaDB.manutencao.find(x => x.id === id); if(confirm(`Renovar [${m.item}] para hoje?`)) { m.ultima = new Date().toISOString().split('T')[0]; ganharXP(50); salvarCasa(); } }
         function excluirManutencao(id) { if(confirm("Apagar este item?")) { casaDB.manutencao = casaDB.manutencao.filter(x => x.id !== id); salvarCasa(); } }
 
         // Boot
