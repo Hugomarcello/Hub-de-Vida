@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-pt" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS | Pit Stop - Garagem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { accent: 'var(--accent, #10B981)', yamaha: '#004A99' } } }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root[data-theme="light"] {
+            --bg-color: #f3f4f6; --panel: #ffffff; --text-strong: #111827; --text-muted: #6b7280; --border-color: #e5e7eb;
+        }
+        :root[data-theme="dark"] {
+            --bg-color: #111827; --panel: #1f2937; --text-strong: #f9fafb; --text-muted: #9ca3af; --border-color: #374151;
+        }
+        body { background-color: var(--bg-color); color: var(--text-strong); }
+        .bg-bg-color { background-color: var(--bg-color); }
+        .bg-panel { background-color: var(--panel); }
+        .text-strong { color: var(--text-strong); }
+        .text-muted { color: var(--text-muted); }
+        .border-theme { border-color: var(--border-color); }
+
+        .f1-panel { border-left: 4px solid var(--accent, #10B981); }
+        .status-pill { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; text-transform: uppercase; }
+        .status-green { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid #10B981; }
+        .status-yellow { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid #F59E0B; }
+        .status-red { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid #EF4444; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+        
+        .tracker-box { width: 18px; height: 18px; border-radius: 3px; transition: all 0.2s ease-in-out; border-width: 1px; flex-shrink: 0; cursor: pointer; }
+        .tracker-box-lg { width: 28px; height: 28px; border-radius: 4px; transition: all 0.2s ease-in-out; border-width: 1px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; }
+        
+        .tracker-box:hover, .tracker-box-lg:hover { transform: scale(1.15); z-index: 10; }
+        
+        .tracker-empty { background-color: transparent; border-color: var(--border-color); color: var(--text-muted); }
+        .tracker-green { background-color: #10B981; border-color: #10B981; color: white; box-shadow: 0 0 8px rgba(16,185,129,0.4); }
+        .tracker-red { background-color: #EF4444; border-color: #EF4444; color: white; }
+        
+        /* Ajuste de Impressão (Foco total no Histórico) */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; overflow: visible !important; height: auto !important; }
+            #dashboard-top, #telemetria-section, #middle-section { display: none !important; }
+            #historico-section { box-shadow: none; border: none; padding: 0 !important; }
+            .glass-card { border: 1px solid #ccc; box-shadow: none; background: white !important; break-inside: avoid; }
+            * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+            table { width: 100% !important; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd !important; padding: 8px !important; color: black !important; }
+        }
+    </style>
+</head>
+<body class="flex h-[100dvh] overflow-hidden transition-colors duration-300">
+
+    <div id="sidebar-container" class="shrink-0 z-50 h-full flex flex-col transition-all duration-300 no-print"></div>
+
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative flex flex-col h-full w-full">
+        
+        <header class="sticky top-0 z-30 bg-bg-color/90 backdrop-blur-md border-b border-theme p-4 lg:p-8 flex items-center justify-between no-print">
+            <div class="flex items-center gap-4">
+                <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden text-strong text-xl hover:text-accent transition-colors p-2"><i class="fa-solid fa-bars"></i></button>
+                <div class="w-px h-8 bg-border-theme md:hidden"></div>
+                <div>
+                    <h2 class="text-xl lg:text-3xl font-black text-strong uppercase tracking-tight italic">Pit Stop <span class="text-accent">Garagem</span></h2>
+                    <p class="text-[9px] lg:text-[10px] font-bold uppercase tracking-[0.2em] text-muted mt-1">Telemetria e Manutenção Preventiva</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="window.print()" class="hidden md:flex bg-panel border border-theme text-strong hover:text-accent px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
+                    <i class="fa-solid fa-print mr-2"></i> Relatório
+                </button>
+                <button id="theme-toggle" class="w-10 h-10 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-accent transition-all shadow-sm"><i class="fa-solid fa-moon text-lg"></i></button>
+            </div>
+        </header>
+
+        <div class="p-4 lg:p-8 max-w-[1600px] mx-auto w-full space-y-6">
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6" id="dashboard-top">
+                
+                <div class="lg:col-span-4 glass-card bg-panel border border-theme p-6 f1-panel relative overflow-hidden flex flex-col justify-between">
+                    <div id="moto-photo-container" class="w-full h-40 md:h-48 rounded-xl bg-black/10 dark:bg-black/40 mb-4 overflow-hidden border border-theme flex items-center justify-center relative group shrink-0">
+                        <img id="moto-img" src="" class="w-full h-full object-cover hidden">
+                        <div id="photo-placeholder" class="text-center">
+                            <i class="fa-solid fa-motorcycle text-4xl text-accent/50 mb-2"></i>
+                            <p class="text-[10px] font-black uppercase text-muted tracking-widest mt-1">Sua Moto</p>
+                        </div>
+                        <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 no-print backdrop-blur-sm">
+                            <button onclick="triggerMotoFoto()" class="bg-accent text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform"><i class="fa-solid fa-upload mr-1"></i> Subir Foto</button>
+                            <button onclick="removeMotoPhoto()" class="bg-red-500/20 text-red-500 border border-red-500/50 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"><i class="fa-solid fa-trash mr-1"></i> Remover</button>
+                            <input type="file" id="moto-foto-upload" accept="image/*" class="hidden" onchange="handleFotoUpload(event)">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2.5 mt-auto flex-1 overflow-y-auto custom-scrollbar pr-1">
+                        <div class="flex justify-between items-center border-b border-theme/50 pb-1.5">
+                            <span class="text-[9px] font-black uppercase text-muted tracking-widest">Modelo</span>
+                            <input type="text" id="moto-modelo" onchange="saveMotoData()" class="bg-transparent text-right font-black text-strong outline-none text-xs focus:text-accent w-1/2" value="Yamaha Fazer 250">
+                        </div>
+                        <div class="flex justify-between items-center border-b border-theme/50 pb-1.5">
+                            <span class="text-[9px] font-black uppercase text-muted tracking-widest">Ano</span>
+                            <input type="text" id="moto-ano" onchange="saveMotoData()" class="bg-transparent text-right font-black text-strong outline-none text-xs focus:text-accent w-1/2" value="2024">
+                        </div>
+                        <div class="flex justify-between items-center border-b border-theme/50 pb-1.5">
+                            <span class="text-[9px] font-black uppercase text-muted tracking-widest">Motor (cc)</span>
+                            <input type="text" id="moto-cc" onchange="saveMotoData()" class="bg-transparent text-right font-black text-strong outline-none text-xs focus:text-accent w-1/2" value="250">
+                        </div>
+                        <div class="flex justify-between items-center border-b border-theme/50 pb-1.5">
+                            <span class="text-[9px] font-black uppercase text-muted tracking-widest">Torque</span>
+                            <input type="text" id="moto-torque" onchange="saveMotoData()" class="bg-transparent text-right font-black text-strong outline-none text-xs focus:text-accent w-1/2" value="2.1 kgf.m">
+                        </div>
+                        <div class="flex justify-between items-center border-b border-theme/50 pb-1.5">
+                            <span class="text-[9px] font-black uppercase text-muted tracking-widest">Consumo Médio</span>
+                            <input type="text" id="moto-consumo" onchange="saveMotoData()" class="bg-transparent text-right font-black text-strong outline-none text-xs focus:text-accent w-1/2" value="30 km/l">
+                        </div>
+                        
+                        <div class="flex justify-between items-center pt-2">
+                            <span class="text-[10px] font-black uppercase text-accent tracking-widest italic"><i class="fa-solid fa-gauge-high mr-1"></i> KM TOTAL</span>
+                            <div class="relative">
+                                <input type="number" id="moto-km" onchange="saveMotoData()" class="bg-bg-color border border-theme text-right font-black text-accent outline-none text-base w-28 pr-2 py-1 rounded focus:border-accent shadow-inner" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-8 glass-card p-6 border-t-4 border-theme bg-panel flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xs font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-clipboard-check text-muted mr-2"></i> Rotinas de Cuidados</h3>
+                        <p class="text-[9px] text-muted font-bold tracking-widest uppercase hidden sm:block">1 clique: <span class="text-green-500">Feito</span> | 2 cliques: <span class="text-red-500">Falha</span></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 flex-1">
+                        
+                        <div class="bg-bg-color border border-theme rounded-xl p-5 flex flex-col relative">
+                            <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
+                                <span class="text-[10px] font-black uppercase text-strong"><i class="fa-solid fa-calendar-week text-accent mr-1"></i> Semanal</span>
+                                <div class="flex gap-2 items-center">
+                                    <span class="text-xs font-black text-accent bg-accent/10 px-2 py-0.5 rounded border border-accent/20" id="count-52">0/52</span>
+                                    <button onclick="adicionarTarefa('semanal')" class="text-[10px] bg-panel border border-theme text-strong px-2 py-1 rounded hover:border-accent no-print shadow-sm"><i class="fa-solid fa-plus text-accent"></i></button>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-1 mb-6 flex-1" id="lista-tarefas-semanais">
+                                </div>
+
+                            <div class="mt-auto pt-4 border-t border-theme/50">
+                                <div class="flex flex-wrap gap-1 justify-start" id="grid-52">
+                                    </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-bg-color border border-theme rounded-xl p-5 flex flex-col relative">
+                            <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
+                                <span class="text-[10px] font-black uppercase text-strong"><i class="fa-solid fa-calendar-days text-blue-500 mr-1"></i> Mensal</span>
+                                <div class="flex gap-2 items-center">
+                                    <span class="text-xs font-black text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20" id="count-12">0/12</span>
+                                    <button onclick="adicionarTarefa('mensal')" class="text-[10px] bg-panel border border-theme text-strong px-2 py-1 rounded hover:border-blue-500 no-print shadow-sm"><i class="fa-solid fa-plus text-blue-500"></i></button>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-1 mb-6 flex-1" id="lista-tarefas-mensais">
+                                </div>
+
+                            <div class="mt-auto pt-4 border-t border-theme/50">
+                                <div class="flex flex-wrap gap-2 justify-start" id="grid-12">
+                                    </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 md:p-8 border-l-4 border-yellow-500 bg-panel" id="telemetria-section">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-theme/50 pb-4">
+                    <div>
+                        <h3 class="text-lg font-black uppercase italic text-strong"><i class="fa-solid fa-microchip text-yellow-500 mr-2"></i> Telemetria de Desgaste</h3>
+                        <p class="text-[10px] text-muted font-bold tracking-widest uppercase mt-1">Estimativa de vida útil baseada em KM</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex gap-3 bg-bg-color p-2 rounded-lg border border-theme hidden md:flex">
+                            <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-accent"></div><span class="text-[9px] font-black uppercase text-muted">Bom</span></div>
+                            <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-yellow-500"></div><span class="text-[9px] font-black uppercase text-muted">Atenção</span></div>
+                            <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-red-500"></div><span class="text-[9px] font-black uppercase text-muted">Trocar</span></div>
+                        </div>
+                        <button onclick="abrirModalPeca()" class="bg-bg-color border border-theme text-strong hover:text-accent hover:border-accent px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all no-print shadow-sm">
+                            <i class="fa-solid fa-plus mr-1"></i> Nova Peça
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="pecas-grid">
+                    </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" id="middle-section">
+                
+                <div class="lg:col-span-2 glass-card p-6 border-l-4 border-blue-500 bg-bg-color">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong italic"><i class="fa-solid fa-book text-blue-500 mr-2"></i> Cronograma de Revisões (Manual)</h3>
+                        <p class="text-[8px] text-muted font-bold tracking-widest uppercase hidden sm:block">1 clique: <span class="text-green-500">Feito</span> | 2 cliques: <span class="text-red-500">Não Feito</span></p>
+                    </div>
+                    <div class="flex flex-wrap gap-3" id="revisoes-grid">
+                        </div>
+                </div>
+
+                <div class="lg:col-span-1 glass-card p-6 border-t-4 border-theme bg-panel flex flex-col">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-4 italic"><i class="fa-solid fa-pen-to-square text-muted mr-2"></i> Diário de Bordo</h3>
+                    <textarea id="moto-notas" onchange="saveMotoData()" class="flex-1 w-full min-h-[120px] bg-bg-color border border-theme rounded-xl p-4 text-xs font-medium text-strong focus:border-accent outline-none custom-scrollbar resize-none transition-colors" placeholder="Ideias para upgrades, referências de peças a comprar, observações..."></textarea>
+                </div>
+
+            </div>
+
+            <div class="glass-card p-6 md:p-8 bg-panel" id="historico-section">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                    <div>
+                        <h3 class="text-lg font-black uppercase italic text-strong"><i class="fa-solid fa-clipboard-list text-muted mr-2"></i> Histórico de Oficina</h3>
+                        <p class="text-[10px] text-muted font-bold tracking-widest uppercase mt-1">Registro de serviços e custos</p>
+                    </div>
+                    <button onclick="abrirModalServico()" class="w-full md:w-auto bg-accent text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform no-print shadow-lg shadow-accent/20">
+                        <i class="fa-solid fa-plus mr-1"></i> Novo Registro
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar pb-2">
+                    <table class="w-full text-left text-xs min-w-[700px] border-collapse">
+                        <thead class="bg-bg-color border border-theme text-muted uppercase font-black text-[9px] tracking-widest">
+                            <tr>
+                                <th class="p-4 border-r border-theme">Data</th>
+                                <th class="p-4 border-r border-theme">KM Moto</th>
+                                <th class="p-4 border-r border-theme">Serviço / Peça Trocada</th>
+                                <th class="p-4 border-r border-theme">Oficina</th>
+                                <th class="p-4 border-r border-theme text-right">Valor Pago</th>
+                                <th class="p-4 no-print text-center">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historico-servicos" class="border border-theme border-t-0">
+                            </tbody>
+                        <tfoot class="border border-theme border-t-0 bg-bg-color/50">
+                            <tr>
+                                <td colspan="4" class="p-4 font-black uppercase text-right text-strong tracking-widest border-r border-theme">Investimento Total na Moto:</td>
+                                <td class="p-4 font-black text-right text-accent text-sm border-r border-theme" id="total-manutencao">R$ 0,00</td>
+                                <td class="no-print"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="text-center pb-8 no-print md:hidden">
+                <button onclick="window.print()" class="bg-panel border border-theme text-muted px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest">
+                    <i class="fa-solid fa-print mr-2"></i> Imprimir Histórico
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <div id="modal-servico" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg-color border border-theme rounded-3xl w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300" id="ms-content">
+            <div class="p-6 border-b border-theme flex justify-between items-center bg-panel rounded-t-3xl">
+                <h3 class="text-lg font-black text-strong uppercase tracking-tight italic">Registrar Serviço</h3>
+                <button onclick="fecharModalServico()" class="text-muted hover:text-red-500"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] font-black uppercase text-muted mb-1 tracking-widest">Data</label><input type="date" id="svc-data" class="w-full bg-panel border border-theme rounded-xl p-3 text-xs font-bold text-strong focus:border-accent outline-none transition-colors"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-muted mb-1 tracking-widest">KM da Moto</label><input type="number" id="svc-km" class="w-full bg-panel border border-theme rounded-xl p-3 text-xs font-bold text-accent focus:border-accent outline-none transition-colors"></div>
+                </div>
+                <div><label class="block text-[10px] font-black uppercase text-muted mb-1 tracking-widest">Tipo de Serviço / Peça</label><input type="text" id="svc-tipo" placeholder="Ex: Troca de Óleo Yamalube" class="w-full bg-panel border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:border-accent outline-none transition-colors"></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] font-black uppercase text-muted mb-1 tracking-widest">Oficina / Local</label><input type="text" id="svc-oficina" placeholder="Ex: Casa / Mecânico" class="w-full bg-panel border border-theme rounded-xl p-3 text-xs font-bold text-strong focus:border-accent outline-none transition-colors"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-muted mb-1 tracking-widest">Valor (R$)</label><input type="number" step="0.01" id="svc-valor" placeholder="0.00" class="w-full bg-panel border border-theme rounded-xl p-3 text-xs font-black text-strong focus:border-accent outline-none transition-colors"></div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-theme bg-panel rounded-b-3xl">
+                <button onclick="salvarServico()" class="w-full bg-accent text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-transform">Adicionar ao Histórico</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-peca" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg-color border border-theme rounded-3xl w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300" id="mp-content">
+            <div class="p-6 border-b border-theme flex justify-between items-center bg-panel rounded-t-3xl">
+                <h3 class="text-sm font-black text-strong uppercase tracking-widest" id="edit-peca-nome-display">Nova Peça</h3>
+                <button onclick="fecharModalPeca()" class="text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="edit-peca-id">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-muted mb-1 tracking-widest">Nome da Peça/Serviço</label>
+                    <input type="text" id="edit-peca-nome-input" placeholder="Ex: Bateria" class="w-full bg-panel border border-theme rounded-lg p-3 text-xs font-bold text-strong outline-none focus:border-accent">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-muted mb-1 tracking-widest">Ícone (Opcional)</label>
+                    <input type="text" id="edit-peca-icone" placeholder="Ex: fa-battery-full" class="w-full bg-panel border border-theme rounded-lg p-3 text-xs font-bold text-strong outline-none focus:border-accent">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-muted mb-1 tracking-widest">KM da Última Troca</label>
+                    <input type="number" id="edit-peca-ultima" class="w-full bg-panel border border-theme rounded-lg p-3 text-xs font-bold text-strong outline-none focus:border-accent">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-muted mb-1 tracking-widest">Vida Útil Estimada (KM)</label>
+                    <input type="number" id="edit-peca-vida" class="w-full bg-panel border border-theme rounded-lg p-3 text-xs font-bold text-strong outline-none focus:border-accent">
+                </div>
+            </div>
+            <div class="p-4 border-t border-theme bg-panel rounded-b-3xl flex gap-2">
+                <button id="btn-excluir-peca" onclick="excluirPeca()" class="bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white px-4 py-3 rounded-xl text-[10px] font-black uppercase transition-colors"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="salvarEdicaoPeca()" class="flex-1 bg-accent text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-transform hover:scale-[1.02]">Salvar Peça</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // ==========================================
+        // BANCO DE DADOS (GARAGEM V7 - NOTAS E POLIMENTO)
+        // ==========================================
+        const DB_GARAGEM = 'lifeos_garagem_moto_v7';
+        let motoDB = JSON.parse(localStorage.getItem(DB_GARAGEM)) || {
+            modelo: "Yamaha Fazer 250", ano: "2024", kmAtual: 0, foto: "",
+            specs: { cc: '250', torque: '2.1 kgf.m', consumo: '30 km/l' },
+            notas: "", // O novo Diário de Bordo
+            track52: Array(52).fill(0), track12: Array(12).fill(0),
+            tarefasSemanais: [
+                { id: 1, nome: 'Lavar a Moto', icone: 'fa-shower', feita: false },
+                { id: 2, nome: 'Lubrificar Corrente e Cabos', icone: 'fa-link', feita: false },
+                { id: 3, nome: 'Calibrar os Pneus', icone: 'fa-gauge', feita: false },
+                { id: 4, nome: 'Checar Nível de Óleo', icone: 'fa-oil-can', feita: false },
+                { id: 5, nome: 'Checar Freios', icone: 'fa-circle-stop', feita: false },
+                { id: 6, nome: 'Checar Parte Elétrica', icone: 'fa-bolt', feita: false }
+            ],
+            tarefasMensais: [
+                { id: 7, nome: 'Revisão de Reaperto Geral', icone: 'fa-wrench', feita: false },
+                { id: 8, nome: 'Verificar Condição de Filtros', icone: 'fa-filter', feita: false },
+                { id: 9, nome: 'Tratamento de Plásticos/Pintura', icone: 'fa-spray-can', feita: false }
+            ],
+            servicos: [],
+            statusPecas: [
+                { id: 'oleo', nome: 'Óleo Motor', ultimaTroca: 0, vidaUtil: 5000, icone: 'fa-oil-can' },
+                { id: 'filtro_o', nome: 'Filtro de Óleo', ultimaTroca: 0, vidaUtil: 10000, icone: 'fa-filter' },
+                { id: 'filtro_a', nome: 'Filtro de Ar', ultimaTroca: 0, vidaUtil: 10000, icone: 'fa-wind' },
+                { id: 'vela', nome: 'Vela Ignição', ultimaTroca: 0, vidaUtil: 10000, icone: 'fa-bolt' },
+                { id: 'relacao', nome: 'Kit Relação', ultimaTroca: 0, vidaUtil: 20000, icone: 'fa-link' },
+                { id: 'pneu_t', nome: 'Pneu Traseiro', ultimaTroca: 0, vidaUtil: 12000, icone: 'fa-circle-notch' },
+                { id: 'pneu_d', nome: 'Pneu Dianteiro', ultimaTroca: 0, vidaUtil: 15000, icone: 'fa-circle-notch' },
+                { id: 'pastilha_t', nome: 'Pastilha Traseira', ultimaTroca: 0, vidaUtil: 10000, icone: 'fa-compact-disc' },
+                { id: 'pastilha_d', nome: 'Pastilha Dianteira', ultimaTroca: 0, vidaUtil: 10000, icone: 'fa-compact-disc' },
+                { id: 'fluido_f', nome: 'Fluido de Freio', ultimaTroca: 0, vidaUtil: 20000, icone: 'fa-droplet' }
+            ],
+            revisoesOficiais: [
+                { km: 1000, estado: 0 }, { km: 5000, estado: 0 }, { km: 10000, estado: 0 },
+                { km: 15000, estado: 0 }, { km: 20000, estado: 0 }, { km: 25000, estado: 0 },
+                { km: 30000, estado: 0 }, { km: 35000, estado: 0 }, { km: 40000, estado: 0 }
+            ]
+        };
+
+        if(!motoDB.notas) motoDB.notas = "";
+
+        function salvarMoto() { localStorage.setItem(DB_GARAGEM, JSON.stringify(motoDB)); renderTudo(); }
+
+        // ==========================================
+        // RENDERIZAÇÃO
+        // ==========================================
+        function renderTudo() {
+            document.getElementById('moto-modelo').value = motoDB.modelo;
+            document.getElementById('moto-ano').value = motoDB.ano;
+            document.getElementById('moto-km').value = motoDB.kmAtual || 0;
+            document.getElementById('moto-cc').value = motoDB.specs.cc || '';
+            document.getElementById('moto-torque').value = motoDB.specs.torque || '';
+            document.getElementById('moto-consumo').value = motoDB.specs.consumo || '';
+            document.getElementById('moto-notas').value = motoDB.notas || '';
+
+            const img = document.getElementById('moto-img');
+            const placeholder = document.getElementById('photo-placeholder');
+            if(motoDB.foto && motoDB.foto !== "") { img.src = motoDB.foto; img.classList.remove('hidden'); placeholder.classList.add('hidden'); }
+            else { img.classList.add('hidden'); placeholder.classList.remove('hidden'); }
+
+            renderChecklists();
+            renderGridsWireframe();
+            renderStatusPecasGT();
+            renderRevisoes();
+            renderHistorico();
+        }
+
+        function saveMotoData() { 
+            let kmInput = parseInt(document.getElementById('moto-km').value); 
+            if(!isNaN(kmInput) && kmInput >= 0) motoDB.kmAtual = kmInput;
+            motoDB.modelo = document.getElementById('moto-modelo').value;
+            motoDB.ano = document.getElementById('moto-ano').value;
+            motoDB.specs.cc = document.getElementById('moto-cc').value;
+            motoDB.specs.torque = document.getElementById('moto-torque').value;
+            motoDB.specs.consumo = document.getElementById('moto-consumo').value;
+            motoDB.notas = document.getElementById('moto-notas').value;
+            salvarMoto(); 
+        }
+        function triggerMotoFoto() { document.getElementById('moto-foto-upload').click(); }
+        function handleFotoUpload(event) { const file = event.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = function(e) { motoDB.foto = e.target.result; salvarMoto(); }; reader.readAsDataURL(file); } }
+        function removeMotoPhoto() { motoDB.foto = ""; salvarMoto(); }
+
+        // CHECKLISTS EDITÁVEIS
+        function renderChecklists() {
+            const listS = document.getElementById('lista-tarefas-semanais'); listS.innerHTML = '';
+            motoDB.tarefasSemanais.forEach(t => {
+                let colorClass = t.feita ? 'text-accent line-through opacity-50' : 'text-strong';
+                let iconColor = t.feita ? 'text-accent' : 'text-muted';
+                listS.innerHTML += `
+                    <div class="flex items-center gap-2.5 py-1 transition-colors hover:bg-black/5 dark:hover:bg-white/5 rounded px-1 -mx-1 group">
+                        <div onclick="toggleTarefa('semanal', ${t.id})" class="flex items-center gap-2.5 flex-1 cursor-pointer">
+                            <div class="w-5 h-5 rounded border border-theme flex items-center justify-center shrink-0 ${iconColor} bg-bg-color"><i class="fa-solid ${t.icone} text-[9px]"></i></div>
+                            <span class="text-[11px] font-semibold ${colorClass}">${t.nome}</span>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 flex gap-2 no-print pr-1">
+                            <button onclick="editarTarefa('semanal', ${t.id})" class="text-muted hover:text-blue-500"><i class="fa-solid fa-pen text-[9px]"></i></button>
+                            <button onclick="excluirTarefa('semanal', ${t.id})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-[9px]"></i></button>
+                        </div>
+                    </div>`;
+            });
+
+            const listM = document.getElementById('lista-tarefas-mensais'); listM.innerHTML = '';
+            motoDB.tarefasMensais.forEach(t => {
+                let colorClass = t.feita ? 'text-blue-500 line-through opacity-50' : 'text-strong';
+                let iconColor = t.feita ? 'text-blue-500' : 'text-muted';
+                listM.innerHTML += `
+                    <div class="flex items-center gap-2.5 py-1 transition-colors hover:bg-black/5 dark:hover:bg-white/5 rounded px-1 -mx-1 group">
+                        <div onclick="toggleTarefa('mensal', ${t.id})" class="flex items-center gap-2.5 flex-1 cursor-pointer">
+                            <div class="w-5 h-5 rounded border border-theme flex items-center justify-center shrink-0 ${iconColor} bg-bg-color"><i class="fa-solid ${t.icone} text-[9px]"></i></div>
+                            <span class="text-[11px] font-semibold ${colorClass}">${t.nome}</span>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 flex gap-2 no-print pr-1">
+                            <button onclick="editarTarefa('mensal', ${t.id})" class="text-muted hover:text-blue-500"><i class="fa-solid fa-pen text-[9px]"></i></button>
+                            <button onclick="excluirTarefa('mensal', ${t.id})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-[9px]"></i></button>
+                        </div>
+                    </div>`;
+            });
+        }
+        function toggleTarefa(tipo, id) { let arr = tipo === 'semanal' ? motoDB.tarefasSemanais : motoDB.tarefasMensais; const t = arr.find(x => x.id === id); t.feita = !t.feita; salvarMoto(); }
+        
+        function adicionarTarefa(tipo) {
+            let nome = prompt(`Nova Tarefa ${tipo.toUpperCase()}:`);
+            if(nome) {
+                let icone = prompt("Nome do ícone (ex: fa-wrench). Deixe em branco para padrão:") || 'fa-wrench';
+                let arr = tipo === 'semanal' ? motoDB.tarefasSemanais : motoDB.tarefasMensais;
+                arr.push({ id: Date.now(), nome: nome, icone: icone, feita: false }); salvarMoto();
+            }
+        }
+        function editarTarefa(tipo, id) {
+            let arr = tipo === 'semanal' ? motoDB.tarefasSemanais : motoDB.tarefasMensais;
+            const t = arr.find(x => x.id === id);
+            let n = prompt("Editar nome da tarefa:", t.nome); if(n) t.nome = n;
+            let i = prompt("Editar ícone (ex: fa-wrench):", t.icone); if(i) t.icone = i;
+            salvarMoto();
+        }
+        function excluirTarefa(tipo, id) {
+            if(confirm("Remover esta tarefa da lista?")) {
+                if(tipo === 'semanal') motoDB.tarefasSemanais = motoDB.tarefasSemanais.filter(x => x.id !== id);
+                else motoDB.tarefasMensais = motoDB.tarefasMensais.filter(x => x.id !== id);
+                salvarMoto();
+            }
+        }
+
+        // GRIDS DE WIREFRAME
+        function renderGridsWireframe() {
+            const g52 = document.getElementById('grid-52'); g52.innerHTML = ''; let feitos52 = 0;
+            motoDB.track52.forEach((estado, i) => {
+                let statusClass = 'tracker-empty'; if(estado === 1) { statusClass = 'tracker-green'; feitos52++; } else if(estado === 2) { statusClass = 'tracker-red'; }
+                g52.innerHTML += `<div onclick="toggleGrid(52, ${i})" class="tracker-box ${statusClass}" title="Semana ${i+1}"></div>`;
+            });
+            document.getElementById('count-52').innerText = `${feitos52}/52`;
+
+            const g12 = document.getElementById('grid-12'); g12.innerHTML = ''; let feitos12 = 0;
+            motoDB.track12.forEach((estado, i) => {
+                let statusClass = 'tracker-empty text-muted'; if(estado === 1) { statusClass = 'tracker-green'; feitos12++; } else if(estado === 2) { statusClass = 'tracker-red'; }
+                g12.innerHTML += `<div onclick="toggleGrid(12, ${i})" class="tracker-box-lg ${statusClass}" title="Mês ${i+1}">${i+1}</div>`;
+            });
+            document.getElementById('count-12').innerText = `${feitos12}/12`;
+        }
+        function toggleGrid(tipo, index) {
+            let arr = tipo === 52 ? motoDB.track52 : motoDB.track12; arr[index] = (arr[index] + 1) % 3;
+            if(arr[index] === 1 && tipo === 52) { if(confirm("Limpar checklist semanal para a próxima rodada?")) { motoDB.tarefasSemanais.forEach(t => t.feita = false); } }
+            if(arr[index] === 1 && tipo === 12) { if(confirm("Limpar checklist mensal para a próxima rodada?")) { motoDB.tarefasMensais.forEach(t => t.feita = false); } }
+            salvarMoto();
+        }
+
+        // TELEMETRIA DE PEÇAS
+        function renderStatusPecasGT() {
+            const grid = document.getElementById('pecas-grid'); grid.innerHTML = ''; let kmAtual = motoDB.kmAtual || 0;
+            motoDB.statusPecas.forEach(p => {
+                let kmRodados = kmAtual - p.ultimaTroca; if(kmRodados < 0) kmRodados = 0;
+                let kmRestante = p.vidaUtil - kmRodados; let percDesgaste = (kmRodados / p.vidaUtil) * 100;
+                let sClass = 'status-green'; let sText = 'BOM'; let barColor = 'bg-accent';
+                if(percDesgaste >= 100) { sClass = 'status-red'; sText = 'TROCAR'; barColor = 'bg-red-500'; kmRestante = 0; }
+                else if(percDesgaste >= 75) { sClass = 'status-yellow'; sText = 'ATENÇÃO'; barColor = 'bg-yellow-500'; }
+
+                grid.innerHTML += `
+                    <div class="bg-bg-color border border-theme p-4 rounded-xl relative group">
+                        <button onclick="abrirModalPeca('${p.id}')" class="absolute top-2 right-2 text-muted hover:text-accent opacity-0 group-hover:opacity-100 transition-opacity no-print"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded bg-panel border border-theme flex items-center justify-center text-muted"><i class="fa-solid ${p.icone || 'fa-gear'} text-[10px]"></i></div>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-strong">${p.nome}</span>
+                            </div>
+                            <span class="status-pill ${sClass}">${sText}</span>
+                        </div>
+                        <div class="flex justify-between text-[9px] text-muted font-bold mb-1 tracking-widest uppercase"><span>Desgaste</span><span>Faltam ${kmRestante} km</span></div>
+                        <div class="h-1.5 bg-panel border border-theme/50 rounded-full overflow-hidden mb-4 relative"><div class="h-full ${barColor} transition-all duration-1000" style="width: ${Math.min(100, percDesgaste)}%"></div></div>
+                        <button onclick="registrarTrocaPeca('${p.id}')" class="w-full bg-panel border border-theme text-[9px] font-black uppercase tracking-widest text-muted hover:text-strong hover:border-accent py-2 rounded-lg transition-colors no-print"><i class="fa-solid fa-check mr-1"></i> Serviço Feito</button>
+                    </div>`;
+            });
+        }
+        function registrarTrocaPeca(id) { const p = motoDB.statusPecas.find(x => x.id === id); if(confirm(`Confirmar serviço de [${p.nome}]?`)) { p.ultimaTroca = motoDB.kmAtual || 0; salvarMoto(); } }
+        function abrirModalPeca(id = null) {
+            if(id) { const p = motoDB.statusPecas.find(x => x.id === id); document.getElementById('edit-peca-nome-display').innerText = `Editar: ${p.nome}`; document.getElementById('edit-peca-id').value = id; document.getElementById('edit-peca-nome-input').value = p.nome; document.getElementById('edit-peca-icone').value = p.icone || ''; document.getElementById('edit-peca-ultima').value = p.ultimaTroca; document.getElementById('edit-peca-vida').value = p.vidaUtil; document.getElementById('btn-excluir-peca').classList.remove('hidden'); }
+            else { document.getElementById('edit-peca-nome-display').innerText = `Adicionar Nova Peça`; document.getElementById('edit-peca-id').value = 'novo'; document.getElementById('edit-peca-nome-input').value = ''; document.getElementById('edit-peca-icone').value = 'fa-gear'; document.getElementById('edit-peca-ultima').value = motoDB.kmAtual || 0; document.getElementById('edit-peca-vida').value = 5000; document.getElementById('btn-excluir-peca').classList.add('hidden'); }
+            document.getElementById('modal-peca').classList.remove('hidden'); document.getElementById('modal-peca').classList.add('flex'); setTimeout(() => { document.getElementById('modal-peca').classList.remove('opacity-0'); document.getElementById('mp-content').classList.remove('scale-95'); }, 10);
+        }
+        function fecharModalPeca() { document.getElementById('modal-peca').classList.add('opacity-0'); document.getElementById('mp-content').classList.add('scale-95'); setTimeout(() => { document.getElementById('modal-peca').classList.remove('flex'); document.getElementById('modal-peca').classList.add('hidden'); }, 300); }
+        function salvarEdicaoPeca() {
+            const id = document.getElementById('edit-peca-id').value; const nome = document.getElementById('edit-peca-nome-input').value; const icone = document.getElementById('edit-peca-icone').value || 'fa-gear'; const ultima = parseInt(document.getElementById('edit-peca-ultima').value) || 0; const vida = parseInt(document.getElementById('edit-peca-vida').value) || 1000;
+            if(!nome) return alert("Preencha o nome!");
+            if(id === 'novo') { motoDB.statusPecas.push({ id: 'peca_'+Date.now(), nome: nome, icone: icone, ultimaTroca: ultima, vidaUtil: vida }); } else { const p = motoDB.statusPecas.find(x => x.id === id); p.nome = nome; p.icone = icone; p.ultimaTroca = ultima; p.vidaUtil = vida; }
+            salvarMoto(); fecharModalPeca();
+        }
+        function excluirPeca() { const id = document.getElementById('edit-peca-id').value; if(confirm("Remover esta peça?")) { motoDB.statusPecas = motoDB.statusPecas.filter(x => x.id !== id); salvarMoto(); fecharModalPeca(); } }
+
+        // REVISÕES OFICIAIS (0=Neutro, 1=Feito(Verde), 2=Falho(Vermelho))
+        function renderRevisoes() {
+            const grid = document.getElementById('revisoes-grid'); grid.innerHTML = '';
+            motoDB.revisoesOficiais.forEach((r, i) => {
+                let status = 'bg-panel border-theme text-muted';
+                let icone = '<i class="fa-solid fa-lock"></i>';
+                
+                if (r.estado === 1) { 
+                    status = 'bg-green-500/20 border-green-500 text-green-500'; 
+                    icone = '<i class="fa-solid fa-check"></i>'; 
+                } 
+                else if (r.estado === 2) { 
+                    status = 'bg-red-500/20 border-red-500 text-red-500'; 
+                    icone = '<i class="fa-solid fa-xmark"></i>'; 
+                } 
+                else if (motoDB.kmAtual >= r.km) { 
+                    status = 'bg-yellow-500/20 border-yellow-500 text-yellow-500 animate-pulse'; 
+                    icone = '<i class="fa-solid fa-triangle-exclamation"></i>'; 
+                }
+
+                grid.innerHTML += `<div onclick="toggleRevisao(${i})" class="w-[70px] border rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer transition-colors ${status} hover:opacity-80"><span class="text-sm mb-1">${icone}</span><span class="text-[9px] font-black uppercase tracking-widest">${r.km} K</span></div>`;
+            });
+        }
+        function toggleRevisao(i) { motoDB.revisoesOficiais[i].estado = (motoDB.revisoesOficiais[i].estado + 1) % 3; salvarMoto(); }
+
+        // HISTÓRICO DE SERVIÇOS
+        function abrirModalServico() { document.getElementById('svc-data').value = new Date().toISOString().split('T')[0]; document.getElementById('svc-km').value = motoDB.kmAtual || ''; document.getElementById('modal-servico').classList.remove('hidden'); document.getElementById('modal-servico').classList.add('flex'); setTimeout(() => { document.getElementById('modal-servico').classList.remove('opacity-0'); document.getElementById('ms-content').classList.remove('scale-95'); }, 10); }
+        function fecharModalServico() { document.getElementById('modal-servico').classList.add('opacity-0'); document.getElementById('ms-content').classList.add('scale-95'); setTimeout(() => { document.getElementById('modal-servico').classList.remove('flex'); document.getElementById('modal-servico').classList.add('hidden'); }, 300); }
+        function salvarServico() {
+            const data = document.getElementById('svc-data').value; const km = document.getElementById('svc-km').value; const tipo = document.getElementById('svc-tipo').value;
+            if(!data || !km || !tipo) return alert("Preencha Data, KM e Serviço!");
+            const s = { id: Date.now(), data: data, km: parseInt(km), tipo: tipo, oficina: document.getElementById('svc-oficina').value || '-', valor: parseFloat(document.getElementById('svc-valor').value) || 0 };
+            motoDB.servicos.unshift(s); if(s.km > motoDB.kmAtual) motoDB.kmAtual = s.km;
+            document.querySelectorAll('#modal-servico input[type="text"], #modal-servico input[type="number"]').forEach(i=>i.value=''); salvarMoto(); fecharModalServico();
+        }
+        function renderHistorico() {
+            const tbody = document.getElementById('historico-servicos'); tbody.innerHTML = ''; let total = 0;
+            if(motoDB.servicos.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-xs text-muted italic">Nenhuma manutenção registrada.</td></tr>`;
+            motoDB.servicos.sort((a,b) => new Date(b.data) - new Date(a.data)).forEach((s) => {
+                total += s.valor; let dataBR = s.data ? s.data.split('-').reverse().join('/') : '--';
+                tbody.innerHTML += `<tr class="hover:bg-black/5 dark:hover:bg-white/5 transition-colors border-b border-theme/50 last:border-0 group"><td class="p-4 font-bold text-muted border-r border-theme/50">${dataBR}</td><td class="p-4 font-black text-accent border-r border-theme/50">${s.km} km</td><td class="p-4 font-bold text-strong border-r border-theme/50">${s.tipo}</td><td class="p-4 text-muted border-r border-theme/50"><i class="fa-solid fa-shop text-[10px] mr-1"></i> ${s.oficina}</td><td class="p-4 text-right font-black text-strong border-r border-theme/50">R$ ${s.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td><td class="p-4 text-center no-print"><button onclick="removerServico(${s.id})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash text-xs"></i></button></td></tr>`;
+            });
+            document.getElementById('total-manutencao').innerText = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+        }
+        function removerServico(id) { if(confirm("Apagar registro?")) { motoDB.servicos = motoDB.servicos.filter(x => x.id !== id); salvarMoto(); } }
+
+        window.onload = () => { renderTudo(); };
+    </script>
+</body>
+</html>
