@@ -3,160 +3,565 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeOS | Visão Geral</title>
+    <title>LifeOS | Central de Controle</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { accent: 'var(--accent)' } } }
+            theme: { extend: { colors: { accent: 'var(--accent, #10B981)' } } }
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        :root[data-theme="light"] { --bg-color: #f3f4f6; --panel: #ffffff; --text-strong: #111827; --text-muted: #6b7280; --border-color: #e5e7eb; }
+        :root[data-theme="dark"] { --bg-color: #111827; --panel: #1f2937; --text-strong: #f9fafb; --text-muted: #9ca3af; --border-color: #374151; }
+        body { background-color: var(--bg-color); color: var(--text-strong); }
+        .bg-bg-color { background-color: var(--bg-color); }
+        .bg-panel { background-color: var(--panel); }
+        .text-strong { color: var(--text-strong); }
+        .text-muted { color: var(--text-muted); }
+        .border-theme { border-color: var(--border-color); }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .glass-card { background-color: var(--panel); border: 1px solid var(--border-color); border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        
+        .checkbox-custom { appearance: none; width: 1.25rem; height: 1.25rem; border: 2px solid var(--border-color); border-radius: 0.375rem; cursor: pointer; transition: all 0.2s; position: relative; display: flex; align-items: center; justify-content: center; background-color: var(--bg-color); }
+        .checkbox-custom:checked { background-color: var(--accent); border-color: var(--accent); }
+        .checkbox-custom:checked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: white; font-size: 0.75rem; }
+
+        .tab-btn { transition: all 0.2s; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .progress-bar-fill { transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .day-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; border: 1px solid var(--border-color); color: var(--text-muted); transition: all 0.3s; }
+        .day-circle.active { background-color: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
+        
+        .input-ghost { background: transparent; border: none; outline: none; width: 100%; color: var(--text-strong); font-weight: bold; }
+        .input-ghost::placeholder { color: var(--text-muted); font-weight: normal; font-style: italic; }
+    </style>
 </head>
-<body class="flex h-[100dvh] overflow-hidden bg-bg-color text-base transition-colors duration-300">
+<body class="flex h-[100dvh] overflow-hidden transition-colors duration-300">
     
     <div id="sidebar-container" class="shrink-0 z-50 h-full flex flex-col transition-all duration-300"></div>
 
     <main class="flex-1 overflow-y-auto custom-scrollbar relative flex flex-col h-full w-full">
         
-        <header class="sticky top-0 z-30 bg-bg-color/80 backdrop-blur-md border-b border-theme p-5 lg:p-8 flex items-center justify-between transition-colors duration-300">
+        <header class="sticky top-0 z-30 bg-bg-color/90 backdrop-blur-md border-b border-theme p-4 lg:px-8 flex items-center justify-between transition-colors duration-300 shrink-0">
             <div class="flex items-center gap-4">
-                <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden text-strong text-2xl hover:text-blue-500 transition-colors">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-                
+                <button id="mobile-menu-btn" onclick="window.toggleMobileMenu()" class="md:hidden text-strong text-2xl hover:text-accent transition-colors p-2"><i class="fa-solid fa-bars"></i></button>
                 <div class="w-px h-8 bg-border-theme md:hidden"></div>
-                
                 <div>
-                    <h2 class="text-2xl lg:text-3xl font-black text-strong uppercase tracking-tight">Life<span class="text-blue-500">OS</span></h2>
-                    <p class="text-[10px] lg:text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">Visão Geral do Sistema</p>
+                    <h2 class="text-xl lg:text-3xl font-black text-strong uppercase tracking-tight italic">Life<span class="text-accent">OS</span></h2>
+                    <p class="text-[9px] lg:text-[10px] font-bold uppercase tracking-[0.2em] text-muted mt-1" id="data-hoje">Super Central de Controle</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-3 lg:gap-5">
-                <div class="hidden sm:flex items-center gap-3 bg-panel border border-theme px-4 py-2 rounded-xl">
-                    <i class="fa-solid fa-fire text-orange-500 text-lg"></i>
-                    <div>
-                        <p class="text-[9px] font-black uppercase text-muted tracking-widest">Streak</p>
-                        <p class="text-sm font-black text-strong leading-none">12 Dias</p>
-                    </div>
-                </div>
-
-                <button id="theme-toggle" title="Alternar Tema" class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-blue-500 hover:scale-105 transition-all shadow-sm">
-                    <i class="fa-solid fa-moon text-lg"></i>
+            <div class="flex items-center gap-2 lg:gap-4">
+                <button onclick="abrirModalSync()" class="flex items-center gap-2 bg-panel border border-theme px-3 py-2 lg:px-4 lg:py-2 rounded-xl hover:border-blue-500 hover:text-blue-500 transition-colors shadow-sm group">
+                    <i class="fa-solid fa-cloud-arrow-up text-blue-500 group-hover:animate-bounce"></i>
+                    <span class="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-strong hidden sm:block">Backup / Sync</span>
                 </button>
+                <button id="theme-toggle" class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-accent transition-all shadow-sm"><i class="fa-solid fa-moon text-lg"></i></button>
             </div>
         </header>
 
-        <div class="p-5 lg:p-8 max-w-7xl mx-auto space-y-6 lg:space-y-8 w-full">
+        <div class="p-4 lg:p-8 max-w-[1600px] mx-auto space-y-6 w-full">
 
-            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <div class="lg:col-span-2 glass-card p-6 md:p-8 border-t-4 border-accent relative overflow-hidden group">
-                    <i class="fa-solid fa-bolt absolute -bottom-6 -right-6 text-9xl text-accent opacity-5 group-hover:scale-110 transition-transform duration-500"></i>
-                    
-                    <div class="flex justify-between items-center mb-6 relative z-10">
-                        <h3 class="text-xs md:text-sm font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-crosshairs text-accent mr-2"></i> O Foco de Hoje</h3>
-                        <a href="tarefas.html" class="text-[10px] md:text-xs font-bold text-accent hover:underline uppercase bg-accent/10 px-3 py-1.5 rounded-lg">Ver Tarefas</a>
-                    </div>
-                    
-                    <div class="space-y-3 relative z-10">
-                        <div class="flex items-center justify-between p-3 md:p-4 bg-bg-color rounded-xl border border-theme hover:border-accent/50 transition-colors cursor-pointer">
-                            <div class="flex items-center gap-4">
-                                <div class="w-6 h-6 rounded-lg border-2 border-theme flex items-center justify-center hover:border-accent transition-colors"><i class="fa-solid fa-check text-[10px] text-transparent"></i></div>
-                                <div>
-                                    <p class="text-sm md:text-base font-bold text-strong">Treino de Musculação (Perna)</p>
-                                    <p class="text-[10px] md:text-xs text-muted font-semibold mt-0.5">Saúde • Rende +50 XP</p>
-                                </div>
-                            </div>
-                            <span class="text-[9px] md:text-[10px] font-black bg-red-500/10 text-red-500 px-2.5 py-1 rounded uppercase tracking-widest">Alta</span>
-                        </div>
-
-                        <div class="flex items-center justify-between p-3 md:p-4 bg-bg-color rounded-xl border border-theme hover:border-accent/50 transition-colors cursor-pointer">
-                            <div class="flex items-center gap-4">
-                                <div class="w-6 h-6 rounded-lg border-2 border-theme flex items-center justify-center hover:border-accent transition-colors"><i class="fa-solid fa-check text-[10px] text-transparent"></i></div>
-                                <div>
-                                    <p class="text-sm md:text-base font-bold text-strong">Gravar Módulo 3 de Afiliados</p>
-                                    <p class="text-[10px] md:text-xs text-muted font-semibold mt-0.5">Profissional • Rende +100 XP</p>
-                                </div>
-                            </div>
-                            <span class="text-[9px] md:text-[10px] font-black bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded uppercase tracking-widest">Média</span>
-                        </div>
-                    </div>
+            <section class="glass-card p-5 border-t-4 border-yellow-400 flex flex-col md:flex-row items-center gap-6 lg:gap-12">
+                <div class="shrink-0 text-center md:text-left">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-ranking-star text-yellow-400 mr-2"></i> XP Global</h3>
+                    <p class="text-[9px] text-muted font-bold tracking-widest uppercase mt-1">Nível do Personagem</p>
                 </div>
-
-                <div class="glass-card p-6 md:p-8 flex flex-col justify-center border-l-4 border-blue-500">
-                    <h3 class="text-xs md:text-sm font-black uppercase tracking-widest text-muted mb-6"><i class="fa-solid fa-chart-pie text-blue-500 mr-2"></i> Áreas da Vida</h3>
-                    <div class="space-y-5">
-                        <div>
-                            <div class="flex justify-between text-[10px] md:text-xs font-bold uppercase mb-2">
-                                <span class="text-strong"><i class="fa-solid fa-heart-pulse text-red-500 mr-1.5"></i> Saúde</span>
-                                <span class="text-accent">90%</span>
-                            </div>
-                            <div class="w-full h-2 bg-bg-color border border-theme rounded-full"><div class="h-full bg-accent rounded-full" style="width: 90%"></div></div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-[10px] md:text-xs font-bold uppercase mb-2">
-                                <span class="text-strong"><i class="fa-solid fa-book-open text-purple-500 mr-1.5"></i> Estudos</span>
-                                <span class="text-orange-500">45%</span>
-                            </div>
-                            <div class="w-full h-2 bg-bg-color border border-theme rounded-full"><div class="h-full bg-orange-500 rounded-full" style="width: 45%"></div></div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-[10px] md:text-xs font-bold uppercase mb-2">
-                                <span class="text-strong"><i class="fa-solid fa-wallet text-green-500 mr-1.5"></i> Financeiro</span>
-                                <span class="text-blue-500">75%</span>
-                            </div>
-                            <div class="w-full h-2 bg-bg-color border border-theme rounded-full"><div class="h-full bg-blue-500 rounded-full" style="width: 75%"></div></div>
-                        </div>
+                <div class="flex-1 w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <div class="flex justify-between text-[10px] font-black uppercase mb-1.5"><span class="text-strong"><i class="fa-solid fa-house text-orange-500 w-4"></i> QG Casa</span><span class="text-orange-500">LVL <span id="lvl-casa">0</span></span></div>
+                        <div class="w-full h-2 bg-bg-color border border-theme rounded-full overflow-hidden"><div id="bar-casa" class="h-full bg-orange-500 progress-bar-fill w-[0%]"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] font-black uppercase mb-1.5"><span class="text-strong"><i class="fa-solid fa-book-open text-blue-500 w-4"></i> Estudos</span><span class="text-blue-500">LVL <span id="lvl-estudo">0</span></span></div>
+                        <div class="w-full h-2 bg-bg-color border border-theme rounded-full overflow-hidden"><div id="bar-estudo" class="h-full bg-blue-500 progress-bar-fill w-[0%]"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] font-black uppercase mb-1.5"><span class="text-strong"><i class="fa-solid fa-dumbbell text-red-500 w-4"></i> Disciplina Geral</span><span class="text-red-500">LVL <span id="lvl-disc">1</span></span></div>
+                        <div class="w-full h-2 bg-bg-color border border-theme rounded-full overflow-hidden"><div id="bar-disc" class="h-full bg-red-500 progress-bar-fill w-[0%]"></div></div>
                     </div>
                 </div>
             </section>
 
-            <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <section class="flex overflow-x-auto hide-scroll gap-3 pb-2">
+                <a href="financas.html" class="bg-panel border border-theme hover:border-green-500 text-muted hover:text-green-500 transition-colors rounded-xl px-4 py-2 flex items-center gap-2 shrink-0"><i class="fa-solid fa-wallet text-sm"></i><span class="text-[9px] font-black uppercase tracking-widest text-strong">Finanças</span></a>
+                <a href="notas.html" class="bg-panel border border-theme hover:border-blue-400 text-muted hover:text-blue-400 transition-colors rounded-xl px-4 py-2 flex items-center gap-2 shrink-0"><i class="fa-solid fa-pen-clip text-sm"></i><span class="text-[9px] font-black uppercase tracking-widest text-strong">Anotações</span></a>
+                <a href="metas.html" class="bg-panel border border-theme hover:border-red-500 text-muted hover:text-red-500 transition-colors rounded-xl px-4 py-2 flex items-center gap-2 shrink-0"><i class="fa-solid fa-bullseye text-sm"></i><span class="text-[9px] font-black uppercase tracking-widest text-strong">Metas</span></a>
+                <a href="saude.html" class="bg-panel border border-theme hover:border-red-400 text-muted hover:text-red-400 transition-colors rounded-xl px-4 py-2 flex items-center gap-2 shrink-0"><i class="fa-solid fa-heart-pulse text-sm"></i><span class="text-[9px] font-black uppercase tracking-widest text-strong">Saúde</span></a>
+                <a href="visao_pro.html" class="bg-panel border border-theme hover:border-indigo-500 text-muted hover:text-indigo-500 transition-colors rounded-xl px-4 py-2 flex items-center gap-2 shrink-0"><i class="fa-solid fa-briefcase text-sm"></i><span class="text-[9px] font-black uppercase tracking-widest text-strong">Central Pro</span></a>
                 
-                <a href="metas.html" class="glass-card p-5 md:p-6 hover:-translate-y-1 hover:border-accent transition-all group cursor-pointer text-center flex flex-col items-center justify-center">
-                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-bullseye text-accent text-xl md:text-2xl"></i>
-                    </div>
-                    <p class="text-sm md:text-base font-bold text-strong">Metas SMART</p>
-                    <p class="text-[9px] md:text-[10px] uppercase tracking-widest text-muted mt-1 font-semibold">3 Ativas</p>
-                </a>
+                <div class="w-px h-6 bg-border-theme shrink-0 mx-1 my-auto"></div>
+                
+                <a href="planejadores.html" class="bg-bg-color border border-theme hover:border-indigo-300 text-indigo-400 transition-colors rounded-xl px-4 py-2 flex items-center gap-2 shrink-0"><i class="fa-solid fa-calendar-day text-sm"></i><span class="text-[9px] font-black uppercase tracking-widest text-strong">Compromissos do Dia</span></a>
+                <a href="tarefas.html" class="bg-bg-color border border-theme hover:border-red-300 text-red-400 transition-colors rounded-xl px-4 py-2 flex items-center gap-2 shrink-0"><i class="fa-solid fa-list-check text-sm"></i><span class="text-[9px] font-black uppercase tracking-widest text-strong">Tarefas do Dia</span></a>
+                <a href="rotinas.html" class="bg-bg-color border border-theme hover:border-accent text-accent transition-colors rounded-xl px-4 py-2 flex items-center gap-2 shrink-0"><i class="fa-solid fa-rotate text-sm"></i><span class="text-[9px] font-black uppercase tracking-widest text-strong">Hábitos a Seguir</span></a>
+                <button onclick="alert('Lembretes: Abrir modal ou página de lembretes')" class="bg-bg-color border border-theme hover:border-yellow-400 text-yellow-500 transition-colors rounded-xl px-4 py-2 flex items-center gap-2 shrink-0"><i class="fa-solid fa-bell text-sm"></i><span class="text-[9px] font-black uppercase tracking-widest text-strong">Lembretes do Dia</span></button>
+            </section>
 
-                <a href="planejadores.html" class="glass-card p-5 md:p-6 hover:-translate-y-1 hover:border-purple-500 transition-all group cursor-pointer text-center flex flex-col items-center justify-center">
-                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-calendar-days text-purple-500 text-xl md:text-2xl"></i>
+            <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <div class="lg:col-span-4 flex flex-col gap-6">
+                    
+                    <div class="glass-card p-6 border-t-4 border-yellow-400 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-star text-yellow-400 mr-2"></i> Foco Principal do Dia</h3>
+                        </div>
+                        <div class="bg-bg-color border border-theme rounded-xl p-4">
+                            <input type="text" id="input-foco-dia" class="input-ghost text-sm text-center" placeholder="Qual é a sua missão número 1 hoje?" onchange="salvarFocoDia(this.value)">
+                        </div>
                     </div>
-                    <p class="text-sm md:text-base font-bold text-strong">Planejadores</p>
-                    <p class="text-[9px] md:text-[10px] uppercase tracking-widest text-muted mt-1 font-semibold">Visão Anual</p>
-                </a>
 
-                <a href="garagem.html" class="glass-card p-5 md:p-6 hover:-translate-y-1 hover:border-zinc-400 transition-all group cursor-pointer text-center flex flex-col items-center justify-center">
-                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-zinc-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-motorcycle text-zinc-400 text-xl md:text-2xl"></i>
+                    <div class="glass-card p-6 border-l-4 border-orange-500 relative overflow-hidden flex flex-col">
+                        <div class="flex justify-between items-center mb-5 z-10">
+                            <h3 class="text-sm font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-book-open text-orange-500 mr-2"></i> Foco Atual (Estudos)</h3>
+                            <a href="estudos.html" class="text-[9px] bg-orange-500/10 text-orange-500 border border-orange-500/30 px-2 py-1 rounded font-black uppercase tracking-widest hover:bg-orange-500 hover:text-white transition-colors">Abrir</a>
+                        </div>
+                        <div class="flex flex-col gap-3 z-10">
+                            <div class="bg-bg-color border border-theme rounded-xl p-3 flex items-center gap-4">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0"><i class="fa-solid fa-book"></i></div>
+                                <div class="min-w-0">
+                                    <span class="block text-[8px] font-black uppercase tracking-widest text-muted">Leitura Ativa</span>
+                                    <span class="block text-xs font-bold text-strong truncate" id="info-leitura">A carregar...</span>
+                                </div>
+                            </div>
+                            <div class="bg-bg-color border border-theme rounded-xl p-3 flex items-center gap-4">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-500 shrink-0"><i class="fa-solid fa-graduation-cap"></i></div>
+                                <div class="min-w-0">
+                                    <span class="block text-[8px] font-black uppercase tracking-widest text-muted">Cursos em Andamento</span>
+                                    <span class="block text-xs font-bold text-strong truncate" id="info-curso">A carregar...</span>
+                                </div>
+                            </div>
+                            <div class="bg-bg-color border border-theme rounded-xl p-3 flex items-center gap-4">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0"><i class="fa-solid fa-flask"></i></div>
+                                <div class="min-w-0">
+                                    <span class="block text-[8px] font-black uppercase tracking-widest text-muted">Lab & Pesquisa</span>
+                                    <span class="block text-xs font-bold text-strong truncate" id="info-pesquisa">A carregar...</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <p class="text-sm md:text-base font-bold text-strong">Moto/Garagem</p>
-                    <p class="text-[9px] md:text-[10px] uppercase tracking-widest text-muted mt-1 font-semibold">KM 14.500 (OK)</p>
-                </a>
 
-                <a href="visao_pro.html" class="glass-card p-5 md:p-6 hover:-translate-y-1 hover:border-blue-500 transition-all group cursor-pointer text-center flex flex-col items-center justify-center">
-                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-briefcase text-blue-500 text-xl md:text-2xl"></i>
+                    <div class="glass-card p-6 border-t-4 border-accent flex flex-col flex-1">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-rotate text-accent mr-2"></i> Rituais Diários</h3>
+                        </div>
+                        <div class="flex text-[9px] font-black uppercase tracking-widest text-muted border-b border-theme/50 mb-4 gap-4">
+                            <button onclick="trocarAbaRotina('manha')" id="btn-rotina-manha" class="tab-btn active pb-2">Manhã</button>
+                            <button onclick="trocarAbaRotina('tarde')" id="btn-rotina-tarde" class="tab-btn pb-2">Tarde</button>
+                            <button onclick="trocarAbaRotina('noite')" id="btn-rotina-noite" class="tab-btn pb-2">Noite</button>
+                        </div>
+                        <div class="flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1 max-h-48" id="conteudo-rotina">
+                            <p class="text-[10px] text-muted italic p-4 text-center tracking-widest uppercase font-bold">A carregar rituais...</p>
+                        </div>
                     </div>
-                    <p class="text-sm md:text-base font-bold text-strong">Central Pro</p>
-                    <p class="text-[9px] md:text-[10px] uppercase tracking-widest text-muted mt-1 font-semibold">Alunos & Negócios</p>
-                </a>
+
+                </div>
+
+                <div class="lg:col-span-4 flex flex-col gap-6">
+                    
+                    <div class="glass-card p-6 border-t-4 border-emerald-500 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-apple-whole text-emerald-500 mr-2"></i> Alimentação & Água</h3>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-4">
+                            <label class="bg-bg-color border border-theme rounded-lg p-2 flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="check-cafe" onchange="salvarRefeicao()" class="checkbox-custom shrink-0"><span class="text-[10px] font-bold text-strong">Café da Manhã</span>
+                            </label>
+                            <label class="bg-bg-color border border-theme rounded-lg p-2 flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="check-lanche" onchange="salvarRefeicao()" class="checkbox-custom shrink-0"><span class="text-[10px] font-bold text-strong">Lanche</span>
+                            </label>
+                            <label class="bg-bg-color border border-theme rounded-lg p-2 flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="check-almoco" onchange="salvarRefeicao()" class="checkbox-custom shrink-0"><span class="text-[10px] font-bold text-strong">Almoço</span>
+                            </label>
+                            <label class="bg-bg-color border border-theme rounded-lg p-2 flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="check-jantar" onchange="salvarRefeicao()" class="checkbox-custom shrink-0"><span class="text-[10px] font-bold text-strong">Jantar</span>
+                            </label>
+                        </div>
+                        <div class="bg-bg-color border border-theme rounded-xl p-3 flex justify-between items-center">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-blue-400"><i class="fa-solid fa-droplet mr-1"></i> Hidratação</span>
+                            <div class="flex items-center gap-3">
+                                <button onclick="alterarAgua(-0.5)" class="w-6 h-6 rounded bg-panel border border-theme text-strong hover:bg-blue-500 hover:text-white transition-colors">-</button>
+                                <span class="text-sm font-black w-10 text-center" id="agua-display">0 L</span>
+                                <button onclick="alterarAgua(0.5)" class="w-6 h-6 rounded bg-panel border border-theme text-strong hover:bg-blue-500 hover:text-white transition-colors">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 border-t-4 border-red-500 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-person-running text-red-500 mr-2"></i> Treino Diário</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" id="check-treinou" class="checkbox-custom w-5 h-5 shrink-0">
+                                <span class="text-sm font-bold text-strong">Eu treinei / corri hoje!</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <select id="select-ficha" class="flex-1 bg-bg-color border border-theme text-strong text-xs p-2 rounded-lg outline-none focus:border-red-500">
+                                    <option value="Ficha A">Ficha A</option>
+                                    <option value="Ficha B">Ficha B</option>
+                                    <option value="Ficha C">Ficha C</option>
+                                    <option value="Corrida">Corrida</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <button onclick="registrarTreino()" class="bg-red-500 hover:bg-red-600 text-white font-bold text-[10px] uppercase tracking-widest px-4 py-2 rounded-lg transition-colors">Registrar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 border-t-4 border-blue-400 flex flex-col flex-1">
+                        <div class="flex justify-between items-center mb-5">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-chart-line text-blue-400 mr-2"></i> Consistência</h3>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <span class="text-[9px] font-bold text-muted uppercase tracking-widest mb-2 block">Rastreador Semanal</span>
+                            <div class="flex justify-between items-center w-full px-1" id="dias-semana">
+                                <div class="day-circle active">D</div>
+                                <div class="day-circle active">S</div>
+                                <div class="day-circle active">T</div>
+                                <div class="day-circle">Q</div>
+                                <div class="day-circle">Q</div>
+                                <div class="day-circle">S</div>
+                                <div class="day-circle">S</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-[9px] font-bold text-muted uppercase tracking-widest mb-2 block">Rastreador do Mês (Planejador)</span>
+                            <div class="bg-bg-color border border-theme rounded-xl p-3 text-center">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-muted mb-1">Progresso Mensal</p>
+                                <p class="text-xl font-black text-blue-400" id="taxa-mensal">--%</p>
+                                <div class="w-full h-1.5 bg-panel border border-theme rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-blue-400" id="barra-mensal" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="lg:col-span-4 flex flex-col gap-6">
+                    
+                    <div class="glass-card p-6 border-t-4 border-red-500 flex flex-col">
+                        <div class="flex justify-between items-center mb-5">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-list-check text-red-500 mr-2"></i> Radar de Tarefas</h3>
+                            <a href="tarefas.html" class="text-[9px] bg-bg-color border border-theme text-muted hover:text-red-500 px-3 py-1.5 rounded-lg transition-colors uppercase font-bold tracking-widest">Abrir Kanban</a>
+                        </div>
+                        <div class="bg-bg-color border border-theme rounded-xl p-6 flex flex-col items-center justify-center text-center">
+                            <span class="text-4xl font-black text-strong mb-1" id="tar-todo">-</span>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-inbox mr-1"></i> Tarefas a Fazer</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 border-t-4 border-indigo-500 flex flex-col">
+                        <div class="flex justify-between items-center mb-5">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-handshake text-indigo-500 mr-2"></i> Compromissos</h3>
+                            <a href="planejadores.html" class="text-[9px] bg-bg-color border border-theme text-muted hover:text-indigo-500 px-2 py-1 rounded transition-colors uppercase font-bold tracking-widest">Ver Todos</a>
+                        </div>
+                        <div class="space-y-3" id="info-compromissos">
+                            <p class="text-[10px] text-muted font-bold tracking-widest uppercase border border-dashed border-theme p-4 text-center rounded-lg">A carregar agenda...</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 border-t-4 border-zinc-500 flex flex-col flex-1">
+                        <div class="flex justify-between items-center mb-5">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-motorcycle text-zinc-400 mr-2"></i> Garagem / Moto</h3>
+                            <a href="garagem.html" class="text-[9px] bg-bg-color border border-theme text-muted hover:text-zinc-400 px-2 py-1 rounded transition-colors uppercase font-bold tracking-widest">Abrir</a>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center bg-bg-color border border-theme p-3 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-oil-can text-zinc-500"></i>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-strong">Troca de Óleo</span>
+                                </div>
+                                <span class="text-[10px] font-bold text-accent" id="moto-oleo">OK</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-bg-color border border-theme p-3 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-link text-zinc-500"></i>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-strong">Lubrificar Relação</span>
+                                </div>
+                                <span class="text-[10px] font-bold text-yellow-500" id="moto-corrente">Revisar</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-bg-color border border-theme p-3 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-circle-notch text-zinc-500"></i>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-strong">Calibragem Pneus</span>
+                                </div>
+                                <span class="text-[10px] font-bold text-muted" id="moto-pneus">Pendente</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
 
             </section>
 
         </div>
 
-        <footer class="p-6 md:p-8 mt-auto border-t border-theme text-center text-muted text-[10px] font-bold uppercase tracking-widest">
-            LifeOS • Desenvolvido com capricho extremo
+        <footer class="p-6 md:p-8 mt-auto border-t border-theme text-center text-muted text-[10px] font-bold uppercase tracking-widest shrink-0">
+            LifeOS • O seu Sistema Operacional Pessoal
         </footer>
     </main>
 
+    <div id="modal-sync" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg-color border border-theme rounded-3xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300" id="ms-content">
+            <div class="p-6 border-b border-theme flex justify-between items-center bg-panel rounded-t-3xl">
+                <h3 class="text-sm font-black text-strong uppercase tracking-widest"><i class="fa-solid fa-cloud-arrow-up text-blue-500 mr-2"></i> Backup & Sincronização</h3>
+                <button onclick="fecharModalSync()" class="text-muted hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-6">
+                <p class="text-xs text-muted leading-relaxed font-medium">Use esta ferramenta para passar os seus dados entre o computador e o telemóvel.</p>
+                <div class="space-y-3">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-strong border-b border-theme/50 pb-1">Passo 1: Exportar</h4>
+                    <button onclick="exportarBackup()" class="w-full bg-panel border border-theme hover:border-accent hover:text-accent text-strong py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Baixar Arquivo</button>
+                </div>
+                <div class="space-y-3 pt-4">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-strong border-b border-theme/50 pb-1">Passo 2: Importar</h4>
+                    <input type="file" id="file-import" accept=".json" class="hidden" onchange="processarImportacao(event)">
+                    <button onclick="document.getElementById('file-import').click()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"><i class="fa-solid fa-upload"></i> Carregar Backup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="components.js"></script>
     <script src="script.js"></script>
+    <script>
+        // ==========================================
+        // BLINDAGEM GLOBAIS E DATA
+        // ==========================================
+        window.abrirModalSync = abrirModalSync; window.fecharModalSync = fecharModalSync; 
+        window.exportarBackup = exportarBackup; window.processarImportacao = processarImportacao; 
+        window.trocarAbaRotina = trocarAbaRotina; window.toggleRotinaItem = toggleRotinaItem;
+
+        const opcoesData = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        let dataStr = new Date().toLocaleDateString('pt-BR', opcoesData);
+        document.getElementById('data-hoje').innerText = dataStr.charAt(0).toUpperCase() + dataStr.slice(1);
+
+        // ==========================================
+        // LEITORES DE DADOS E NOVAS FUNÇÕES
+        // ==========================================
+        let dbRotinasCache = null; 
+        let aguaAtual = 0;
+        
+        function calcularNivel(xp) { return Math.floor((xp || 0) / 100) + 1; }
+        function calcularBarra(xp) { return (xp || 0) % 100; }
+
+        function carregarTelemetriaGeral() {
+            // 0. Foco do Dia
+            let focoDia = localStorage.getItem('lifeos_foco_dia_v1') || '';
+            document.getElementById('input-foco-dia').value = focoDia;
+
+            // 0.1 Carregar Alimentação e Água
+            let dietaDB = JSON.parse(localStorage.getItem('lifeos_saude_dieta_v1')) || { agua: 0, cafe: false, lanche: false, almoco: false, jantar: false };
+            aguaAtual = dietaDB.agua || 0;
+            document.getElementById('agua-display').innerText = aguaAtual + ' L';
+            document.getElementById('check-cafe').checked = dietaDB.cafe;
+            document.getElementById('check-lanche').checked = dietaDB.lanche;
+            document.getElementById('check-almoco').checked = dietaDB.almoco;
+            document.getElementById('check-jantar').checked = dietaDB.jantar;
+
+            // 1. CASA E GARAGEM (XP)
+            try {
+                let casaDB = JSON.parse(localStorage.getItem('lifeos_casa_v2'));
+                let xpCasa = casaDB ? casaDB.xp : 0;
+                document.getElementById('lvl-casa').innerText = calcularNivel(xpCasa);
+                document.getElementById('bar-casa').style.width = `${calcularBarra(xpCasa)}%`;
+            } catch(e) {}
+
+            // 2. ESTUDOS (Foco Atual Reduzido)
+            try {
+                let estRaw = JSON.parse(localStorage.getItem('lifeos_estudos_v1')) || {};
+                let estDB = Array.isArray(estRaw) && estRaw.length > 0 ? estRaw[estRaw.length - 1] : estRaw;
+
+                document.getElementById('info-leitura').innerText = estDB.livro || estDB.leitura || "Nenhum livro ativo";
+                document.getElementById('info-curso').innerText = estDB.curso || estDB.course || "Nenhum curso ativo";
+                document.getElementById('info-pesquisa').innerText = estDB.pesquisa || estDB.lab || "Nenhuma pesquisa";
+                
+                let xpEstudo = estDB.xp || 0;
+                document.getElementById('lvl-estudo').innerText = calcularNivel(xpEstudo);
+                document.getElementById('bar-estudo').style.width = `${calcularBarra(xpEstudo)}%`;
+            } catch(e) {}
+
+            // 3. TAREFAS (Apenas A fazer)
+            try {
+                let tarefasDB = JSON.parse(localStorage.getItem('lifeos_tarefas_v1')) || [];
+                let pendentes = [];
+                if(Array.isArray(tarefasDB)) {
+                    pendentes = tarefasDB.filter(t => t.status === 'todo' || t.status === 'pendente' || !t.status);
+                } else if (typeof tarefasDB === 'object') {
+                    pendentes = tarefasDB.todo || tarefasDB.pendentes || [];
+                }
+                document.getElementById('tar-todo').innerText = pendentes.length;
+            } catch(e) {}
+
+            // 4. COMPROMISSOS (Agenda)
+            try {
+                let compDB = JSON.parse(localStorage.getItem('lifeos_compromissos_v1')) || JSON.parse(localStorage.getItem('lifeos_planejadores_v1')) || [];
+                let eventosContainer = document.getElementById('info-compromissos');
+                eventosContainer.innerHTML = '';
+                
+                let proximos = Array.isArray(compDB) ? compDB.slice(0, 2) : []; 
+                if(proximos.length === 0) {
+                    eventosContainer.innerHTML = '<p class="text-[10px] text-muted font-bold tracking-widest uppercase border border-dashed border-theme p-4 text-center rounded-lg">Sem compromissos agendados</p>';
+                } else {
+                    proximos.forEach(ev => {
+                        let titulo = ev.titulo || ev.title || ev.nome || ev.texto || 'Compromisso';
+                        let data = ev.data || ev.date || 'Hoje';
+                        let hora = ev.hora || ev.time || '';
+                        eventosContainer.innerHTML += `
+                            <div class="flex items-start gap-3 bg-bg-color border border-theme rounded-lg p-3">
+                                <div class="w-10 h-10 rounded bg-indigo-500/10 flex flex-col items-center justify-center border border-indigo-500/20 shrink-0"><i class="fa-solid fa-clock text-indigo-500 text-sm"></i></div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-bold text-strong leading-tight truncate">${titulo}</p>
+                                    <p class="text-[9px] text-muted font-bold uppercase tracking-widest mt-1 truncate">${data} ${hora ? '• '+hora : ''}</p>
+                                </div>
+                            </div>`;
+                    });
+                }
+            } catch(e) {}
+
+            // 5. CUIDADOS DA MOTO
+            try {
+                let manutencaoDB = JSON.parse(localStorage.getItem('lifeos_garagem_manutencao_v1')) || {};
+                if(manutencaoDB.oleoStatus) document.getElementById('moto-oleo').innerText = manutencaoDB.oleoStatus;
+                if(manutencaoDB.correnteStatus) document.getElementById('moto-corrente').innerText = manutencaoDB.correnteStatus;
+                if(manutencaoDB.pneusStatus) document.getElementById('moto-pneus').innerText = manutencaoDB.pneusStatus;
+            } catch(e) {}
+
+            // 6. RITUAIS E RASTREADOR SEMANAL
+            try {
+                let rawRotinas = JSON.parse(localStorage.getItem('lifeos_rituais_diarios_v1')) || JSON.parse(localStorage.getItem('lifeos_rotinas_v1'));
+                if(Array.isArray(rawRotinas)) {
+                    dbRotinasCache = { 
+                        manha: rawRotinas.filter(r => r.turno === 'manha'), 
+                        tarde: rawRotinas.filter(r => r.turno === 'tarde' || r.turno === 'habitos'),
+                        noite: rawRotinas.filter(r => r.turno === 'noite') 
+                    };
+                } else {
+                    dbRotinasCache = rawRotinas || { manha: [], tarde: [], noite: [] };
+                }
+                trocarAbaRotina('manha');
+
+                // Rastreador Semanal
+                let trackerDB = JSON.parse(localStorage.getItem('lifeos_rastreador_semanal_v1'));
+                if(trackerDB && trackerDB.dias) {
+                    const containerDias = document.getElementById('dias-semana');
+                    containerDias.innerHTML = '';
+                    const letras = ['D','S','T','Q','Q','S','S'];
+                    trackerDB.dias.forEach((feito, index) => {
+                        containerDias.innerHTML += `<div class="day-circle ${feito ? 'active' : ''}">${letras[index]}</div>`;
+                    });
+                }
+                
+                // Rastreador Mensal (Simulação visual que lê do localStorage se existir)
+                let trackerMensal = JSON.parse(localStorage.getItem('lifeos_planejador_mensal_v1')) || { progresso: 0 };
+                let progressoMensal = trackerMensal.progresso || Math.floor(Math.random() * 100); // placeholder visual
+                document.getElementById('taxa-mensal').innerText = `${progressoMensal}%`;
+                document.getElementById('barra-mensal').style.width = `${progressoMensal}%`;
+
+            } catch(e) {}
+        }
+
+        // ==========================================
+        // FUNÇÕES DE SALVAMENTO DOS NOVOS WIDGETS
+        // ==========================================
+        function salvarFocoDia(val) {
+            localStorage.setItem('lifeos_foco_dia_v1', val);
+        }
+
+        function salvarRefeicao() {
+            let dietaDB = JSON.parse(localStorage.getItem('lifeos_saude_dieta_v1')) || {};
+            dietaDB.cafe = document.getElementById('check-cafe').checked;
+            dietaDB.lanche = document.getElementById('check-lanche').checked;
+            dietaDB.almoco = document.getElementById('check-almoco').checked;
+            dietaDB.jantar = document.getElementById('check-jantar').checked;
+            dietaDB.agua = aguaAtual;
+            localStorage.setItem('lifeos_saude_dieta_v1', JSON.stringify(dietaDB));
+        }
+
+        function alterarAgua(qtd) {
+            aguaAtual = Math.max(0, aguaAtual + qtd); // Não permite água negativa
+            document.getElementById('agua-display').innerText = aguaAtual + ' L';
+            salvarRefeicao(); // Atualiza o banco
+        }
+
+        function registrarTreino() {
+            let treinou = document.getElementById('check-treinou').checked;
+            if(!treinou) {
+                alert('Marque a caixa confirmando que treinou hoje primeiro!');
+                return;
+            }
+            let ficha = document.getElementById('select-ficha').value;
+            let treinosDB = JSON.parse(localStorage.getItem('lifeos_saude_treinos_v1')) || [];
+            
+            treinosDB.push({
+                data: new Date().toLocaleDateString('pt-BR'),
+                ficha: ficha,
+                id: Date.now()
+            });
+            localStorage.setItem('lifeos_saude_treinos_v1', JSON.stringify(treinosDB));
+            
+            document.getElementById('check-treinou').checked = false;
+            alert('Excelente! Treino (' + ficha + ') registrado com sucesso no banco de dados da Saúde.');
+        }
+
+        // ==========================================
+        // LÓGICA RITUAIS DIÁRIOS
+        // ==========================================
+        let abaRotinaAtual = 'manha';
+        function trocarAbaRotina(aba) {
+            abaRotinaAtual = aba;
+            ['manha', 'tarde', 'noite'].forEach(id => document.getElementById(`btn-rotina-${id}`).classList.remove('active'));
+            document.getElementById(`btn-rotina-${aba}`).classList.add('active');
+            
+            let html = '';
+            if(dbRotinasCache && dbRotinasCache[aba] && dbRotinasCache[aba].length > 0) {
+                dbRotinasCache[aba].forEach(item => {
+                    let texto = item.texto || item.nome || item.ritual || 'Ritual sem nome';
+                    html += `
+                    <label class="flex items-center gap-3 cursor-pointer group p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded transition-colors -mx-1">
+                        <input type="checkbox" ${item.feita ? 'checked' : ''} onchange="toggleRotinaItem(${item.id || Date.now()})" class="checkbox-custom shrink-0">
+                        <span class="text-xs font-bold ${item.feita ? 'text-muted line-through' : 'text-strong'} group-hover:text-accent transition-colors select-none">${texto}</span>
+                    </label>`;
+                });
+            } else { html = `<p class="text-[10px] text-muted italic text-center p-2 uppercase font-bold tracking-widest">Nenhum ritual registado</p>`; }
+            document.getElementById('conteudo-rotina').innerHTML = html;
+        }
+
+        function toggleRotinaItem(id) {
+            if (dbRotinasCache && dbRotinasCache[abaRotinaAtual]) {
+                const item = dbRotinasCache[abaRotinaAtual].find(x => x.id === id);
+                if(item) { 
+                    item.feita = !item.feita; 
+                    localStorage.setItem('lifeos_rituais_diarios_v1', JSON.stringify(dbRotinasCache)); 
+                }
+            }
+            trocarAbaRotina(abaRotinaAtual); 
+        }
+
+        // ==========================================
+        // SISTEMA DE BACKUP / EXPORTAÇÃO
+        // ==========================================
+        function abrirModalSync() { document.getElementById('modal-sync').classList.remove('hidden'); document.getElementById('modal-sync').classList.add('flex'); setTimeout(() => { document.getElementById('modal-sync').classList.remove('opacity-0'); document.getElementById('ms-content').classList.remove('scale-95'); }, 10); }
+        function fecharModalSync() { document.getElementById('modal-sync').classList.add('opacity-0'); document.getElementById('ms-content').classList.add('scale-95'); setTimeout(() => { document.getElementById('modal-sync').classList.remove('flex'); document.getElementById('modal-sync').classList.add('hidden'); }, 300); }
+        function exportarBackup() { let backupData = {}; for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key.startsWith('lifeos_') || key === 'theme') { backupData[key] = localStorage.getItem(key); } } const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2)); const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); const dataHoje = new Date().toISOString().split('T')[0]; downloadAnchorNode.setAttribute("download", `lifeos_backup_${dataHoje}.json`); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove(); }
+        function processarImportacao(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const importedData = JSON.parse(e.target.result); let hasValidKeys = false; for (const key in importedData) { if (key.startsWith('lifeos_') || key === 'theme') hasValidKeys = true; } if(!hasValidKeys) { alert("Ficheiro inválido."); return; } if(confirm("APAGAR DADOS ATUAIS e substituir pelo backup?")) { for (let i = localStorage.length - 1; i >= 0; i--) { const key = localStorage.key(i); if (key.startsWith('lifeos_')) localStorage.removeItem(key); } for (const key in importedData) { localStorage.setItem(key, importedData[key]); } alert("Sucesso!"); window.location.reload(); } } catch (error) { alert("Erro de formato."); } }; reader.readAsText(file); event.target.value = ''; }
+
+        window.onload = () => { carregarTelemetriaGeral(); };
+    </script>
 </body>
 </html>

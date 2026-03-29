@@ -13,111 +13,114 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="flex h-screen overflow-hidden bg-bg-color text-base">
+<body class="flex h-[100dvh] overflow-hidden bg-bg-color text-base transition-colors duration-300">
 
-    <div id="sidebar-container" class="shrink-0 z-50"></div>
+    <div id="sidebar-container" class="shrink-0 z-50 h-full flex flex-col transition-all duration-300"></div>
 
-    <main class="flex-1 overflow-y-auto custom-scrollbar relative">
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative flex flex-col h-full w-full">
         
-        <header class="sticky top-0 z-30 bg-bg-color/80 backdrop-blur-md border-b border-theme p-5 lg:p-8 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <button id="mobile-menu-btn" class="md:hidden text-strong text-2xl hover:text-accent transition-colors">
+        <header class="sticky top-0 z-30 bg-bg-color/90 backdrop-blur-md border-b border-theme p-4 lg:p-6 flex items-center justify-between transition-colors duration-300 shrink-0">
+            <div class="flex items-center gap-3 lg:gap-4">
+                <button id="mobile-menu-btn" onclick="window.toggleMobileMenu()" class="md:hidden text-strong text-2xl hover:text-accent transition-colors p-2">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-                <div class="w-px h-8 bg-theme md:hidden"></div>
+                <div class="w-px h-8 bg-border-theme md:hidden"></div>
                 <div>
-                    <h2 class="text-2xl lg:text-3xl font-black text-strong uppercase tracking-tight">Metas e Objetivos</h2>
-                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">S.M.A.R.T + O.K.R Framework</p>
+                    <h2 class="text-xl lg:text-3xl font-black text-strong uppercase tracking-tight">Metas e Objetivos</h2>
+                    <p class="text-[9px] lg:text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">S.M.A.R.T + O.K.R Framework</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-3">
-                <button onclick="abrirModalMeta()" class="bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-black hover:scale-105 transition-transform shadow-lg flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i> <span class="hidden md:inline">NOVA META</span>
+            <div class="flex items-center gap-2 lg:gap-3">
+                <button onclick="abrirModalSync()" class="bg-panel border border-theme hover:border-blue-500 text-strong hover:text-blue-500 px-3 py-2 rounded-xl text-[10px] font-black transition-colors shadow-sm flex items-center gap-2 group">
+                    <i class="fa-solid fa-cloud-arrow-up text-blue-500 group-hover:animate-bounce"></i> <span class="hidden md:inline uppercase tracking-widest">Sync</span>
                 </button>
-                <button id="theme-toggle" title="Alternar Tema" class="w-12 h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-moon"></i>
+                <button onclick="abrirModalMeta()" class="bg-blue-500 text-white px-3 py-2 md:px-5 md:py-3 rounded-xl text-[10px] md:text-xs font-black shadow-lg hover:scale-[1.02] transition-transform flex items-center gap-2 uppercase tracking-widest">
+                    <i class="fa-solid fa-plus"></i> <span class="hidden md:inline">Nova Meta</span>
+                </button>
+                <button id="theme-toggle" title="Alternar Tema" class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-accent transition-all shadow-sm">
+                    <i class="fa-solid fa-moon text-lg"></i>
                 </button>
             </div>
         </header>
 
-        <div class="p-5 lg:p-8 max-w-7xl mx-auto space-y-8">
+        <div class="p-4 lg:p-8 max-w-7xl mx-auto space-y-6 lg:space-y-8 w-full">
 
-            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-card p-6 flex items-center gap-5 border-l-4 border-blue-500">
-                    <div class="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 text-2xl shrink-0">
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+                <div class="glass-card p-5 lg:p-6 flex items-center gap-4 lg:gap-5 border-l-4 border-blue-500 shadow-sm">
+                    <div class="w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 text-xl lg:text-2xl shrink-0">
                         <i class="fa-solid fa-chart-line"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="text-xs font-black uppercase tracking-widest text-muted">Avanço Global</p>
+                        <p class="text-[10px] lg:text-xs font-black uppercase tracking-widest text-muted">Avanço Global</p>
                         <div class="flex items-end gap-2 mb-2 mt-1">
-                            <span class="text-4xl font-black text-strong leading-none" id="stats-progresso">0%</span>
+                            <span class="text-3xl lg:text-4xl font-black text-strong leading-none" id="stats-progresso">0%</span>
                         </div>
-                        <div class="w-full h-2 bg-black/10 dark:bg-white/5 rounded-full overflow-hidden">
+                        <div class="w-full h-1.5 lg:h-2 bg-black/10 dark:bg-white/5 rounded-full overflow-hidden">
                             <div id="bar-progresso" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="glass-card p-6 flex items-center gap-5 border-l-4 border-orange-500">
-                    <div class="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 text-2xl shrink-0">
+                <div class="glass-card p-5 lg:p-6 flex items-center gap-4 lg:gap-5 border-l-4 border-orange-500 shadow-sm">
+                    <div class="w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 text-xl lg:text-2xl shrink-0">
                         <i class="fa-solid fa-fire"></i>
                     </div>
                     <div>
-                        <p class="text-xs font-black uppercase tracking-widest text-muted">Metas Ativas</p>
-                        <p class="text-4xl font-black text-strong leading-none mt-2" id="stats-ativas">0</p>
-                        <p class="text-xs text-muted font-bold mt-1">Em execução</p>
+                        <p class="text-[10px] lg:text-xs font-black uppercase tracking-widest text-muted">Metas Ativas</p>
+                        <p class="text-3xl lg:text-4xl font-black text-strong leading-none mt-2" id="stats-ativas">0</p>
+                        <p class="text-[9px] lg:text-xs text-muted font-bold mt-1 uppercase tracking-widest">Em execução</p>
                     </div>
                 </div>
 
-                <div class="glass-card p-6 flex items-center gap-5 border-l-4 border-accent">
-                    <div class="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center text-accent text-2xl shrink-0">
+                <div class="glass-card p-5 lg:p-6 flex items-center gap-4 lg:gap-5 border-l-4 border-accent shadow-sm">
+                    <div class="w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-accent/10 flex items-center justify-center text-accent text-xl lg:text-2xl shrink-0">
                         <i class="fa-solid fa-trophy"></i>
                     </div>
                     <div>
-                        <p class="text-xs font-black uppercase tracking-widest text-muted">Conquistadas</p>
-                        <p class="text-4xl font-black text-strong leading-none mt-2" id="stats-concluidas">0</p>
-                        <p class="text-xs text-muted font-bold mt-1">Histórico Total</p>
+                        <p class="text-[10px] lg:text-xs font-black uppercase tracking-widest text-muted">Conquistadas</p>
+                        <p class="text-3xl lg:text-4xl font-black text-strong leading-none mt-2" id="stats-concluidas">0</p>
+                        <p class="text-[9px] lg:text-xs text-muted font-bold mt-1 uppercase tracking-widest">Histórico Total</p>
                     </div>
                 </div>
             </section>
 
-            <section class="flex gap-3 overflow-x-auto pb-2 custom-scrollbar" id="filtros-container">
-                <button onclick="filtrarMetas('Todas')" class="filtro-btn px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-blue-500 text-white shadow-md">Todas</button>
-                <button onclick="filtrarMetas('Profissional')" class="filtro-btn px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Profissional</button>
-                <button onclick="filtrarMetas('Saúde')" class="filtro-btn px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Saúde</button>
-                <button onclick="filtrarMetas('Estudos')" class="filtro-btn px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Estudos</button>
-                <button onclick="filtrarMetas('Pessoal')" class="filtro-btn px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Pessoal</button>
-                <button onclick="filtrarMetas('Financeiro')" class="filtro-btn px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Financeiro</button>
+            <section class="flex gap-2 lg:gap-3 overflow-x-auto hide-scroll pb-2 custom-scrollbar" id="filtros-container">
+                <button onclick="filtrarMetas('Todas')" class="filtro-btn shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-blue-500 text-white shadow-md">Todas</button>
+                <button onclick="filtrarMetas('Profissional')" class="filtro-btn shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Profissional</button>
+                <button onclick="filtrarMetas('Saúde')" class="filtro-btn shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Saúde</button>
+                <button onclick="filtrarMetas('Estudos')" class="filtro-btn shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Estudos</button>
+                <button onclick="filtrarMetas('Pessoal')" class="filtro-btn shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Pessoal</button>
+                <button onclick="filtrarMetas('Financeiro')" class="filtro-btn shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Financeiro</button>
             </section>
 
-            <section id="metas-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12">
-                </section>
+            <section id="metas-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 pb-12">
+            </section>
 
         </div>
     </main>
 
-    <div id="modal-meta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-panel border border-theme rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
+    <div id="modal-meta" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-panel border border-theme rounded-3xl w-full max-w-2xl max-h-[95vh] flex flex-col shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
             
-            <div class="p-6 border-b border-theme flex justify-between items-center shrink-0">
+            <div class="p-4 md:p-6 border-b border-theme flex justify-between items-center shrink-0 rounded-t-3xl">
                 <div>
-                    <h3 class="text-xl font-black text-strong uppercase tracking-tight">Arquitetar Nova Meta</h3>
-                    <p class="text-xs font-bold text-muted uppercase tracking-widest mt-1">S.M.A.R.T + Resultados Chave</p>
+                    <h3 class="text-lg md:text-xl font-black text-strong uppercase tracking-tight">Arquitetar Nova Meta</h3>
+                    <p class="text-[10px] font-bold text-muted uppercase tracking-widest mt-1">S.M.A.R.T + Resultados Chave</p>
                 </div>
                 <button onclick="fecharModalMeta()" class="text-muted hover:text-red-500 transition-colors w-10 h-10 flex items-center justify-center rounded-xl bg-black/5 dark:bg-white/5 hover:bg-red-500/10"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
-            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-8">
+            <div class="p-4 md:p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 md:space-y-8">
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-black uppercase tracking-widest text-muted mb-2">Título do Objetivo</label>
-                        <input type="text" id="meta-titulo" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-base font-bold text-strong focus:outline-none focus:border-blue-500 transition-colors" placeholder="Ex: Lançar curso de Afiliados">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Título do Objetivo</label>
+                        <input type="text" id="meta-titulo" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm md:text-base font-bold text-strong focus:outline-none focus:border-blue-500 transition-colors" placeholder="Ex: Lançar curso de Afiliados">
                     </div>
                     <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-muted mb-2">Categoria</label>
-                        <select id="meta-categoria" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-blue-500 appearance-none font-bold cursor-pointer transition-colors">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Categoria</label>
+                        <select id="meta-categoria" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-xs md:text-sm text-strong focus:outline-none focus:border-blue-500 appearance-none font-bold cursor-pointer transition-colors">
                             <option value="Profissional">💼 Profissional</option>
                             <option value="Saúde">❤️ Saúde</option>
                             <option value="Estudos">📚 Estudos</option>
@@ -127,39 +130,60 @@
                     </div>
                 </div>
 
-                <div class="space-y-5 bg-bg-color p-6 rounded-2xl border border-theme">
-                    <h4 class="text-sm font-black uppercase tracking-widest text-strong flex items-center gap-2 mb-4"><i class="fa-solid fa-microscope text-blue-500"></i> Parâmetros S.M.A.R.T</h4>
+                <div class="space-y-4 md:space-y-5 bg-bg-color p-4 md:p-6 rounded-2xl border border-theme">
+                    <h4 class="text-xs font-black uppercase tracking-widest text-strong flex items-center gap-2 mb-4"><i class="fa-solid fa-microscope text-blue-500"></i> Parâmetros S.M.A.R.T</h4>
                     
-                    <div><label class="block text-xs font-bold text-muted mb-1"><span class="text-blue-500">S (Específico):</span> O que exatamente vai fazer?</label>
-                    <input type="text" id="meta-s" class="w-full bg-transparent border-b border-theme py-2 text-sm text-strong focus:outline-none focus:border-blue-500 transition-colors"></div>
+                    <div><label class="block text-[10px] md:text-xs font-bold text-muted mb-1"><span class="text-blue-500">S (Específico):</span> O que exatamente vai fazer?</label>
+                    <input type="text" id="meta-s" class="w-full bg-transparent border-b border-theme py-2 text-xs md:text-sm text-strong focus:outline-none focus:border-blue-500 transition-colors"></div>
                     
-                    <div><label class="block text-xs font-bold text-muted mb-1"><span class="text-blue-500">M (Mensurável):</span> Qual o indicador de sucesso?</label>
-                    <input type="text" id="meta-m" class="w-full bg-transparent border-b border-theme py-2 text-sm text-strong focus:outline-none focus:border-blue-500 transition-colors"></div>
+                    <div><label class="block text-[10px] md:text-xs font-bold text-muted mb-1"><span class="text-blue-500">M (Mensurável):</span> Qual o indicador de sucesso?</label>
+                    <input type="text" id="meta-m" class="w-full bg-transparent border-b border-theme py-2 text-xs md:text-sm text-strong focus:outline-none focus:border-blue-500 transition-colors"></div>
                     
-                    <div><label class="block text-xs font-bold text-muted mb-1"><span class="text-blue-500">A (Atingível):</span> Que recursos você precisa ter?</label>
-                    <input type="text" id="meta-a" class="w-full bg-transparent border-b border-theme py-2 text-sm text-strong focus:outline-none focus:border-blue-500 transition-colors"></div>
+                    <div><label class="block text-[10px] md:text-xs font-bold text-muted mb-1"><span class="text-blue-500">A (Atingível):</span> Que recursos você precisa ter?</label>
+                    <input type="text" id="meta-a" class="w-full bg-transparent border-b border-theme py-2 text-xs md:text-sm text-strong focus:outline-none focus:border-blue-500 transition-colors"></div>
                     
-                    <div><label class="block text-xs font-bold text-muted mb-1"><span class="text-blue-500">R (Relevante):</span> Por que isso é importante para o seu futuro?</label>
-                    <input type="text" id="meta-r" class="w-full bg-transparent border-b border-theme py-2 text-sm text-strong focus:outline-none focus:border-blue-500 transition-colors"></div>
+                    <div><label class="block text-[10px] md:text-xs font-bold text-muted mb-1"><span class="text-blue-500">R (Relevante):</span> Por que isso é importante para o seu futuro?</label>
+                    <input type="text" id="meta-r" class="w-full bg-transparent border-b border-theme py-2 text-xs md:text-sm text-strong focus:outline-none focus:border-blue-500 transition-colors"></div>
                     
-                    <div><label class="block text-xs font-bold text-muted mb-1"><span class="text-blue-500">T (Prazo):</span> Data limite da conquista</label>
-                    <input type="date" id="meta-t" class="w-full bg-transparent border-b border-theme py-2 text-sm font-bold text-strong focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"></div>
+                    <div><label class="block text-[10px] md:text-xs font-bold text-muted mb-1"><span class="text-blue-500">T (Prazo):</span> Data limite da conquista</label>
+                    <input type="date" id="meta-t" class="w-full bg-transparent border-b border-theme py-2 text-xs md:text-sm font-bold text-strong focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"></div>
                 </div>
 
                 <div>
-                    <h4 class="text-sm font-black uppercase tracking-widest text-strong flex items-center gap-2 mb-2"><i class="fa-solid fa-list-check text-orange-500"></i> Key Results (Resultados-Chave)</h4>
-                    <p class="text-xs text-muted mb-4 font-semibold">Divida a meta em grandes marcos de entrega. O progresso deles dita o progresso da Meta.</p>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-strong flex items-center gap-2 mb-2"><i class="fa-solid fa-list-check text-orange-500"></i> Key Results (Resultados-Chave)</h4>
+                    <p class="text-[10px] text-muted mb-4 font-semibold uppercase tracking-widest leading-relaxed">Divida a meta em grandes marcos de entrega. O progresso deles dita o progresso da Meta.</p>
                     
-                    <div id="modal-krs-list" class="space-y-3 mb-4">
-                        </div>
-                    <button onclick="adicionarInputKR()" class="text-sm font-bold text-blue-500 hover:text-blue-600 flex items-center gap-2 transition-colors px-2 py-1 rounded hover:bg-blue-500/10"><i class="fa-solid fa-plus"></i> Adicionar Key Result</button>
+                    <div id="modal-krs-list" class="space-y-3 mb-4"></div>
+                    
+                    <button onclick="adicionarInputKR()" class="text-[10px] md:text-xs font-black uppercase tracking-widest text-blue-500 hover:text-blue-600 flex items-center gap-2 transition-colors px-3 py-2 rounded-lg hover:bg-blue-500/10"><i class="fa-solid fa-plus"></i> Adicionar Key Result</button>
                 </div>
 
             </div>
 
-            <div class="p-6 border-t border-theme shrink-0 flex justify-end gap-4 bg-panel rounded-b-2xl">
-                <button onclick="fecharModalMeta()" class="px-6 py-3 rounded-xl text-sm font-bold text-muted hover:bg-bg-color transition-colors border border-transparent hover:border-theme">CANCELAR</button>
-                <button onclick="salvarMeta()" class="bg-blue-500 text-white px-8 py-3 rounded-xl text-sm font-black shadow-lg hover:scale-105 transition-transform">SALVAR META</button>
+            <div class="p-4 md:p-6 border-t border-theme shrink-0 flex flex-col-reverse md:flex-row justify-end gap-3 md:gap-4 bg-panel rounded-b-3xl">
+                <button onclick="fecharModalMeta()" class="w-full md:w-auto px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-muted hover:bg-bg-color transition-colors border border-transparent hover:border-theme text-center">Cancelar</button>
+                <button onclick="salvarMeta()" class="w-full md:w-auto bg-blue-500 text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-transform text-center flex items-center justify-center gap-2"><i class="fa-solid fa-check"></i> Salvar Meta</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-sync" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg-color border border-theme rounded-3xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300" id="ms-content">
+            <div class="p-5 md:p-6 border-b border-theme flex justify-between items-center bg-panel rounded-t-3xl">
+                <h3 class="text-xs md:text-sm font-black text-strong uppercase tracking-widest"><i class="fa-solid fa-cloud-arrow-up text-blue-500 mr-2"></i> Backup & Sync</h3>
+                <button onclick="fecharModalSync()" class="text-muted hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-500/10"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-5 md:p-6 space-y-6">
+                <p class="text-[10px] md:text-xs text-muted leading-relaxed font-bold uppercase tracking-widest">Use esta ferramenta para passar os seus dados entre o computador e o telemóvel.</p>
+                <div class="space-y-3">
+                    <h4 class="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-strong border-b border-theme/50 pb-1">Passo 1: Exportar</h4>
+                    <button onclick="exportarBackup()" class="w-full bg-panel border border-theme hover:border-accent hover:text-accent text-strong py-3 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Baixar Arquivo</button>
+                </div>
+                <div class="space-y-3 pt-4">
+                    <h4 class="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-strong border-b border-theme/50 pb-1">Passo 2: Importar</h4>
+                    <input type="file" id="file-import" accept=".json" class="hidden" onchange="processarImportacao(event)">
+                    <button onclick="document.getElementById('file-import').click()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"><i class="fa-solid fa-upload"></i> Carregar Backup</button>
+                </div>
             </div>
         </div>
     </div>
@@ -206,11 +230,11 @@
                 let krsHTML = '';
                 if(totalKRs > 0) {
                     krsHTML = meta.krs.map((kr, krIdx) => `
-                        <div class="flex items-start gap-3 p-3 hover:bg-bg-color rounded-xl group transition-colors border border-transparent hover:border-theme">
-                            <div onclick="toggleKR(${mIdx}, ${krIdx})" class="w-6 h-6 mt-0.5 rounded-lg border-2 border-theme flex items-center justify-center cursor-pointer transition-colors ${kr.feito ? 'bg-accent border-accent text-white' : 'text-transparent hover:border-accent'}">
-                                <i class="fa-solid fa-check text-xs"></i>
+                        <div class="flex items-start gap-3 p-2 md:p-3 hover:bg-bg-color rounded-xl group transition-colors border border-transparent hover:border-theme">
+                            <div onclick="toggleKR(${mIdx}, ${krIdx})" class="w-5 h-5 md:w-6 md:h-6 mt-0.5 rounded-lg border-2 border-theme flex items-center justify-center cursor-pointer transition-colors shrink-0 ${kr.feito ? 'bg-accent border-accent text-white' : 'text-transparent hover:border-accent'}">
+                                <i class="fa-solid fa-check text-[10px] md:text-xs"></i>
                             </div>
-                            <span class="flex-1 text-sm font-semibold pt-0.5 ${kr.feito ? 'text-muted line-through' : 'text-strong'}">${kr.texto}</span>
+                            <span class="flex-1 text-xs md:text-sm font-semibold pt-0.5 ${kr.feito ? 'text-muted line-through' : 'text-strong'}">${kr.texto}</span>
                         </div>
                     `).join('');
                 } else {
@@ -220,37 +244,37 @@
                 const card = document.createElement('div');
                 card.className = `glass-card flex flex-col overflow-hidden transition-all duration-300 ${progresso === 100 ? 'opacity-60 border-accent scale-[0.98]' : 'hover:-translate-y-1 hover:shadow-xl'}`;
                 card.innerHTML = `
-                    <div class="p-6 md:p-8 flex-1">
-                        <div class="flex justify-between items-start mb-5">
-                            <span class="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border ${corCat}">${meta.categoria}</span>
+                    <div class="p-5 md:p-6 lg:p-8 flex-1 flex flex-col">
+                        <div class="flex justify-between items-start mb-4 md:mb-5">
+                            <span class="text-[9px] md:text-[10px] font-black uppercase tracking-widest px-2 py-1 md:px-3 md:py-1.5 rounded-lg border ${corCat}">${meta.categoria}</span>
                             <button onclick="excluirMeta(${mIdx})" class="text-muted hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-500/10"><i class="fa-solid fa-trash-can text-sm"></i></button>
                         </div>
 
-                        <h3 class="text-xl font-black text-strong leading-tight mb-6 ${progresso === 100 ? 'line-through text-muted' : ''}">${meta.titulo}</h3>
+                        <h3 class="text-lg md:text-xl font-black text-strong leading-tight mb-5 md:mb-6 ${progresso === 100 ? 'line-through text-muted' : ''}">${meta.titulo}</h3>
                         
-                        <div class="mb-8 bg-bg-color p-5 rounded-2xl border border-theme">
-                            <div class="flex justify-between text-xs font-bold uppercase tracking-widest mb-3">
+                        <div class="mb-6 md:mb-8 bg-bg-color p-4 md:p-5 rounded-2xl border border-theme">
+                            <div class="flex justify-between text-[10px] md:text-xs font-black uppercase tracking-widest mb-3">
                                 <span class="text-muted">Progresso O.K.R</span>
                                 <span class="text-strong">${progresso}%</span>
                             </div>
-                            <div class="w-full h-2 bg-black/10 dark:bg-white/5 rounded-full overflow-hidden mb-4">
+                            <div class="w-full h-1.5 md:h-2 bg-black/10 dark:bg-white/5 rounded-full overflow-hidden mb-4">
                                 <div class="h-full bg-blue-500 transition-all duration-500" style="width: ${progresso}%"></div>
                             </div>
-                            <div class="flex items-center gap-2 text-xs font-bold text-muted bg-panel inline-flex px-3 py-1.5 rounded-lg border border-theme">
+                            <div class="flex items-center gap-2 text-[10px] md:text-xs font-bold text-muted bg-panel inline-flex px-2 py-1 md:px-3 md:py-1.5 rounded-lg border border-theme">
                                 <i class="fa-regular fa-clock"></i> Prazo: <span class="${progresso === 100 ? '' : 'text-orange-500'}">${dataFormatada}</span>
                             </div>
                         </div>
 
-                        <div class="mb-6">
-                            <h4 class="text-xs font-black uppercase tracking-widest text-muted mb-3 border-b border-theme pb-2">Key Results (${concluidosKRs}/${totalKRs})</h4>
+                        <div class="mb-5 md:mb-6 flex-1">
+                            <h4 class="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted mb-3 border-b border-theme pb-2">Key Results (${concluidosKRs}/${totalKRs})</h4>
                             <div class="space-y-1">${krsHTML}</div>
                         </div>
 
                         <details class="group cursor-pointer">
-                            <summary class="text-xs font-bold text-blue-500 uppercase tracking-widest select-none flex items-center gap-2 outline-none mt-2 p-2 rounded-lg hover:bg-blue-500/10 transition-colors w-max">
+                            <summary class="text-[10px] md:text-xs font-black text-blue-500 uppercase tracking-widest select-none flex items-center gap-2 outline-none mt-2 p-2 rounded-lg hover:bg-blue-500/10 transition-colors w-max">
                                 <i class="fa-solid fa-microscope"></i> Ler Estrutura S.M.A.R.T <i class="fa-solid fa-chevron-down text-[10px] group-open:rotate-180 transition-transform"></i>
                             </summary>
-                            <div class="mt-4 space-y-3 p-5 bg-bg-color border border-theme rounded-2xl text-sm text-muted">
+                            <div class="mt-3 md:mt-4 space-y-2 md:space-y-3 p-4 md:p-5 bg-bg-color border border-theme rounded-2xl text-xs md:text-sm text-muted">
                                 <p><strong class="text-strong font-black text-blue-500">S:</strong> ${meta.smart.s || '-'}</p>
                                 <p><strong class="text-strong font-black text-blue-500">M:</strong> ${meta.smart.m || '-'}</p>
                                 <p><strong class="text-strong font-black text-blue-500">A:</strong> ${meta.smart.a || '-'}</p>
@@ -270,7 +294,7 @@
             document.getElementById('stats-concluidas').innerText = totalConcluidas;
 
             if (metasFiltradas.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-20 text-center opacity-50"><i class="fa-solid fa-bullseye text-6xl mb-4 text-muted"></i><p class="font-bold text-base">Nenhuma meta encontrada nesta categoria.</p></div>`;
+                grid.innerHTML = `<div class="col-span-full py-16 md:py-20 text-center opacity-50"><i class="fa-solid fa-bullseye text-4xl md:text-6xl mb-4 text-muted"></i><p class="font-bold text-sm md:text-base uppercase tracking-widest">Nenhuma meta encontrada.</p></div>`;
             }
         }
 
@@ -280,9 +304,9 @@
             const botoes = document.querySelectorAll('.filtro-btn');
             botoes.forEach(btn => {
                 if(btn.innerText === cat) {
-                    btn.className = "filtro-btn px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-blue-500 text-white shadow-md";
+                    btn.className = "filtro-btn shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-blue-500 text-white shadow-md";
                 } else {
-                    btn.className = "filtro-btn px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong hover:bg-bg-color";
+                    btn.className = "filtro-btn shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong hover:bg-bg-color";
                 }
             });
             renderDashboard();
@@ -338,11 +362,11 @@
         function adicionarInputKR() {
             const container = document.getElementById('modal-krs-list');
             const div = document.createElement('div');
-            div.className = "flex gap-3 items-center bg-bg-color p-2 rounded-xl border border-theme";
+            div.className = "flex gap-2 md:gap-3 items-center bg-bg-color p-2 rounded-xl border border-theme";
             div.innerHTML = `
-                <div class="w-6 h-6 rounded-lg border-2 border-theme bg-panel flex-shrink-0 ml-1"></div>
-                <input type="text" class="kr-input flex-1 bg-transparent border-none py-1.5 text-sm font-semibold text-strong focus:outline-none placeholder-muted" placeholder="Ex: Atingir 1.000 seguidores">
-                <button onclick="this.parentElement.remove()" class="text-muted hover:text-red-500 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-500/10 transition-colors mr-1"><i class="fa-solid fa-xmark text-sm"></i></button>
+                <div class="w-5 h-5 md:w-6 md:h-6 rounded-lg border-2 border-theme bg-panel flex-shrink-0 ml-1"></div>
+                <input type="text" class="kr-input flex-1 bg-transparent border-none py-1.5 text-xs md:text-sm font-semibold text-strong focus:outline-none placeholder-muted" placeholder="Ex: Atingir 1.000 seguidores">
+                <button onclick="this.parentElement.remove()" class="text-muted hover:text-red-500 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-500/10 transition-colors mr-1 shrink-0"><i class="fa-solid fa-xmark text-sm"></i></button>
             `;
             container.appendChild(div);
         }
@@ -378,6 +402,71 @@
             fecharModalMeta();
             renderDashboard();
         }
+
+        // --- SISTEMA DE BACKUP / SYNC ---
+        window.abrirModalSync = function() {
+            document.getElementById('modal-sync').classList.remove('hidden');
+            document.getElementById('modal-sync').classList.add('flex');
+            setTimeout(() => { document.getElementById('modal-sync').classList.remove('opacity-0'); document.getElementById('ms-content').classList.remove('scale-95'); }, 10);
+        };
+        
+        window.fecharModalSync = function() {
+            document.getElementById('modal-sync').classList.add('opacity-0');
+            document.getElementById('ms-content').classList.add('scale-95');
+            setTimeout(() => { document.getElementById('modal-sync').classList.remove('flex'); document.getElementById('modal-sync').classList.add('hidden'); }, 300);
+        };
+
+        window.exportarBackup = function() {
+            let backupData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('lifeos_') || key === 'theme') {
+                    backupData[key] = localStorage.getItem(key);
+                }
+            }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            const dataHoje = new Date().toISOString().split('T')[0];
+            downloadAnchorNode.setAttribute("download", `lifeos_backup_${dataHoje}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        };
+
+        window.processarImportacao = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    let hasValidKeys = false;
+                    for (const key in importedData) {
+                        if (key.startsWith('lifeos_') || key === 'theme') hasValidKeys = true;
+                    }
+                    if(!hasValidKeys) {
+                        alert("Ficheiro inválido.");
+                        return;
+                    }
+                    if(confirm("APAGAR DADOS ATUAIS e substituir pelo backup?")) {
+                        for (let i = localStorage.length - 1; i >= 0; i--) {
+                            const key = localStorage.key(i);
+                            if (key.startsWith('lifeos_')) localStorage.removeItem(key);
+                        }
+                        for (const key in importedData) {
+                            localStorage.setItem(key, importedData[key]);
+                        }
+                        alert("Sucesso!");
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    alert("Erro de formato.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        };
 
         window.onload = renderDashboard;
     </script>

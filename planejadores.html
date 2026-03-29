@@ -14,446 +14,542 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Animação suave para transição de meses/trimestres */
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .caderno-linhas {
+            background-image: repeating-linear-gradient(transparent, transparent 31px, var(--border-color) 31px, var(--border-color) 32px);
+            background-attachment: local;
+            line-height: 32px !important;
+            font-size: 16px !important;
+            padding: 4px 8px !important;
+        }
+
+        @media print {
+            @page { size: A4; margin: 15mm; }
+            body { background: white !important; color: black !important; }
+            #sidebar-container, header, .hide-on-print, #modal-sync, #modal-meta { display: none !important; }
+            main { overflow: visible !important; height: auto !important; width: 100% !important; display: block !important; }
+            .glass-card, .bg-panel, .bg-bg-color { background: white !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important; break-inside: avoid; }
+            .text-strong, .text-muted { color: black !important; }
+            .custom-scrollbar { overflow: visible !important; }
+            textarea { border: 1px solid #eee !important; resize: none !important; height: auto !important; overflow: visible !important; }
+            input { border: none !important; color: black !important; background: transparent !important; }
+        }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden bg-bg-color text-base transition-colors duration-300">
+<body class="flex h-[100dvh] overflow-hidden bg-bg-color text-base transition-colors duration-300">
 
     <div id="sidebar-container" class="shrink-0 z-50 h-full flex flex-col transition-all duration-300"></div>
 
     <main class="flex-1 overflow-y-auto custom-scrollbar relative flex flex-col h-full w-full">
         
-        <header class="sticky top-0 z-30 bg-bg-color/80 backdrop-blur-md border-b border-theme p-5 lg:p-8 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <button id="mobile-menu-btn" class="md:hidden text-strong text-2xl hover:text-blue-500 transition-colors"><i class="fa-solid fa-bars"></i></button>
+        <header class="sticky top-0 z-30 bg-bg-color/90 backdrop-blur-md border-b border-theme p-4 lg:p-6 flex items-center justify-between transition-colors duration-300 shrink-0 hide-on-print">
+            <div class="flex items-center gap-3 lg:gap-4">
+                <button id="mobile-menu-btn" onclick="window.toggleMobileMenu()" class="md:hidden text-strong text-2xl hover:text-blue-500 transition-colors p-2"><i class="fa-solid fa-bars"></i></button>
                 <div class="w-px h-8 bg-border-theme md:hidden"></div>
                 <div>
-                    <h2 class="text-2xl lg:text-3xl font-black text-strong uppercase tracking-tight">Planejadores</h2>
-                    <p class="text-[10px] lg:text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">Sua Bússola Temporal</p>
+                    <h2 class="text-xl lg:text-3xl font-black text-strong uppercase tracking-tight">Planejadores</h2>
+                    <p class="text-[9px] lg:text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">Sua Bússola Temporal</p>
                 </div>
             </div>
-            <button id="theme-toggle" class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-blue-500 transition-all shadow-sm"><i class="fa-solid fa-moon text-lg"></i></button>
+            
+            <div class="flex items-center gap-2 lg:gap-3 hide-on-print">
+                <button onclick="window.print()" class="bg-panel border border-theme hover:border-gray-500 text-strong hover:text-gray-500 px-3 py-2 rounded-xl text-[10px] font-black transition-colors shadow-sm flex items-center gap-2 group" title="Imprimir A4">
+                    <i class="fa-solid fa-print group-hover:scale-110 transition-transform"></i> <span class="hidden md:inline uppercase tracking-widest">Imprimir</span>
+                </button>
+                <button onclick="abrirModalSync()" class="bg-panel border border-theme hover:border-blue-500 text-strong hover:text-blue-500 px-3 py-2 rounded-xl text-[10px] font-black transition-colors shadow-sm flex items-center gap-2 group">
+                    <i class="fa-solid fa-cloud-arrow-up text-blue-500 group-hover:animate-bounce"></i> <span class="hidden md:inline uppercase tracking-widest">Sync</span>
+                </button>
+                <button id="theme-toggle" class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-accent transition-all shadow-sm"><i class="fa-solid fa-moon text-lg"></i></button>
+            </div>
         </header>
 
-        <div class="p-5 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
+        <div class="p-4 lg:p-8 max-w-[1600px] mx-auto w-full space-y-6">
 
-            <div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
-                <button onclick="mudarAba('anual')" id="tab-anual" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Visão Anual</button>
-                <button onclick="mudarAba('trimestral')" id="tab-trimestral" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Trimestral</button>
-                <button onclick="mudarAba('mensal')" id="tab-mensal" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-blue-500 text-white shadow-md">Mensal</button>
-                <button onclick="mudarAba('semanal')" id="tab-semanal" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Semanal</button>
+            <div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar hide-on-print">
+                <button onclick="mudarAba('anual')" id="tab-anual" class="tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Visão Anual</button>
+                <button onclick="mudarAba('trimestral')" id="tab-trimestral" class="tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Trimestral</button>
+                <button onclick="mudarAba('mensal')" id="tab-mensal" class="tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-blue-500 text-white shadow-md">Mensal</button>
+                <button onclick="mudarAba('semanal')" id="tab-semanal" class="tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Semanal</button>
+                <button onclick="mudarAba('diario')" id="tab-diario" class="tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong">Diário (Hoje)</button>
             </div>
 
-            <div id="conteudo-mensal" class="tab-conteudo block space-y-6 fade-in">
+            <div id="conteudo-diario" class="tab-conteudo hidden space-y-6 fade-in">
                 
-                <div class="flex justify-between items-center bg-panel border border-theme p-4 rounded-2xl">
-                    <button onclick="navegarMes(-1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-blue-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
-                    <h3 id="label-mes-atual" class="text-lg md:text-xl font-black text-strong uppercase tracking-widest">Agosto 2026</h3>
-                    <button onclick="navegarMes(1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-blue-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="flex justify-between items-center bg-panel border border-theme p-4 rounded-2xl mb-6">
+                    <button onclick="navegarDia(-1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-emerald-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
+                    <div class="text-center flex flex-col items-center">
+                        <div class="flex items-center gap-3">
+                            <h3 id="label-dia-atual" class="text-lg md:text-xl font-black text-strong uppercase tracking-widest">Hoje</h3>
+                            <button onclick="limparDia()" title="Limpar Planejamento" class="text-muted hover:text-red-500 transition-colors bg-bg-color border border-theme w-8 h-8 rounded-lg flex items-center justify-center hide-on-print"><i class="fa-solid fa-broom"></i></button>
+                        </div>
+                        <p id="label-data-dia" class="text-[10px] text-muted font-bold uppercase tracking-widest mt-0.5">--</p>
+                    </div>
+                    <button onclick="navegarDia(1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-emerald-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
 
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-1 space-y-6 hide-on-print">
+                        <div class="space-y-4">
+                            <a href="tarefas.html" class="glass-card p-4 flex flex-col items-center justify-center text-center hover:border-red-500 group transition-colors cursor-pointer">
+                                <i class="fa-solid fa-list-check text-2xl text-red-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-xs font-black uppercase tracking-widest text-strong">Tarefas (Kanban)</span>
+                            </a>
+                            <a href="rotinas.html" class="glass-card p-4 flex flex-col items-center justify-center text-center hover:border-accent group transition-colors cursor-pointer">
+                                <i class="fa-solid fa-rotate text-2xl text-accent mb-2 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-xs font-black uppercase tracking-widest text-strong">Hábitos & Rituais</span>
+                            </a>
+                            <a href="saude.html" class="glass-card p-4 flex flex-col items-center justify-center text-center hover:border-orange-500 group transition-colors cursor-pointer">
+                                <i class="fa-solid fa-dumbbell text-2xl text-orange-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-xs font-black uppercase tracking-widest text-strong">Treinos do Dia</span>
+                            </a>
+                        </div>
+                        <div class="glass-card p-5 border-t-4 border-indigo-500 bg-gradient-to-br from-panel to-indigo-500/5">
+                            <h4 class="text-[10px] font-black uppercase tracking-widest text-muted mb-4 border-b border-theme pb-2 flex items-center gap-2"><i class="fa-solid fa-cloud-moon text-indigo-500"></i> Descompressão</h4>
+                            <label class="block text-[9px] font-bold text-muted uppercase tracking-widest mb-2 text-center">Humor Predominante</label>
+                            <div class="flex justify-between gap-2 mb-4">
+                                <button id="btn-humor-mau" onclick="setHumor('mau')" class="flex-1 bg-panel border border-theme text-muted text-[10px] font-black uppercase tracking-widest py-2 rounded-lg hover:border-red-500 transition-colors">Mal <span class="text-sm block mt-1">😠</span></button>
+                                <button id="btn-humor-bom" onclick="setHumor('bom')" class="flex-1 bg-panel border border-theme text-muted text-[10px] font-black uppercase tracking-widest py-2 rounded-lg hover:border-blue-500 transition-colors">Bom <span class="text-sm block mt-1">🙂</span></button>
+                                <button id="btn-humor-otimo" onclick="setHumor('otimo')" class="flex-1 bg-panel border border-theme text-muted text-[10px] font-black uppercase tracking-widest py-2 rounded-lg hover:border-accent transition-colors">Ótimo <span class="text-sm block mt-1">🤩</span></button>
+                            </div>
+                            <label class="block text-[9px] font-bold text-muted uppercase tracking-widest mb-2">Como foi o seu dia?</label>
+                            <textarea id="d-reflexao" onblur="salvarDia()" class="w-full h-32 bg-bg-color border border-theme rounded-xl p-3 text-xs text-strong focus:outline-none focus:border-indigo-500 resize-none custom-scrollbar" placeholder="Escreva os pontos altos, lições aprendidas ou desabafos..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-3 glass-card p-6 border-t-4 border-emerald-500">
+                        <div class="mb-6 pb-4 border-b border-theme">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-2">Foco Principal do Dia</label>
+                            <input type="text" id="d-foco" onblur="salvarDia()" class="w-full bg-transparent text-xl font-black text-strong focus:outline-none placeholder-muted" placeholder="Qual a sua missão nº 1 hoje?">
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 mb-4">
+                                <i class="fa-solid fa-book-open text-muted"></i>
+                                <h4 class="text-xs font-black uppercase tracking-widest text-muted">Programação & Compromissos</h4>
+                            </div>
+                            <textarea id="d-caderno" onblur="salvarDia()" class="w-full h-[600px] bg-transparent border-none text-strong focus:outline-none resize-none placeholder-muted/50 caderno-linhas custom-scrollbar" placeholder="Ex:&#10;08h as 08h45: Deslocamento para o trabalho&#10;09h as 09h30: Primeira aula do dia..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="conteudo-semanal" class="tab-conteudo hidden space-y-6 fade-in">
+                
+                <div class="flex justify-between items-center bg-panel border border-theme p-4 rounded-2xl mb-6">
+                    <button onclick="navegarSemana(-1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-accent transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
+                    <div class="text-center w-full md:w-auto px-4 flex flex-col items-center">
+                        <div class="flex justify-center items-end gap-3 mb-1">
+                            <h3 class="text-lg md:text-2xl font-black text-strong uppercase tracking-widest">Semana <span id="week-number" class="text-accent">0</span></h3>
+                            <button onclick="limparSemana()" title="Limpar Semana" class="text-muted hover:text-red-500 transition-colors bg-bg-color border border-theme w-8 h-8 rounded-lg flex items-center justify-center pb-1 hide-on-print"><i class="fa-solid fa-broom"></i></button>
+                        </div>
+                        <p id="week-dates" class="text-[9px] text-muted font-bold uppercase tracking-widest mt-0.5">--</p>
+                    </div>
+                    <button onclick="navegarSemana(1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-accent transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+
+                <div class="glass-card p-4 md:p-6 overflow-hidden">
+                    <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-table-cells text-accent mr-2"></i> Quadro de Horários</h3>
+                        <span class="text-[9px] text-muted font-bold uppercase tracking-widest hide-on-print">Pode alterar os horários clicando neles</span>
+                    </div>
+                    
+                    <div class="overflow-x-auto custom-scrollbar pb-4">
+                        <div class="min-w-[1000px] grid grid-cols-8 gap-1 border border-theme bg-theme rounded-xl overflow-hidden text-xs">
+                            <div class="bg-panel p-3 font-black text-center text-muted uppercase tracking-widest flex items-center justify-center border-b border-r border-theme"><i class="fa-regular fa-clock text-lg"></i></div>
+                            <div class="bg-panel p-3 font-black text-center text-strong uppercase tracking-widest border-b border-theme">Segunda</div>
+                            <div class="bg-panel p-3 font-black text-center text-strong uppercase tracking-widest border-b border-theme">Terça</div>
+                            <div class="bg-panel p-3 font-black text-center text-strong uppercase tracking-widest border-b border-theme">Quarta</div>
+                            <div class="bg-panel p-3 font-black text-center text-strong uppercase tracking-widest border-b border-theme">Quinta</div>
+                            <div class="bg-panel p-3 font-black text-center text-strong uppercase tracking-widest border-b border-theme">Sexta</div>
+                            <div class="bg-panel p-3 font-black text-center text-accent uppercase tracking-widest border-b border-theme">Sábado</div>
+                            <div class="bg-panel p-3 font-black text-center text-red-500 uppercase tracking-widest border-b border-theme">Domingo</div>
+
+                            <div id="grid-semanal-body" class="contents"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 border-t-4 border-blue-500">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-4"><i class="fa-solid fa-crosshairs text-blue-500 mr-2"></i> Alinhamento Estratégico</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Quais as <span class="text-blue-500">3 Prioridades</span> inegociáveis?</label>
+                            <div class="space-y-2">
+                                <input type="text" id="s-p1" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-lg p-2.5 text-xs font-semibold text-strong focus:outline-none focus:border-blue-500" placeholder="1. ...">
+                                <input type="text" id="s-p2" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-lg p-2.5 text-xs font-semibold text-strong focus:outline-none focus:border-blue-500" placeholder="2. ...">
+                                <input type="text" id="s-p3" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-lg p-2.5 text-xs font-semibold text-strong focus:outline-none focus:border-blue-500" placeholder="3. ...">
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Caixa de Entrada (Anotações Rápidas)</label>
+                                <textarea id="s-notas" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-xs text-strong focus:outline-none focus:border-blue-500 resize-none h-24 custom-scrollbar" placeholder="Descarregue ideias soltas..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="conteudo-mensal" class="tab-conteudo hidden space-y-6 fade-in">
+                <div class="flex justify-between items-center bg-panel border border-theme p-4 rounded-2xl mb-6">
+                    <button onclick="navegarMes(-1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-blue-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
+                    <div class="text-center flex items-center gap-3">
+                        <h3 id="label-mes-atual" class="text-lg md:text-xl font-black text-strong uppercase tracking-widest">--</h3>
+                        <button onclick="limparMensal()" title="Limpar Mês" class="text-muted hover:text-red-500 transition-colors bg-bg-color border border-theme w-8 h-8 rounded-lg flex items-center justify-center hide-on-print"><i class="fa-solid fa-broom"></i></button>
+                    </div>
+                    <button onclick="navegarMes(1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-blue-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
                 <div class="glass-card p-6 border-t-4 border-purple-500 bg-gradient-to-br from-panel to-purple-500/5">
                     <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="document.getElementById('m-perguntas').classList.toggle('hidden')">
                         <h3 class="text-sm font-black uppercase tracking-widest text-strong flex items-center gap-2"><i class="fa-solid fa-brain text-purple-500"></i> Alinhamento do Mês</h3>
                         <i class="fa-solid fa-chevron-down text-muted text-xs"></i>
                     </div>
                     <div id="m-perguntas" class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                        <div><label class="block text-xs font-bold text-muted mb-2">1. Foco <span class="text-purple-500">PRINCIPAL</span> do mês?</label><textarea id="m-q1" onblur="salvarMensal()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-20"></textarea></div>
-                        <div><label class="block text-xs font-bold text-muted mb-2">2. Quais <span class="text-orange-500">OBSTÁCULOS</span> previstos?</label><textarea id="m-q2" onblur="salvarMensal()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-20"></textarea></div>
-                        <div><label class="block text-xs font-bold text-muted mb-2">3. Qual a sua <span class="text-accent">RECOMPENSA</span>?</label><textarea id="m-q3" onblur="salvarMensal()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-20"></textarea></div>
+                        <div><label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">1. Foco PRINCIPAL do mês?</label><textarea id="m-q1" onblur="salvarMensal()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-20 custom-scrollbar"></textarea></div>
+                        <div><label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">2. Quais OBSTÁCULOS previstos?</label><textarea id="m-q2" onblur="salvarMensal()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-20 custom-scrollbar"></textarea></div>
+                        <div><label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">3. Qual a sua RECOMPENSA?</label><textarea id="m-q3" onblur="salvarMensal()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-20 custom-scrollbar"></textarea></div>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="space-y-6">
-                        <div class="glass-card p-6 border-l-4 border-blue-500">
-                            <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
-                                <h4 class="text-xs font-black uppercase tracking-widest text-muted">Objetivos do Mês</h4>
-                                <button onclick="addListaItem('mensal', 'objetivos')" class="text-blue-500 hover:text-blue-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button>
-                            </div>
-                            <ul id="m-objetivos" class="space-y-2"></ul>
-                        </div>
-
+                        <div class="glass-card p-6 border-l-4 border-blue-500"><div class="flex justify-between items-center mb-4 border-b border-theme pb-2"><h4 class="text-[10px] font-black uppercase tracking-widest text-muted">Objetivos do Mês</h4><button onclick="addListaItem('mensal', 'objetivos')" class="text-blue-500 hover:text-blue-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button></div><ul id="m-objetivos" class="space-y-2"></ul></div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div class="glass-card p-5 border-t-2 border-accent">
-                                <div class="flex justify-between items-center mb-3">
-                                    <h4 class="text-[10px] font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-cart-shopping text-accent mr-1"></i> Comprar</h4>
-                                    <button onclick="addListaItem('mensal', 'comprar')" class="text-muted hover:text-accent"><i class="fa-solid fa-plus"></i></button>
-                                </div>
-                                <ul id="m-comprar" class="space-y-2"></ul>
-                            </div>
-                            <div class="glass-card p-5 border-t-2 border-red-500">
-                                <div class="flex justify-between items-center mb-3">
-                                    <h4 class="text-[10px] font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-file-invoice-dollar text-red-500 mr-1"></i> Pagar</h4>
-                                    <button onclick="addListaItem('mensal', 'pagar')" class="text-muted hover:text-red-500"><i class="fa-solid fa-plus"></i></button>
-                                </div>
-                                <ul id="m-pagar" class="space-y-2"></ul>
-                            </div>
+                            <div class="glass-card p-4 lg:p-5 border-t-2 border-accent"><div class="flex justify-between items-center mb-3 border-b border-theme pb-2"><h4 class="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-cart-shopping text-accent mr-1"></i> Comprar</h4><button onclick="addListaItem('mensal', 'comprar')" class="text-muted hover:text-accent"><i class="fa-solid fa-plus"></i></button></div><ul id="m-comprar" class="space-y-2"></ul></div>
+                            <div class="glass-card p-4 lg:p-5 border-t-2 border-red-500"><div class="flex justify-between items-center mb-3 border-b border-theme pb-2"><h4 class="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-file-invoice-dollar text-red-500 mr-1"></i> Pagar</h4><button onclick="addListaItem('mensal', 'pagar')" class="text-muted hover:text-red-500"><i class="fa-solid fa-plus"></i></button></div><ul id="m-pagar" class="space-y-2"></ul></div>
                         </div>
-
                         <div class="glass-card p-6 border-l-4 border-purple-500">
-                            <h4 class="text-xs font-black uppercase tracking-widest text-muted mb-4 border-b border-theme pb-2">Fichas do Mês</h4>
-                            <div class="space-y-4 text-sm">
-                                <div class="flex items-center gap-3"><span class="w-6 text-center text-lg">📚</span><span class="font-bold text-muted w-14">Curso:</span><input type="text" id="m-f-curso" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold"></div>
-                                <div class="flex items-center gap-3"><span class="w-6 text-center text-lg">📕</span><span class="font-bold text-muted w-14">Livro:</span><input type="text" id="m-f-livro" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold"></div>
-                                <div class="flex items-center gap-3"><span class="w-6 text-center text-lg">🎮</span><span class="font-bold text-muted w-14">Jogo:</span><input type="text" id="m-f-jogo" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold"></div>
-                                <div class="flex items-center gap-3"><span class="w-6 text-center text-lg">📌</span><span class="font-bold text-muted w-14">Passeio:</span><input type="text" id="m-f-passeio" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold"></div>
-                                <div class="flex items-center gap-3"><span class="w-6 text-center text-lg">🎬</span><span class="font-bold text-muted w-14">Séries:</span><input type="text" id="m-f-serie" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold"></div>
+                            <h4 class="text-[10px] font-black uppercase tracking-widest text-muted mb-4 border-b border-theme pb-2">Fichas do Mês (Realizados)</h4>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex items-center gap-3"><input type="checkbox" id="m-fd-curso" onchange="salvarMensal()" class="w-4 h-4 rounded border-theme text-accent cursor-pointer"><span class="w-6 text-center text-lg">📚</span><span class="font-bold text-muted text-xs uppercase tracking-widest w-14">Curso:</span><input type="text" id="m-f-curso" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold text-xs transition-all"></div>
+                                <div class="flex items-center gap-3"><input type="checkbox" id="m-fd-livro" onchange="salvarMensal()" class="w-4 h-4 rounded border-theme text-accent cursor-pointer"><span class="w-6 text-center text-lg">📕</span><span class="font-bold text-muted text-xs uppercase tracking-widest w-14">Livro:</span><input type="text" id="m-f-livro" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold text-xs transition-all"></div>
+                                <div class="flex items-center gap-3"><input type="checkbox" id="m-fd-jogo" onchange="salvarMensal()" class="w-4 h-4 rounded border-theme text-accent cursor-pointer"><span class="w-6 text-center text-lg">🎮</span><span class="font-bold text-muted text-xs uppercase tracking-widest w-14">Jogo:</span><input type="text" id="m-f-jogo" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold text-xs transition-all"></div>
+                                <div class="flex items-center gap-3"><input type="checkbox" id="m-fd-passeio" onchange="salvarMensal()" class="w-4 h-4 rounded border-theme text-accent cursor-pointer"><span class="w-6 text-center text-lg">📌</span><span class="font-bold text-muted text-xs uppercase tracking-widest w-14">Passeio:</span><input type="text" id="m-f-passeio" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold text-xs transition-all"></div>
+                                <div class="flex items-center gap-3"><input type="checkbox" id="m-fd-serie" onchange="salvarMensal()" class="w-4 h-4 rounded border-theme text-accent cursor-pointer"><span class="w-6 text-center text-lg">🎬</span><span class="font-bold text-muted text-xs uppercase tracking-widest w-14">Séries:</span><input type="text" id="m-f-serie" onblur="salvarMensal()" class="bg-transparent border-b border-theme/50 focus:outline-none focus:border-purple-500 flex-1 text-strong font-semibold text-xs transition-all"></div>
                             </div>
                         </div>
                     </div>
-
                     <div class="space-y-6">
-                        <div class="glass-card p-6 border-l-4 border-orange-500">
-                            <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
-                                <h4 class="text-xs font-black uppercase tracking-widest text-muted">Datas Importantes</h4>
-                                <button onclick="addListaData('mensal')" class="text-orange-500 hover:text-orange-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button>
-                            </div>
-                            <ul id="m-datas" class="space-y-2"></ul>
-                        </div>
-
-                        <div class="glass-card p-6 flex flex-col">
-                            <h4 class="text-xs font-black uppercase tracking-widest text-muted mb-4 border-b border-theme pb-2"><i class="fa-solid fa-pen-nib text-muted mr-2"></i> Anotações Livres</h4>
-                            <textarea id="m-notas" onblur="salvarMensal()" class="w-full h-32 bg-transparent border-none text-sm text-strong font-semibold focus:outline-none resize-none placeholder-muted" placeholder="(Livre • Reflexões • Ideias soltas...)"></textarea>
-                        </div>
-
-                        <div class="glass-card p-6 border-t-4 border-theme">
-                            <div class="flex justify-between items-center mb-6 border-b border-theme pb-2">
-                                <h4 class="text-xs font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-pen-ruler text-muted mr-2"></i> Rastreadores</h4>
-                                <button onclick="addRastreadorMensal()" class="text-muted hover:text-strong text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Novo</button>
-                            </div>
-                            <div id="m-rastreadores" class="space-y-8"></div>
-                        </div>
+                        <div class="glass-card p-6 border-l-4 border-orange-500"><div class="flex justify-between items-center mb-4 border-b border-theme pb-2"><h4 class="text-[10px] font-black uppercase tracking-widest text-muted">Datas Importantes</h4><button onclick="addListaData('mensal')" class="text-orange-500 hover:text-orange-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button></div><ul id="m-datas" class="space-y-2"></ul></div>
+                        <div class="glass-card p-6 flex flex-col"><h4 class="text-[10px] font-black uppercase tracking-widest text-muted mb-4 border-b border-theme pb-2"><i class="fa-solid fa-pen-nib text-muted mr-2"></i> Anotações Livres</h4><textarea id="m-notas" onblur="salvarMensal()" class="w-full h-32 bg-transparent border-none text-sm text-strong font-semibold focus:outline-none resize-none placeholder-muted custom-scrollbar"></textarea></div>
+                        <div class="glass-card p-6 border-t-4 border-theme hide-on-print"><div class="flex justify-between items-center mb-6 border-b border-theme pb-2"><h4 class="text-[10px] font-black uppercase tracking-widest text-muted"><i class="fa-solid fa-pen-ruler text-muted mr-2"></i> Rastreadores</h4><button onclick="addRastreadorMensal()" class="text-muted hover:text-strong text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Novo</button></div><div id="m-rastreadores" class="space-y-8"></div></div>
                     </div>
                 </div>
             </div>
 
-            <div id="conteudo-trimestral" class="tab-conteudo hidden space-y-6 fade-in">
-                
-                <div class="flex justify-between items-center bg-panel border border-theme p-4 rounded-2xl">
-                    <button onclick="navegarTrimestre(-1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-purple-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
-                    <div class="text-center">
-                        <h3 id="label-trimestre" class="text-lg md:text-xl font-black text-strong uppercase tracking-widest">Q3 - Terceiro Trimestre</h3>
-                        <p id="label-meses-trimestre" class="text-[10px] text-muted font-bold uppercase tracking-widest mt-0.5">Julho • Agosto • Setembro</p>
-                    </div>
-                    <button onclick="navegarTrimestre(1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-purple-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button>
-                </div>
-
-                <div class="glass-card p-6 border-t-4 border-purple-500">
-                    <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-4"><i class="fa-solid fa-chess-knight text-purple-500 mr-2"></i> Estratégia de 90 Dias</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div><label class="block text-xs font-bold text-muted mb-2">1. Foco PRINCIPAL destes 90 dias?</label><textarea id="t-q1" onblur="salvarTrimestral()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-24"></textarea></div>
-                        <div><label class="block text-xs font-bold text-muted mb-2">2. O que tem que MELHORAR do passado?</label><textarea id="t-q2" onblur="salvarTrimestral()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-24"></textarea></div>
-                        <div><label class="block text-xs font-bold text-muted mb-2">3. Métrica de SUCESSO final?</label><textarea id="t-q3" onblur="salvarTrimestral()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-purple-500 resize-none h-24"></textarea></div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="glass-card p-6 border-l-4 border-blue-500">
-                        <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
-                            <h4 class="text-xs font-black uppercase tracking-widest text-muted">Grandes Objetivos (OKR)</h4>
-                            <button onclick="addListaItem('trimestral', 'objetivos')" class="text-blue-500 hover:text-blue-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button>
-                        </div>
-                        <ul id="t-objetivos" class="space-y-2"></ul>
-                    </div>
-                    <div class="glass-card p-6 border-l-4 border-orange-500">
-                        <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
-                            <h4 class="text-xs font-black uppercase tracking-widest text-muted">Lembretes & Marcos</h4>
-                            <button onclick="addListaItem('trimestral', 'lembretes')" class="text-orange-500 hover:text-orange-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button>
-                        </div>
-                        <ul id="t-lembretes" class="space-y-2"></ul>
-                    </div>
-                </div>
-            </div>
-
+            <div id="conteudo-trimestral" class="tab-conteudo hidden space-y-6 fade-in"><div class="flex justify-between items-center bg-panel border border-theme p-4 rounded-2xl mb-6"><button onclick="navegarTrimestre(-1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-purple-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button><div class="text-center"><h3 id="label-trimestre" class="text-lg md:text-xl font-black text-strong uppercase tracking-widest">Q3</h3><p id="label-meses-trimestre" class="text-[10px] text-muted font-bold uppercase tracking-widest mt-0.5">--</p></div><button onclick="navegarTrimestre(1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-purple-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button></div><div class="glass-card p-6 border-t-4 border-purple-500"><h3 class="text-sm font-black uppercase tracking-widest text-strong mb-4"><i class="fa-solid fa-chess-knight text-purple-500 mr-2"></i> Estratégia de 90 Dias</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-6"><div><label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">1. Foco PRINCIPAL?</label><textarea id="t-q1" onblur="salvarTrimestral()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-xs text-strong focus:outline-none focus:border-purple-500 resize-none h-24 custom-scrollbar"></textarea></div><div><label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">2. O que tem que MELHORAR?</label><textarea id="t-q2" onblur="salvarTrimestral()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-xs text-strong focus:outline-none focus:border-purple-500 resize-none h-24 custom-scrollbar"></textarea></div><div><label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">3. Métrica de SUCESSO?</label><textarea id="t-q3" onblur="salvarTrimestral()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-xs text-strong focus:outline-none focus:border-purple-500 resize-none h-24 custom-scrollbar"></textarea></div></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="glass-card p-6 border-l-4 border-blue-500"><div class="flex justify-between items-center mb-4 border-b border-theme pb-2"><h4 class="text-[10px] font-black uppercase tracking-widest text-muted">Grandes Objetivos</h4><button onclick="addListaItem('trimestral', 'objetivos')" class="text-blue-500 hover:text-blue-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button></div><ul id="t-objetivos" class="space-y-2"></ul></div><div class="glass-card p-6 border-l-4 border-orange-500"><div class="flex justify-between items-center mb-4 border-b border-theme pb-2"><h4 class="text-[10px] font-black uppercase tracking-widest text-muted">Lembretes & Marcos</h4><button onclick="addListaItem('trimestral', 'lembretes')" class="text-orange-500 hover:text-orange-400 text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Add</button></div><ul id="t-lembretes" class="space-y-2"></ul></div></div></div>
+            
             <div id="conteudo-anual" class="tab-conteudo hidden space-y-6 fade-in">
-                <div class="flex flex-col md:flex-row justify-between items-center bg-panel border border-theme p-6 rounded-2xl gap-4">
-                    <div class="text-center md:text-left">
-                        <h3 class="text-xl font-black text-strong uppercase tracking-widest">Listas de Longo Prazo</h3>
-                        <p class="text-xs text-muted font-bold mt-1">Crie coleções anuais (Ex: 12 Livros, 5 Viagens)</p>
+                
+                <div class="flex justify-between items-center bg-panel border border-theme p-4 rounded-2xl mb-6">
+                    <button onclick="navegarAno(-1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-blue-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
+                    <div class="text-center flex items-center gap-3">
+                        <h3 id="label-ano-atual" class="text-lg md:text-xl font-black text-strong uppercase tracking-widest">Ano 2026</h3>
+                        <button onclick="limparAnual()" title="Limpar Ano" class="text-muted hover:text-red-500 transition-colors bg-bg-color border border-theme w-8 h-8 rounded-lg flex items-center justify-center hide-on-print"><i class="fa-solid fa-broom"></i></button>
                     </div>
-                    <button onclick="addListaAnual()" class="px-5 py-2.5 bg-accent text-bg-color rounded-xl text-sm font-black shadow-lg hover:scale-105 transition-transform"><i class="fa-solid fa-plus mr-2"></i>Nova Lista</button>
-                </div>
-
-                <div id="grid-anual" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    </div>
-            </div>
-
-            <div id="conteudo-semanal" class="tab-conteudo hidden space-y-6 fade-in">
-                <div class="glass-card p-6 bg-gradient-to-r from-panel to-accent/5">
-                    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                        <div class="w-full md:w-1/2">
-                            <div class="flex justify-between items-end mb-2">
-                                <h3 class="text-2xl font-black text-strong uppercase tracking-widest">Semana <span id="week-number" class="text-accent">0</span></h3>
-                                <span class="text-xs font-bold text-muted">de 52 Semanas</span>
-                            </div>
-                            <div class="w-full h-3 bg-bg-color border border-theme rounded-full overflow-hidden relative shadow-inner">
-                                <div id="week-progress" class="h-full bg-accent" style="width: 0%"></div>
-                                <div class="absolute inset-0 flex justify-between px-1"><div class="w-0.5 h-full bg-theme/50 mx-auto"></div><div class="w-0.5 h-full bg-theme/50 mx-auto"></div><div class="w-0.5 h-full bg-theme/50 mx-auto"></div></div>
-                            </div>
-                        </div>
-                    </div>
+                    <button onclick="navegarAno(1)" class="w-10 h-10 rounded-xl bg-bg-color border border-theme text-muted hover:text-blue-500 transition-colors flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
 
                 <div class="glass-card p-6 border-t-4 border-blue-500">
-                    <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-4"><i class="fa-solid fa-crosshairs text-blue-500 mr-2"></i> Alinhamento Semanal</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-xs font-bold text-muted mb-2">1. Quais as <span class="text-blue-500">3 Prioridades</span> inegociáveis?</label>
-                            <div class="space-y-2">
-                                <input type="text" id="s-p1" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-lg p-2.5 text-sm font-semibold text-strong focus:outline-none focus:border-blue-500" placeholder="1. ...">
-                                <input type="text" id="s-p2" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-lg p-2.5 text-sm font-semibold text-strong focus:outline-none focus:border-blue-500" placeholder="2. ...">
-                                <input type="text" id="s-p3" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-lg p-2.5 text-sm font-semibold text-strong focus:outline-none focus:border-blue-500" placeholder="3. ...">
-                            </div>
-                        </div>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold text-muted mb-2">2. O que ficou <span class="text-red-500">pendente</span> da semana passada?</label>
-                                <textarea id="s-q1" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-blue-500 resize-none h-16"></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-muted mb-2">3. Como posso facilitar minha vida esta semana?</label>
-                                <textarea id="s-q2" onblur="salvarSemana()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-blue-500 resize-none h-16"></textarea>
-                            </div>
-                        </div>
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong flex items-center gap-2"><i class="fa-solid fa-bullseye text-blue-500"></i> Masterplan Anual (S.M.A.R.T)</h3>
+                        <button onclick="abrirModalMetaAnual()" class="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-[10px] font-black shadow-lg hover:scale-105 transition-transform uppercase tracking-widest"><i class="fa-solid fa-plus mr-1"></i> Novo Objetivo</button>
                     </div>
+                    <div class="mb-8 p-4 bg-bg-color border border-theme rounded-2xl">
+                        <h4 class="text-[9px] font-black uppercase tracking-widest text-muted mb-3 border-b border-theme pb-2">Quadro Resumo (Clique para expandir)</h4>
+                        <div id="anual-smart-resumo" class="space-y-2"></div>
+                    </div>
+                    <div id="anual-smart-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
                 </div>
-
-                <div class="glass-card p-6 border-t-4 border-theme">
-                    <h4 class="text-xs font-black uppercase tracking-widest text-muted mb-4"><i class="fa-solid fa-pen-nib mr-2"></i> Caixa de Entrada (Anotações Rápidas da Semana)</h4>
-                    <textarea id="s-notas" onblur="salvarSemana()" class="w-full h-32 bg-bg-color border border-theme rounded-xl p-4 text-sm text-strong font-semibold focus:outline-none resize-none placeholder-muted" placeholder="Descarregue ideias soltas, tarefas que surgiram do nada..."></textarea>
+                <div class="flex flex-col md:flex-row justify-between items-center bg-panel border border-theme p-6 rounded-2xl gap-4">
+                    <div class="text-center md:text-left"><h3 class="text-sm font-black text-strong uppercase tracking-widest">Listas de Longo Prazo</h3><p class="text-[10px] text-muted font-bold uppercase tracking-widest mt-1">Crie coleções anuais (Ex: 12 Livros)</p></div>
+                    <button onclick="addListaAnual()" class="px-5 py-2.5 bg-accent text-bg-color rounded-xl text-xs font-black shadow-lg hover:scale-105 transition-transform uppercase tracking-widest"><i class="fa-solid fa-plus mr-2"></i>Nova Lista</button>
                 </div>
+                <div id="grid-anual" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
             </div>
 
         </div>
     </main>
 
+    <div id="modal-meta" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300"><div class="bg-panel border border-theme rounded-3xl w-full max-w-2xl max-h-[95vh] flex flex-col shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content-meta"><div class="p-4 md:p-6 border-b border-theme flex justify-between items-center shrink-0 rounded-t-3xl"><div><h3 class="text-lg font-black text-strong uppercase tracking-tight">Objetivo Anual S.M.A.R.T</h3><p class="text-[9px] font-bold text-muted uppercase tracking-widest mt-1">Estratégia + Resultados Chave</p></div><button onclick="fecharModalMetaAnual()" class="text-muted hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-500/10"><i class="fa-solid fa-xmark text-lg"></i></button></div><div class="p-4 md:p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5"><div><label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Título do Objetivo</label><input type="text" id="meta-titulo" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:outline-none focus:border-blue-500 transition-colors" placeholder="Ex: Dominar tráfego pago"></div><div class="space-y-3 bg-bg-color p-4 rounded-2xl border border-theme"><h4 class="text-[10px] font-black uppercase tracking-widest text-strong flex items-center gap-2 mb-2"><i class="fa-solid fa-microscope text-blue-500"></i> Parâmetros</h4><div><input type="text" id="meta-s" placeholder="S (Específico): O que exatamente?" class="w-full bg-transparent border-b border-theme py-2 text-xs text-strong focus:outline-none focus:border-blue-500"></div><div><input type="text" id="meta-m" placeholder="M (Mensurável): Como vai medir?" class="w-full bg-transparent border-b border-theme py-2 text-xs text-strong focus:outline-none focus:border-blue-500"></div><div><input type="text" id="meta-a" placeholder="A (Atingível): Quais recursos precisa?" class="w-full bg-transparent border-b border-theme py-2 text-xs text-strong focus:outline-none focus:border-blue-500"></div><div><input type="text" id="meta-r" placeholder="R (Relevante): Por que importa?" class="w-full bg-transparent border-b border-theme py-2 text-xs text-strong focus:outline-none focus:border-blue-500"></div></div><div><h4 class="text-[10px] font-black uppercase tracking-widest text-strong flex items-center gap-2 mb-2"><i class="fa-solid fa-list-check text-orange-500"></i> Key Results (Entregas)</h4><div id="modal-krs-list" class="space-y-2 mb-3"></div><button onclick="adicionarInputKR()" class="text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-600 flex items-center gap-2 transition-colors px-2 py-1"><i class="fa-solid fa-plus"></i> Add KR</button></div></div><div class="p-4 md:p-6 border-t border-theme shrink-0 flex justify-end gap-3 bg-panel rounded-b-3xl"><button onclick="fecharModalMetaAnual()" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted hover:bg-bg-color transition-colors">Cancelar</button><button onclick="salvarMetaAnual()" class="bg-blue-500 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-105 transition-transform">Salvar</button></div></div></div>
+    
+    <div id="modal-sync" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300"><div class="bg-bg-color border border-theme rounded-3xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300" id="ms-content"><div class="p-5 border-b border-theme flex justify-between items-center bg-panel rounded-t-3xl"><h3 class="text-xs font-black text-strong uppercase tracking-widest"><i class="fa-solid fa-cloud-arrow-up text-blue-500 mr-2"></i> Backup & Sync</h3><button onclick="fecharModalSync()" class="text-muted hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button></div><div class="p-5 space-y-6"><div class="space-y-3"><h4 class="text-[9px] font-black uppercase tracking-widest text-strong border-b border-theme/50 pb-1">Passo 1: Exportar</h4><button onclick="exportarBackup()" class="w-full bg-panel border border-theme hover:border-accent hover:text-accent text-strong py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Baixar Arquivo</button></div><div class="space-y-3 pt-4"><h4 class="text-[9px] font-black uppercase tracking-widest text-strong border-b border-theme/50 pb-1">Passo 2: Importar</h4><input type="file" id="file-import" accept=".json" class="hidden" onchange="processarImportacao(event)"><button onclick="document.getElementById('file-import').click()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"><i class="fa-solid fa-upload"></i> Carregar Backup</button></div></div></div></div>
+
     <script src="components.js"></script>
     <script src="script.js"></script>
     
     <script>
-        // ==========================================
-        // SISTEMA DE DADOS E NAVEGAÇÃO
-        // ==========================================
         const DB_KEY = 'lifeos_planejador_v3';
         
         let dataAtual = new Date();
-        let mesSelecionado = dataAtual.getMonth(); // 0-11
+        let mesSelecionado = dataAtual.getMonth(); 
         let anoSelecionado = dataAtual.getFullYear();
-        let trimestreSelecionado = Math.floor(mesSelecionado / 3) + 1; // 1-4
+        let trimestreSelecionado = Math.floor(mesSelecionado / 3) + 1; 
+        
+        let semanaAtualDate = new Date();
+        let diaSelecionado = new Date();
+        let anoAnualSelecionado = dataAtual.getFullYear();
 
         const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         const trimestresNomes = { 1: "Janeiro • Fevereiro • Março", 2: "Abril • Maio • Junho", 3: "Julho • Agosto • Setembro", 4: "Outubro • Novembro • Dezembro" };
 
-        let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
-            anual: [
-                { id: 1, titulo: "12 Livros", icone: "📚", itens: [{ id: 11, texto: "Poder do Hábito", concluido: false }] },
-                { id: 2, titulo: "12 Obras", icone: "🎬", itens: [] }
-            ],
-            trimestres: { 1: {}, 2: {}, 3: {}, 4: {} },
-            meses: {},
-            semana: { p1: "", p2: "", p3: "", q1: "", q2: "", notas: "" }
-        };
+        let db = JSON.parse(localStorage.getItem(DB_KEY)) || {};
+        
+        // Mapeamento e Migração para a nova estrutura Anual
+        if(!db.anuais) {
+            db.anuais = {};
+            let anoAtualString = dataAtual.getFullYear().toString();
+            // Migra os dados antigos (se existirem) para o ano corrente
+            db.anuais[anoAtualString] = {
+                smart: db.anual_smart || [],
+                listas: db.anual || []
+            };
+            // Remove chaves legadas globais para poupar espaço (opcional, mantendo por segurança temporal)
+        }
+
+        if(!db.trimestres) db.trimestres = { 1: {}, 2: {}, 3: {}, 4: {} };
+        if(!db.meses) db.meses = {};
+        if(!db.semanas) db.semanas = {};
+        if(!db.dias) db.dias = {};
 
         function salvarDB() { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
-        // --- ABA MENSAL ---
-        function getChaveMes() { return `${anoSelecionado}-${mesSelecionado}`; }
-        function initMes() {
-            const ch = getChaveMes();
-            if(!db.meses[ch]) {
-                db.meses[ch] = { q1:"", q2:"", q3:"", notas:"", fichas:{curso:"", livro:"", jogo:"", passeio:"", serie:""}, objetivos:[], comprar:[], pagar:[], datas:[], rastreadores:[] };
-            }
-        }
+        // ==========================================
+        // LÓGICA DE LIMPEZA GERAL
+        // ==========================================
+        function limparDia() { if(confirm("Tem a certeza que deseja apagar todo o planejamento de HOJE?")) { let ch = getChaveDia(diaSelecionado); db.dias[ch] = { foco: "", caderno: "", humor: "", reflexao: "" }; salvarDB(); renderDiario(); } }
+        function limparSemana() { if(confirm("Tem a certeza que deseja apagar a grelha e anotações desta SEMANA?")) { let ch = getChaveSemana(); db.semanas[ch] = { grid: {}, diasInfo: {}, p1: "", p2: "", p3: "", notas: "" }; salvarDB(); renderSemanal(); } }
+        function limparMensal() { if(confirm("Tem a certeza que deseja apagar a revisão deste MÊS?")) { let ch = getChaveMes(); db.meses[ch] = { q1:"", q2:"", q3:"", notas:"", fichas:{curso:"", livro:"", jogo:"", passeio:"", serie:""}, fichas_done:{curso:false, livro:false, jogo:false, passeio:false, serie:false}, objetivos:[], comprar:[], pagar:[], datas:[], rastreadores:[] }; salvarDB(); renderMensal(); } }
+        function limparAnual() { if(confirm(`Tem a certeza que deseja apagar TODO o plano do Ano ${anoAnualSelecionado}?`)) { let ch = anoAnualSelecionado.toString(); db.anuais[ch] = { smart: [], listas: [] }; salvarDB(); renderAnual(); } }
 
-        function navegarMes(dir) {
-            mesSelecionado += dir;
-            if(mesSelecionado > 11) { mesSelecionado = 0; anoSelecionado++; }
-            if(mesSelecionado < 0) { mesSelecionado = 11; anoSelecionado--; }
-            renderMensal();
-        }
-
-        function renderMensal() {
-            initMes();
-            const ch = getChaveMes();
-            const dados = db.meses[ch];
-
-            document.getElementById('label-mes-atual').innerText = `${mesesNomes[mesSelecionado]} ${anoSelecionado}`;
-            
-            // Inputs
-            ['q1', 'q2', 'q3', 'notas'].forEach(k => document.getElementById(`m-${k}`).value = dados[k]);
-            ['curso', 'livro', 'jogo', 'passeio', 'serie'].forEach(k => document.getElementById(`m-f-${k}`).value = dados.fichas[k]);
-
-            // Listas
-            renderListaHTML('m-objetivos', dados.objetivos, 'mensal', 'objetivos');
-            renderListaHTML('m-comprar', dados.comprar, 'mensal', 'comprar');
-            renderListaHTML('m-pagar', dados.pagar, 'mensal', 'pagar');
-            
-            // Datas
-            const ulDatas = document.getElementById('m-datas');
-            ulDatas.innerHTML = '';
-            dados.datas.forEach((d, i) => {
-                ulDatas.innerHTML += `
-                    <li class="flex items-center gap-3 p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg group border border-transparent hover:border-theme transition-colors">
-                        <span class="bg-orange-500/10 text-orange-500 px-2 py-1 rounded text-xs font-black cursor-pointer" onclick="editarDataMensal(${i}, 'data')">${d.data}</span>
-                        <span class="text-sm font-semibold text-strong flex-1 cursor-pointer" onclick="editarDataMensal(${i}, 'texto')">${d.texto}</span>
-                        <button onclick="excluirDataMensal(${i})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </li>`;
-            });
-
-            // Rastreadores
-            const cRast = document.getElementById('m-rastreadores');
-            cRast.innerHTML = '';
-            dados.rastreadores.forEach((t, i) => {
-                let p = Math.round((t.marcados.length / (t.total/t.step)) * 100);
-                let boxes = '';
-                for(let n=t.step; n<=t.total; n+=t.step){
-                    let done = t.marcados.includes(n);
-                    boxes += `<div onclick="toggleTrackMensal(${i}, ${n})" class="w-8 h-8 flex items-center justify-center text-xs font-bold rounded-lg cursor-pointer transition-all select-none border border-transparent ${done ? 'text-muted relative opacity-50 bg-bg-color' : 'text-strong hover:bg-black/10 dark:hover:bg-white/10 bg-panel border-theme shadow-sm'}">${n} ${done ? '<div class="absolute inset-0 flex items-center justify-center text-red-500/60 pointer-events-none"><i class="fa-solid fa-xmark"></i></div>':''}</div>`;
-                }
-                cRast.innerHTML += `
-                    <div class="relative group">
-                        <div class="absolute -top-2 right-0 flex gap-2 opacity-0 group-hover:opacity-100 bg-panel px-2 py-1 rounded-lg border border-theme shadow-lg z-10 transition-opacity"><button onclick="editarRastreadorMensal(${i})" class="text-muted hover:text-blue-500 text-[10px] font-bold">Editar</button><button onclick="excluirRastreadorMensal(${i})" class="text-muted hover:text-red-500 text-[10px] font-bold">Excluir</button></div>
-                        <p class="text-sm font-bold text-strong mb-2 border-b border-theme/50 pb-1">${t.nome} <span class="text-[10px] font-bold text-muted ml-2">${p}%</span></p>
-                        <div class="flex flex-wrap gap-1.5 md:gap-2">${boxes}</div>
-                    </div>`;
-            });
-        }
-
-        function salvarMensal() {
-            initMes();
-            const d = db.meses[getChaveMes()];
-            ['q1', 'q2', 'q3', 'notas'].forEach(k => d[k] = document.getElementById(`m-${k}`).value);
-            ['curso', 'livro', 'jogo', 'passeio', 'serie'].forEach(k => d.fichas[k] = document.getElementById(`m-f-${k}`).value);
-            salvarDB();
-        }
-
-        // --- ABA TRIMESTRAL ---
-        function initTrimestre() { if(!db.trimestres[trimestreSelecionado]) db.trimestres[trimestreSelecionado] = { q1:"", q2:"", q3:"", objetivos:[], lembretes:[] }; }
-        function navegarTrimestre(dir) {
-            trimestreSelecionado += dir;
-            if(trimestreSelecionado > 4) trimestreSelecionado = 1;
-            if(trimestreSelecionado < 1) trimestreSelecionado = 4;
-            renderTrimestral();
-        }
-        function renderTrimestral() {
-            initTrimestre();
-            const d = db.trimestres[trimestreSelecionado];
-            document.getElementById('label-trimestre').innerText = `Q${trimestreSelecionado} - ${trimestreSelecionado}º Trimestre`;
-            document.getElementById('label-meses-trimestre').innerText = trimestresNomes[trimestreSelecionado];
-            
-            ['q1', 'q2', 'q3'].forEach(k => document.getElementById(`t-${k}`).value = d[k] || "");
-            renderListaHTML('t-objetivos', d.objetivos, 'trimestral', 'objetivos');
-            renderListaHTML('t-lembretes', d.lembretes, 'trimestral', 'lembretes');
-        }
-        function salvarTrimestral() {
-            initTrimestre();
-            ['q1', 'q2', 'q3'].forEach(k => db.trimestres[trimestreSelecionado][k] = document.getElementById(`t-${k}`).value);
-            salvarDB();
-        }
-
-        // --- ABA ANUAL (LISTAS CUSTOMIZADAS) ---
-        function renderAnual() {
-            const grid = document.getElementById('grid-anual');
-            grid.innerHTML = '';
-            db.anual.forEach((lista, lIdx) => {
-                let itensHTML = lista.itens.map((it, iIdx) => `
-                    <li class="flex items-start gap-2 group">
-                        <input type="checkbox" ${it.concluido ? 'checked' : ''} onchange="toggleAnualItem(${lIdx}, ${iIdx})" class="mt-1 cursor-pointer">
-                        <span class="text-sm font-semibold flex-1 cursor-pointer hover:text-blue-500 transition-colors ${it.concluido ? 'line-through text-muted opacity-60' : 'text-strong'}" onclick="editarAnualItem(${lIdx}, ${iIdx})">${it.texto}</span>
-                        <button onclick="excluirAnualItem(${lIdx}, ${iIdx})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-xmark text-xs"></i></button>
-                    </li>
-                `).join('');
-
-                grid.innerHTML += `
-                    <div class="glass-card p-6 flex flex-col h-full relative group/card">
-                        <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                            <button onclick="editarListaAnual(${lIdx})" class="text-muted hover:text-blue-500"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="excluirListaAnual(${lIdx})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
-                        </div>
-                        <h4 class="text-sm font-black uppercase tracking-widest text-strong mb-4 border-b border-theme pb-2"><span class="text-xl mr-2">${lista.icone}</span> ${lista.titulo}</h4>
-                        <ol class="list-decimal list-inside space-y-3 flex-1 mb-4">${itensHTML}</ol>
-                        <button onclick="addAnualItem(${lIdx})" class="text-xs font-bold text-muted hover:text-strong bg-panel border border-theme py-2 rounded-lg w-full transition-colors"><i class="fa-solid fa-plus mr-1"></i> Adicionar Item</button>
-                    </div>
-                `;
-            });
-        }
+        // ==========================================
+        // ABA DIÁRIA
+        // ==========================================
+        function getChaveDia(d) { return d.toISOString().split('T')[0]; }
+        function navegarDia(dir) { diaSelecionado.setDate(diaSelecionado.getDate() + dir); renderDiario(); }
+        function setHumor(h) { let ch = getChaveDia(diaSelecionado); if(!db.dias[ch]) db.dias[ch] = {}; db.dias[ch].humor = h; salvarDB(); renderDiario(); }
         
-        function addListaAnual() {
-            let titulo = prompt("Título da Lista (Ex: 12 Viagens):"); if(!titulo) return;
-            let icone = prompt("Ícone/Emoji (Ex: ✈️):") || "📌";
-            db.anual.push({ id: Date.now(), titulo, icone, itens: [] }); salvarDB(); renderAnual();
+        function renderDiario() {
+            const ch = getChaveDia(diaSelecionado);
+            if(!db.dias[ch]) db.dias[ch] = { foco: "", caderno: "", humor: "", reflexao: "" };
+            const opcoes = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            let dataFormatada = diaSelecionado.toLocaleDateString('pt-BR', opcoes);
+            let hojeChave = getChaveDia(new Date());
+            document.getElementById('label-dia-atual').innerText = ch === hojeChave ? "Hoje" : "Diário";
+            document.getElementById('label-data-dia').innerText = dataFormatada;
+            document.getElementById('d-foco').value = db.dias[ch].foco || "";
+            document.getElementById('d-caderno').value = db.dias[ch].caderno || "";
+            document.getElementById('d-reflexao').value = db.dias[ch].reflexao || "";
+            let humorAtual = db.dias[ch].humor;
+            const btnMau = document.getElementById('btn-humor-mau'); const btnBom = document.getElementById('btn-humor-bom'); const btnOtimo = document.getElementById('btn-humor-otimo');
+            [btnMau, btnBom, btnOtimo].forEach(btn => { btn.classList.remove('bg-red-500', 'bg-blue-500', 'bg-accent', 'text-white', 'border-transparent'); btn.classList.add('bg-panel', 'text-muted'); });
+            if(humorAtual === 'mau') { btnMau.classList.remove('bg-panel', 'text-muted'); btnMau.classList.add('bg-red-500', 'text-white', 'border-transparent'); }
+            if(humorAtual === 'bom') { btnBom.classList.remove('bg-panel', 'text-muted'); btnBom.classList.add('bg-blue-500', 'text-white', 'border-transparent'); }
+            if(humorAtual === 'otimo') { btnOtimo.classList.remove('bg-panel', 'text-muted'); btnOtimo.classList.add('bg-accent', 'text-white', 'border-transparent'); }
         }
-        function editarListaAnual(lIdx) {
-            let t = prompt("Novo título:", db.anual[lIdx].titulo); if(t) db.anual[lIdx].titulo = t;
-            let i = prompt("Novo ícone:", db.anual[lIdx].icone); if(i) db.anual[lIdx].icone = i;
-            salvarDB(); renderAnual();
-        }
-        function excluirListaAnual(lIdx) { if(confirm("Excluir lista inteira?")) { db.anual.splice(lIdx, 1); salvarDB(); renderAnual(); } }
-        function addAnualItem(lIdx) { let t = prompt("Novo item:"); if(t) { db.anual[lIdx].itens.push({ id: Date.now(), texto: t, concluido: false }); salvarDB(); renderAnual(); } }
-        function editarAnualItem(lIdx, iIdx) { let t = prompt("Editar:", db.anual[lIdx].itens[iIdx].texto); if(t) { db.anual[lIdx].itens[iIdx].texto = t; salvarDB(); renderAnual(); } }
-        function excluirAnualItem(lIdx, iIdx) { db.anual[lIdx].itens.splice(iIdx, 1); salvarDB(); renderAnual(); }
-        function toggleAnualItem(lIdx, iIdx) { db.anual[lIdx].itens[iIdx].concluido = !db.anual[lIdx].itens[iIdx].concluido; salvarDB(); renderAnual(); }
 
-        // --- ABA SEMANAL ---
+        function salvarDia() {
+            const ch = getChaveDia(diaSelecionado);
+            if(!db.dias[ch]) db.dias[ch] = {};
+            db.dias[ch].foco = document.getElementById('d-foco').value;
+            db.dias[ch].caderno = document.getElementById('d-caderno').value;
+            db.dias[ch].reflexao = document.getElementById('d-reflexao').value;
+            salvarDB();
+        }
+
+        // ==========================================
+        // ABA SEMANAL (AGORA COM LINHA DE INFO/DATA)
+        // ==========================================
+        function getWeekData(d) {
+            let temp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            temp.setUTCDate(temp.getUTCDate() + 4 - (temp.getUTCDay()||7));
+            let yearStart = new Date(Date.UTC(temp.getUTCFullYear(),0,1));
+            let weekNo = Math.ceil(( ( (temp - yearStart) / 86400000) + 1)/7);
+            return { ano: temp.getUTCFullYear(), semana: weekNo };
+        }
+        function getChaveSemana() { let wd = getWeekData(semanaAtualDate); return `${wd.ano}-W${wd.semana}`; }
+        function navegarSemana(dir) { semanaAtualDate.setDate(semanaAtualDate.getDate() + (dir * 7)); renderSemanal(); }
+        function getDiasDaSemana(dateInfo) { let curr = new Date(dateInfo.getTime()); let first = curr.getDate() - curr.getDay() + (curr.getDay() === 0 ? -6 : 1); let startDate = new Date(curr.setDate(first)); let endDate = new Date(curr.setDate(curr.getDate() + 6)); return { start: startDate, end: endDate }; }
+
+        function salvarSemanaLabel(idx, val) {
+            let ch = getChaveSemana();
+            if(!db.semanas[ch].labels) db.semanas[ch].labels = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+            db.semanas[ch].labels[idx] = val; salvarDB();
+        }
+
         function renderSemanal() {
-            let inicioAno = new Date(dataAtual.getFullYear(), 0, 1);
-            let dias = Math.floor((dataAtual - inicioAno) / (24 * 60 * 60 * 1000));
-            let numSemana = Math.ceil((dias + inicioAno.getDay() + 1) / 7);
-            document.getElementById('week-number').innerText = numSemana;
-            document.getElementById('week-progress').style.width = `${Math.round((numSemana/52)*100)}%`;
+            let wd = getWeekData(semanaAtualDate);
+            let ch = getChaveSemana();
+            if(!db.semanas[ch]) db.semanas[ch] = { grid: {}, diasInfo: {}, p1: "", p2: "", p3: "", notas: "" };
+            let sData = db.semanas[ch];
 
-            ['p1','p2','p3','q1','q2','notas'].forEach(k => document.getElementById(`s-${k}`).value = db.semana[k] || "");
-        }
-        function salvarSemana() { ['p1','p2','p3','q1','q2','notas'].forEach(k => db.semana[k] = document.getElementById(`s-${k}`).value); salvarDB(); }
+            document.getElementById('week-number').innerText = wd.semana;
+            let limites = getDiasDaSemana(semanaAtualDate);
+            let fStart = limites.start.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
+            let fEnd = limites.end.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
+            document.getElementById('week-dates').innerText = `${fStart} até ${fEnd}`;
 
-        // --- FUNÇÕES GLOBAIS DE LISTA E CRUD ---
-        function getAlvo(secao, listaId) {
-            if(secao === 'mensal') return db.meses[getChaveMes()][listaId];
-            if(secao === 'trimestral') return db.trimestres[trimestreSelecionado][listaId];
-        }
-        
-        function renderListaHTML(containerId, array, secao, listaId) {
-            const ul = document.getElementById(containerId); ul.innerHTML = '';
-            array.forEach((it, i) => {
-                ul.innerHTML += `
-                    <li class="flex items-center gap-3 p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg group border border-transparent hover:border-theme transition-colors">
-                        <div class="w-4 h-4 rounded border flex items-center justify-center cursor-pointer transition-colors ${it.concluido ? 'bg-accent border-accent text-white' : 'border-theme text-transparent hover:border-accent'}" onclick="toggleGeral('${secao}', '${listaId}', ${i})"><i class="fa-solid fa-check text-[10px]"></i></div>
-                        <span class="text-sm font-semibold flex-1 cursor-pointer transition-colors ${it.concluido ? 'text-muted line-through opacity-60' : 'text-strong hover:text-blue-500'}" onclick="editarGeral('${secao}', '${listaId}', ${i})">${it.texto}</span>
-                        <button onclick="excluirGeral('${secao}', '${listaId}', ${i})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </li>`;
+            ['p1','p2','p3','notas'].forEach(k => document.getElementById(`s-${k}`).value = sData[k] || "");
+
+            if(!sData.labels) sData.labels = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+            if(!sData.diasInfo) sData.diasInfo = { seg:{data:"",nota:""}, ter:{data:"",nota:""}, qua:{data:"",nota:""}, qui:{data:"",nota:""}, sex:{data:"",nota:""}, sab:{data:"",nota:""}, dom:{data:"",nota:""} };
+            
+            const gridBody = document.getElementById('grid-semanal-body');
+            gridBody.innerHTML = '';
+            const dias = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"];
+
+            // LINHA 1: INFO/DATA DOS DIAS
+            let headerInfoHtml = `<div class="bg-panel p-2 flex flex-col justify-center items-center border-b border-r border-theme text-[9px] font-black text-muted uppercase tracking-widest leading-tight"><i class="fa-regular fa-calendar-days text-sm mb-1"></i> Infos Dia</div>`;
+            dias.forEach(dia => {
+                let info = sData.diasInfo[dia] || {data:"", nota:""};
+                headerInfoHtml += `
+                <div class="bg-bg-color border-b border-r border-theme flex flex-col p-1.5 gap-1.5 h-[80px]">
+                    <input type="text" value="${info.data}" onblur="salvarSemanaInfo('${dia}', 'data', this.value)" placeholder="Data..." class="w-full bg-panel text-center text-[10px] md:text-xs font-black text-strong focus:outline-none rounded py-1">
+                    <textarea onblur="salvarSemanaInfo('${dia}', 'nota', this.value)" placeholder="Lembretes/Feriado..." class="w-full bg-transparent text-[9px] font-bold text-muted focus:text-strong text-center resize-none focus:outline-none rounded custom-scrollbar flex-1 leading-tight"></textarea>
+                </div>`;
+            });
+            gridBody.innerHTML += headerInfoHtml;
+
+            // LINHAS SUBSEQUENTES: HORÁRIOS
+            sData.labels.forEach((horaLabel, idx) => {
+                let rowHtml = `<div class="bg-panel p-2 flex justify-center items-center border-b border-r border-theme"><input type="text" value="${horaLabel}" onblur="salvarSemanaLabel(${idx}, this.value)" class="w-full bg-transparent text-center text-[10px] md:text-xs font-black text-muted focus:outline-none focus:text-accent" placeholder="Hora"></div>`;
+                dias.forEach(dia => {
+                    let cellValue = (sData.grid[dia] && sData.grid[dia][idx] !== undefined) ? sData.grid[dia][idx] : "";
+                    rowHtml += `<div class="bg-bg-color border-b border-r border-theme"><textarea onblur="salvarSemanaGrid('${dia}', ${idx}, this.value)" class="w-full h-full min-h-[50px] bg-transparent text-sm font-semibold text-strong text-left p-2 resize-none focus:outline-none focus:bg-panel transition-colors rounded custom-scrollbar">${cellValue}</textarea></div>`;
+                });
+                gridBody.innerHTML += rowHtml;
             });
         }
 
+        function salvarSemanaInfo(dia, campo, valor) {
+            let ch = getChaveSemana();
+            if(!db.semanas[ch]) db.semanas[ch] = { grid: {}, diasInfo: {}, p1: "", p2: "", p3: "", notas: "" };
+            if(!db.semanas[ch].diasInfo) db.semanas[ch].diasInfo = {};
+            if(!db.semanas[ch].diasInfo[dia]) db.semanas[ch].diasInfo[dia] = {data:"", nota:""};
+            db.semanas[ch].diasInfo[dia][campo] = valor;
+            salvarDB();
+        }
+
+        function salvarSemanaGrid(dia, idx, valor) {
+            let ch = getChaveSemana();
+            if(!db.semanas[ch]) db.semanas[ch] = { grid: {}, diasInfo: {}, p1: "", p2: "", p3: "", notas: "" };
+            if(!db.semanas[ch].grid[dia]) db.semanas[ch].grid[dia] = {};
+            db.semanas[ch].grid[dia][idx] = valor;
+            salvarDB();
+        }
+
+        function salvarSemana() { 
+            let ch = getChaveSemana();
+            if(!db.semanas[ch]) db.semanas[ch] = { grid: {}, diasInfo: {}, p1: "", p2: "", p3: "", notas: "" };
+            ['p1','p2','p3','notas'].forEach(k => db.semanas[ch][k] = document.getElementById(`s-${k}`).value); 
+            salvarDB(); 
+        }
+
+        // ==========================================
+        // ABA ANUAL (COM NAVEGAÇÃO E TEMPO)
+        // ==========================================
+        function initAno(anoStr) {
+            if(!db.anuais[anoStr]) db.anuais[anoStr] = { smart: [], listas: [] };
+        }
+
+        function navegarAno(dir) {
+            anoAnualSelecionado += dir;
+            renderAnual();
+        }
+
+        function renderAnual() {
+            let ch = anoAnualSelecionado.toString();
+            initAno(ch);
+            let dadosAno = db.anuais[ch];
+            
+            document.getElementById('label-ano-atual').innerText = `Ano ${ch}`;
+
+            const resumo = document.getElementById('anual-smart-resumo');
+            const gridSmart = document.getElementById('anual-smart-grid');
+            resumo.innerHTML = ''; gridSmart.innerHTML = '';
+            
+            dadosAno.smart.forEach((meta, mIdx) => {
+                const totalKRs = meta.krs ? meta.krs.length : 0;
+                const concluidosKRs = meta.krs ? meta.krs.filter(kr => kr.feito).length : 0;
+                const progresso = totalKRs > 0 ? Math.round((concluidosKRs / totalKRs) * 100) : 0;
+                
+                resumo.innerHTML += `<details class="group/det bg-panel rounded-lg border border-theme mb-2"><summary class="text-xs font-bold text-strong p-3 cursor-pointer select-none flex items-center gap-3"><i class="fa-solid fa-chevron-right text-[10px] text-muted group-open/det:rotate-90 transition-transform w-3"></i><span class="flex-1 ${progresso === 100 ? 'line-through text-muted' : ''}">${meta.titulo}</span><span class="text-[10px] font-black text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded">${progresso}%</span></summary><div class="p-3 pt-0 text-[10px] text-muted border-t border-theme/50 flex flex-col gap-1.5 mt-1 bg-bg-color/50 rounded-b-lg"><p><strong class="text-blue-500">S:</strong> ${meta.smart.s || '-'}</p><p><strong class="text-blue-500">M:</strong> ${meta.smart.m || '-'}</p><div class="mt-2 text-strong font-semibold">KRs: ${concluidosKRs}/${totalKRs} concluídos</div></div></details>`;
+                
+                let krsHTML = '';
+                if(totalKRs > 0) krsHTML = meta.krs.map((kr, krIdx) => `<div class="flex items-start gap-2 p-1.5 hover:bg-bg-color rounded transition-colors"><div onclick="toggleKRAnual(${mIdx}, ${krIdx})" class="w-4 h-4 mt-0.5 rounded flex items-center justify-center cursor-pointer transition-colors border ${kr.feito ? 'bg-blue-500 border-blue-500 text-white' : 'border-theme text-transparent hover:border-blue-500'}"><i class="fa-solid fa-check text-[9px]"></i></div><span class="flex-1 text-[10px] font-semibold pt-0.5 ${kr.feito ? 'text-muted line-through' : 'text-strong'}">${kr.texto}</span></div>`).join('');
+                
+                gridSmart.innerHTML += `<div class="glass-card p-4 flex flex-col relative group/card border-l-2 ${progresso===100?'border-green-500 opacity-60':'border-blue-500'}"><button onclick="excluirMetaAnual(${mIdx})" class="absolute top-3 right-3 text-muted hover:text-red-500 opacity-0 group-hover/card:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can text-xs"></i></button><h3 class="text-xs font-black text-strong leading-tight mb-3 pr-6 ${progresso===100?'line-through':''}">${meta.titulo}</h3><div class="w-full h-1.5 bg-bg-color border border-theme rounded-full overflow-hidden mb-4"><div class="h-full bg-blue-500" style="width: ${progresso}%"></div></div><div class="flex-1"><h4 class="text-[9px] font-black uppercase tracking-widest text-muted mb-2 border-b border-theme pb-1">Key Results</h4><div class="space-y-1">${krsHTML}</div></div></div>`;
+            });
+            
+            if(dadosAno.smart.length === 0) resumo.innerHTML = '<p class="text-[10px] text-muted italic">Nenhum objetivo S.M.A.R.T criado para este ano.</p>';
+            
+            const grid = document.getElementById('grid-anual'); grid.innerHTML = '';
+            dadosAno.listas.forEach((lista, lIdx) => {
+                let itensHTML = lista.itens.map((it, iIdx) => `<li class="flex items-start gap-2 group"><input type="checkbox" ${it.concluido ? 'checked' : ''} onchange="toggleAnualItem(${lIdx}, ${iIdx})" class="mt-1 cursor-pointer"><span class="text-xs font-semibold flex-1 cursor-pointer hover:text-blue-500 transition-colors ${it.concluido ? 'line-through text-muted opacity-60' : 'text-strong'}" onclick="editarAnualItem(${lIdx}, ${iIdx})">${it.texto}</span><button onclick="excluirAnualItem(${lIdx}, ${iIdx})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-xmark text-[10px]"></i></button></li>`).join('');
+                grid.innerHTML += `<div class="glass-card p-5 flex flex-col h-full relative group/card"><div class="absolute top-3 right-3 flex gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity"><button onclick="editarListaAnual(${lIdx})" class="text-muted hover:text-blue-500"><i class="fa-solid fa-pen text-[10px]"></i></button><button onclick="excluirListaAnual(${lIdx})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-[10px]"></i></button></div><h4 class="text-xs font-black uppercase tracking-widest text-strong mb-4 border-b border-theme pb-2"><span class="text-lg mr-2">${lista.icone}</span> ${lista.titulo}</h4><ol class="list-decimal list-inside space-y-2 flex-1 mb-4 text-xs">${itensHTML}</ol><button onclick="addAnualItem(${lIdx})" class="text-[10px] font-bold text-muted hover:text-strong bg-panel border border-theme py-1.5 rounded-lg w-full transition-colors uppercase tracking-widest"><i class="fa-solid fa-plus mr-1"></i> Adicionar Item</button></div>`;
+            });
+        }
+
+        function abrirModalMetaAnual() { document.getElementById('meta-titulo').value = ''; ['s','m','a','r'].forEach(k => document.getElementById(`meta-${k}`).value = ''); document.getElementById('modal-krs-list').innerHTML = ''; adicionarInputKR(); let m = document.getElementById('modal-meta'); m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('modal-content-meta').classList.remove('scale-95'); }, 10); }
+        function fecharModalMetaAnual() { let m = document.getElementById('modal-meta'); m.classList.add('opacity-0'); document.getElementById('modal-content-meta').classList.add('scale-95'); setTimeout(() => { m.classList.remove('flex'); m.classList.add('hidden'); }, 300); }
+        function adicionarInputKR() { const div = document.createElement('div'); div.className = "flex gap-2 items-center bg-panel p-1.5 rounded-lg border border-theme"; div.innerHTML = `<input type="text" class="kr-input flex-1 bg-transparent border-none py-1 text-xs font-semibold text-strong focus:outline-none" placeholder="Qual a entrega chave?"><button onclick="this.parentElement.remove()" class="text-muted hover:text-red-500 px-2"><i class="fa-solid fa-xmark"></i></button>`; document.getElementById('modal-krs-list').appendChild(div); }
+        function salvarMetaAnual() { const titulo = document.getElementById('meta-titulo').value.trim(); if(!titulo) return alert("Título obrigatório."); const krsInputs = document.querySelectorAll('.kr-input'); const krsArray = []; krsInputs.forEach(input => { if(input.value.trim() !== '') krsArray.push({ texto: input.value.trim(), feito: false }); }); db.anuais[anoAnualSelecionado.toString()].smart.push({ id: Date.now(), titulo: titulo, smart: { s: document.getElementById('meta-s').value.trim(), m: document.getElementById('meta-m').value.trim(), a: document.getElementById('meta-a').value.trim(), r: document.getElementById('meta-r').value.trim() }, krs: krsArray }); salvarDB(); fecharModalMetaAnual(); renderAnual(); }
+        function toggleKRAnual(mIdx, krIdx) { db.anuais[anoAnualSelecionado.toString()].smart[mIdx].krs[krIdx].feito = !db.anuais[anoAnualSelecionado.toString()].smart[mIdx].krs[krIdx].feito; salvarDB(); renderAnual(); }
+        function excluirMetaAnual(mIdx) { if(confirm("Apagar objetivo?")) { db.anuais[anoAnualSelecionado.toString()].smart.splice(mIdx, 1); salvarDB(); renderAnual(); } }
+        function addListaAnual() { let titulo = prompt("Título da Lista:"); if(!titulo) return; let icone = prompt("Ícone/Emoji:") || "📌"; db.anuais[anoAnualSelecionado.toString()].listas.push({ id: Date.now(), titulo, icone, itens: [] }); salvarDB(); renderAnual(); }
+        function editarListaAnual(lIdx) { let t = prompt("Novo título:", db.anuais[anoAnualSelecionado.toString()].listas[lIdx].titulo); if(t) db.anuais[anoAnualSelecionado.toString()].listas[lIdx].titulo = t; let i = prompt("Novo ícone:", db.anuais[anoAnualSelecionado.toString()].listas[lIdx].icone); if(i) db.anuais[anoAnualSelecionado.toString()].listas[lIdx].icone = i; salvarDB(); renderAnual(); }
+        function excluirListaAnual(lIdx) { if(confirm("Excluir lista inteira?")) { db.anuais[anoAnualSelecionado.toString()].listas.splice(lIdx, 1); salvarDB(); renderAnual(); } }
+        function addAnualItem(lIdx) { let t = prompt("Novo item:"); if(t) { db.anuais[anoAnualSelecionado.toString()].listas[lIdx].itens.push({ id: Date.now(), texto: t, concluido: false }); salvarDB(); renderAnual(); } }
+        function editarAnualItem(lIdx, iIdx) { let t = prompt("Editar:", db.anuais[anoAnualSelecionado.toString()].listas[lIdx].itens[iIdx].texto); if(t) { db.anuais[anoAnualSelecionado.toString()].listas[lIdx].itens[iIdx].texto = t; salvarDB(); renderAnual(); } }
+        function excluirAnualItem(lIdx, iIdx) { db.anuais[anoAnualSelecionado.toString()].listas[lIdx].itens.splice(iIdx, 1); salvarDB(); renderAnual(); }
+        function toggleAnualItem(lIdx, iIdx) { db.anuais[anoAnualSelecionado.toString()].listas[lIdx].itens[iIdx].concluido = !db.anuais[anoAnualSelecionado.toString()].listas[lIdx].itens[iIdx].concluido; salvarDB(); renderAnual(); }
+
+        // ==========================================
+        // OUTRAS ABAS (MENSAL, TRIMESTRAL) LÓGICA MANTIDA
+        // ==========================================
+        function getChaveMes() { return `${anoSelecionado}-${mesSelecionado}`; }
+        function initMes() { const ch = getChaveMes(); if(!db.meses[ch]) db.meses[ch] = { q1:"", q2:"", q3:"", notas:"", fichas:{curso:"", livro:"", jogo:"", passeio:"", serie:""}, fichas_done:{curso:false, livro:false, jogo:false, passeio:false, serie:false}, objetivos:[], comprar:[], pagar:[], datas:[], rastreadores:[] }; }
+        function navegarMes(dir) { mesSelecionado += dir; if(mesSelecionado > 11) { mesSelecionado = 0; anoSelecionado++; } if(mesSelecionado < 0) { mesSelecionado = 11; anoSelecionado--; } renderMensal(); }
+        function renderMensal() { initMes(); const ch = getChaveMes(); const dados = db.meses[ch]; document.getElementById('label-mes-atual').innerText = `${mesesNomes[mesSelecionado]} ${anoSelecionado}`; ['q1', 'q2', 'q3', 'notas'].forEach(k => document.getElementById(`m-${k}`).value = dados[k]); ['curso', 'livro', 'jogo', 'passeio', 'serie'].forEach(k => { let inputTxt = document.getElementById(`m-f-${k}`); let inputChk = document.getElementById(`m-fd-${k}`); inputTxt.value = dados.fichas[k] || ""; inputChk.checked = dados.fichas_done[k] || false; if(inputChk.checked) { inputTxt.classList.add('line-through', 'text-muted'); inputTxt.classList.remove('text-strong'); } else { inputTxt.classList.remove('line-through', 'text-muted'); inputTxt.classList.add('text-strong'); } }); renderListaHTML('m-objetivos', dados.objetivos, 'mensal', 'objetivos'); renderListaHTML('m-comprar', dados.comprar, 'mensal', 'comprar'); renderListaHTML('m-pagar', dados.pagar, 'mensal', 'pagar'); const ulDatas = document.getElementById('m-datas'); ulDatas.innerHTML = ''; dados.datas.forEach((d, i) => { ulDatas.innerHTML += `<li class="flex items-center gap-3 p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg group border border-transparent hover:border-theme transition-colors"><span class="bg-orange-500/10 text-orange-500 px-2 py-1 rounded text-[10px] font-black cursor-pointer" onclick="editarDataMensal(${i}, 'data')">${d.data}</span><span class="text-xs font-semibold text-strong flex-1 cursor-pointer" onclick="editarDataMensal(${i}, 'texto')">${d.texto}</span><button onclick="excluirDataMensal(${i})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash text-[10px]"></i></button></li>`; }); const cRast = document.getElementById('m-rastreadores'); cRast.innerHTML = ''; dados.rastreadores.forEach((t, i) => { let p = Math.round((t.marcados.length / (t.total/t.step)) * 100); let boxes = ''; for(let n=t.step; n<=t.total; n+=t.step){ let done = t.marcados.includes(n); boxes += `<div onclick="toggleTrackMensal(${i}, ${n})" class="w-6 h-6 flex items-center justify-center text-[9px] font-bold rounded cursor-pointer transition-all select-none border border-transparent ${done ? 'text-muted relative opacity-50 bg-bg-color' : 'text-strong hover:bg-black/10 dark:hover:bg-white/10 bg-panel border-theme shadow-sm'}">${n} ${done ? '<div class="absolute inset-0 flex items-center justify-center text-red-500/60 pointer-events-none"><i class="fa-solid fa-xmark"></i></div>':''}</div>`; } cRast.innerHTML += `<div class="relative group"><div class="absolute -top-2 right-0 flex gap-2 opacity-0 group-hover:opacity-100 bg-panel px-2 py-1 rounded-lg border border-theme shadow-lg z-10 transition-opacity"><button onclick="editarRastreadorMensal(${i})" class="text-muted hover:text-blue-500 text-[9px] font-bold">Editar</button><button onclick="excluirRastreadorMensal(${i})" class="text-muted hover:text-red-500 text-[9px] font-bold">Excluir</button></div><p class="text-xs font-bold text-strong mb-2 border-b border-theme/50 pb-1">${t.nome} <span class="text-[9px] font-bold text-muted ml-2">${p}%</span></p><div class="flex flex-wrap gap-1 md:gap-1.5">${boxes}</div></div>`; }); }
+        function salvarMensal() { initMes(); const d = db.meses[getChaveMes()]; ['q1', 'q2', 'q3', 'notas'].forEach(k => d[k] = document.getElementById(`m-${k}`).value); ['curso', 'livro', 'jogo', 'passeio', 'serie'].forEach(k => { d.fichas[k] = document.getElementById(`m-f-${k}`).value; d.fichas_done[k] = document.getElementById(`m-fd-${k}`).checked; }); salvarDB(); renderMensal(); }
+
+        function initTrimestre() { if(!db.trimestres[trimestreSelecionado]) db.trimestres[trimestreSelecionado] = { q1:"", q2:"", q3:"", objetivos:[], lembretes:[] }; }
+        function navegarTrimestre(dir) { trimestreSelecionado += dir; if(trimestreSelecionado > 4) trimestreSelecionado = 1; if(trimestreSelecionado < 1) trimestreSelecionado = 4; renderTrimestral(); }
+        function renderTrimestral() { initTrimestre(); const d = db.trimestres[trimestreSelecionado]; document.getElementById('label-trimestre').innerText = `Q${trimestreSelecionado}`; document.getElementById('label-meses-trimestre').innerText = trimestresNomes[trimestreSelecionado]; ['q1', 'q2', 'q3'].forEach(k => document.getElementById(`t-${k}`).value = d[k] || ""); renderListaHTML('t-objetivos', d.objetivos, 'trimestral', 'objetivos'); renderListaHTML('t-lembretes', d.lembretes, 'trimestral', 'lembretes'); }
+        function salvarTrimestral() { initTrimestre(); ['q1', 'q2', 'q3'].forEach(k => db.trimestres[trimestreSelecionado][k] = document.getElementById(`t-${k}`).value); salvarDB(); }
+
+        function getAlvo(secao, listaId) { if(secao === 'mensal') return db.meses[getChaveMes()][listaId]; if(secao === 'trimestral') return db.trimestres[trimestreSelecionado][listaId]; }
+        function renderListaHTML(containerId, array, secao, listaId) { const ul = document.getElementById(containerId); ul.innerHTML = ''; array.forEach((it, i) => { ul.innerHTML += `<li class="flex items-center gap-3 p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg group border border-transparent hover:border-theme transition-colors"><div class="w-4 h-4 rounded border flex items-center justify-center cursor-pointer transition-colors shrink-0 ${it.concluido ? 'bg-accent border-accent text-white' : 'border-theme text-transparent hover:border-accent'}" onclick="toggleGeral('${secao}', '${listaId}', ${i})"><i class="fa-solid fa-check text-[9px]"></i></div><span class="text-xs font-semibold flex-1 cursor-pointer transition-colors ${it.concluido ? 'text-muted line-through opacity-60' : 'text-strong hover:text-blue-500'}" onclick="editarGeral('${secao}', '${listaId}', ${i})">${it.texto}</span><button onclick="excluirGeral('${secao}', '${listaId}', ${i})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash text-[10px]"></i></button></li>`; }); }
         function addListaItem(secao, listaId) { let t = prompt("Adicionar item:"); if(t){ getAlvo(secao, listaId).push({texto: t, concluido: false}); salvarDB(); secao==='mensal'?renderMensal():renderTrimestral(); } }
         function editarGeral(s, l, i) { let t = prompt("Editar:", getAlvo(s, l)[i].texto); if(t){ getAlvo(s, l)[i].texto = t; salvarDB(); s==='mensal'?renderMensal():renderTrimestral(); } }
         function excluirGeral(s, l, i) { getAlvo(s, l).splice(i, 1); salvarDB(); s==='mensal'?renderMensal():renderTrimestral(); }
         function toggleGeral(s, l, i) { getAlvo(s, l)[i].concluido = !getAlvo(s, l)[i].concluido; salvarDB(); s==='mensal'?renderMensal():renderTrimestral(); }
 
-        // Datas Mensais
         function addListaData(secao) { let d=prompt("Data (Ex: 10.08):"); let t=prompt("Evento:"); if(d&&t){ getAlvo(secao, 'datas').push({data:d, texto:t}); salvarDB(); renderMensal(); } }
         function editarDataMensal(i, campo) { let nv=prompt("Editar:", db.meses[getChaveMes()].datas[i][campo]); if(nv){ db.meses[getChaveMes()].datas[i][campo] = nv; salvarDB(); renderMensal(); } }
         function excluirDataMensal(i) { db.meses[getChaveMes()].datas.splice(i,1); salvarDB(); renderMensal(); }
 
-        // Rastreadores Mensais
         function addRastreadorMensal() { let n=prompt("Nome:"); let t=parseInt(prompt("Total? (Ex: 380)")); let s=parseInt(prompt("Pulos? (Ex: 10)")); if(n&&t&&s){ db.meses[getChaveMes()].rastreadores.push({nome:n, total:t, step:s, marcados:[]}); salvarDB(); renderMensal(); } }
         function editarRastreadorMensal(i) { let n=prompt("Novo nome:", db.meses[getChaveMes()].rastreadores[i].nome); if(n){ db.meses[getChaveMes()].rastreadores[i].nome=n; salvarDB(); renderMensal(); } }
         function excluirRastreadorMensal(i) { if(confirm("Excluir?")){ db.meses[getChaveMes()].rastreadores.splice(i,1); salvarDB(); renderMensal(); } }
         function toggleTrackMensal(tIdx, num) { let t=db.meses[getChaveMes()].rastreadores[tIdx]; if(t.marcados.includes(num)) t.marcados=t.marcados.filter(x=>x!==num); else t.marcados.push(num); salvarDB(); renderMensal(); }
 
-        // Abas
         function mudarAba(aba) {
             document.querySelectorAll('.tab-conteudo').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong");
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong");
             document.getElementById(`conteudo-${aba}`).classList.remove('hidden');
-            let cor = aba==='semanal'?'bg-accent':aba==='trimestral'?'bg-purple-500':'bg-blue-500';
-            document.getElementById(`tab-${aba}`).className = `tab-btn px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${cor} text-white shadow-md`;
-            if(aba==='mensal') renderMensal(); if(aba==='trimestral') renderTrimestral(); if(aba==='anual') renderAnual(); if(aba==='semanal') renderSemanal();
+            let cor = aba==='semanal'?'bg-accent':aba==='trimestral'?'bg-purple-500':aba==='diario'?'bg-emerald-500':'bg-blue-500';
+            document.getElementById(`tab-${aba}`).className = `tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all ${cor} text-white shadow-md`;
+            if(aba==='mensal') renderMensal(); if(aba==='trimestral') renderTrimestral(); if(aba==='anual') renderAnual(); if(aba==='semanal') renderSemanal(); if(aba==='diario') renderDiario();
         }
 
-        window.onload = () => mudarAba('mensal'); // Inicia na aba mensal
+        window.abrirModalSync = function() { document.getElementById('modal-sync').classList.remove('hidden'); document.getElementById('modal-sync').classList.add('flex'); setTimeout(() => { document.getElementById('modal-sync').classList.remove('opacity-0'); document.getElementById('ms-content').classList.remove('scale-95'); }, 10); };
+        window.fecharModalSync = function() { document.getElementById('modal-sync').classList.add('opacity-0'); document.getElementById('ms-content').classList.add('scale-95'); setTimeout(() => { document.getElementById('modal-sync').classList.remove('flex'); document.getElementById('modal-sync').classList.add('hidden'); }, 300); };
+        window.exportarBackup = function() { let backupData = {}; for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key.startsWith('lifeos_') || key === 'theme') { backupData[key] = localStorage.getItem(key); } } const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2)); const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); const dataHoje = new Date().toISOString().split('T')[0]; downloadAnchorNode.setAttribute("download", `lifeos_backup_${dataHoje}.json`); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove(); };
+        window.processarImportacao = function(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const importedData = JSON.parse(e.target.result); let hasValidKeys = false; for (const key in importedData) { if (key.startsWith('lifeos_') || key === 'theme') hasValidKeys = true; } if(!hasValidKeys) { alert("Ficheiro inválido."); return; } if(confirm("APAGAR DADOS ATUAIS e substituir pelo backup?")) { for (let i = localStorage.length - 1; i >= 0; i--) { const key = localStorage.key(i); if (key.startsWith('lifeos_')) localStorage.removeItem(key); } for (const key in importedData) { localStorage.setItem(key, importedData[key]); } alert("Sucesso!"); window.location.reload(); } } catch (error) { alert("Erro de formato."); } }; reader.readAsText(file); event.target.value = ''; };
+
+        window.onload = () => mudarAba('diario');
     </script>
 </body>
 </html>
