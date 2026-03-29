@@ -19,695 +19,898 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Blocos da linha do tempo da periodização */
-        .micro-block { transition: all 0.3s ease; }
-        .micro-block.active { transform: scaleY(1.4); border-radius: 4px; box-shadow: 0 0 15px var(--accent); }
+        .tracker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .tracker-cell { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .tracker-cell.done { background-color: var(--accent); color: white; }
+        .tracker-cell.empty { background-color: rgba(128, 128, 128, 0.1); border: 1px solid rgba(128,128,128,0.2); color: transparent; }
+        .tracker-cell.empty:hover { background-color: rgba(128, 128, 128, 0.2); }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden bg-bg-color text-base transition-colors duration-300">
+<body class="flex h-[100dvh] overflow-hidden bg-bg-color text-base transition-colors duration-300">
 
     <div id="sidebar-container" class="shrink-0 z-50 h-full flex flex-col transition-all duration-300"></div>
 
-    <main class="flex-1 overflow-y-auto custom-scrollbar relative flex flex-col h-full w-full">
+    <main class="flex-1 overflow-hidden relative flex flex-col h-full w-full">
         
-        <header class="sticky top-0 z-30 bg-bg-color/80 backdrop-blur-md border-b border-theme p-5 lg:p-8 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <button id="mobile-menu-btn" class="md:hidden text-strong text-2xl hover:text-blue-500 transition-colors"><i class="fa-solid fa-bars"></i></button>
+        <header class="shrink-0 bg-bg-color/90 backdrop-blur-md border-b border-theme p-4 lg:p-6 flex items-center justify-between z-30">
+            <div class="flex items-center gap-3 lg:gap-4">
+                <button id="mobile-menu-btn" onclick="window.toggleMobileMenu()" class="md:hidden text-strong text-2xl hover:text-blue-500 transition-colors p-2"><i class="fa-solid fa-bars"></i></button>
                 <div class="w-px h-8 bg-border-theme md:hidden"></div>
                 <div>
-                    <h2 class="text-2xl lg:text-3xl font-black text-strong uppercase tracking-tight">Máquina Humana</h2>
-                    <p class="text-[10px] lg:text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">Telemetria de Saúde & Performance</p>
+                    <h2 class="text-xl lg:text-3xl font-black text-strong uppercase tracking-tight">Saúde & Performance</h2>
+                    <p class="text-[9px] lg:text-xs font-bold uppercase tracking-[0.2em] text-muted mt-1">O Veículo da Mente</p>
                 </div>
-            </div>
-            <button id="theme-toggle" class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-blue-500 transition-all shadow-sm"><i class="fa-solid fa-moon text-lg"></i></button>
-        </header>
-
-        <div class="p-5 lg:p-8 max-w-[1600px] mx-auto w-full space-y-6">
-
-            <div class="glass-card p-6 bg-gradient-to-r from-panel to-teal-500/5 border-l-4 border-teal-500 flex flex-col md:flex-row items-center gap-6 fade-in">
-                <div class="relative shrink-0">
-                    <div class="w-16 h-16 rounded-full bg-bg-color border-4 border-teal-500 flex items-center justify-center text-2xl shadow-lg shadow-teal-500/20">🧬</div>
-                    <div class="absolute -bottom-2 -right-2 bg-strong text-bg-color px-2 py-0.5 rounded text-[10px] font-black tracking-widest border border-bg-color">LVL <span id="health-lvl">1</span></div>
-                </div>
-                <div class="flex-1 w-full">
-                    <div class="flex justify-between items-end mb-2">
-                        <div><h3 class="text-lg font-black text-strong uppercase tracking-widest">Nível de Atleta</h3><p class="text-[10px] text-muted font-bold uppercase tracking-widest">Treinos, bons sonos e nutrição geram XP</p></div>
-                        <div class="text-right text-xs font-black text-teal-500"><span id="health-xp">0</span> / <span id="health-max-xp">500</span> XP</div>
-                    </div>
-                    <div class="w-full h-2 bg-bg-color border border-theme rounded-full overflow-hidden"><div id="health-bar" class="h-full bg-teal-500 transition-all duration-1000" style="width: 0%"></div></div>
-                </div>
-            </div>
-
-            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 border-b border-theme sticky top-[88px] z-20 bg-bg-color/90 backdrop-blur-sm pt-2">
-                <button onclick="mudarAbaSaude('sono')" id="tab-sono" class="tab-saude px-5 py-2.5 rounded-t-xl text-xs font-bold transition-all bg-blue-500 text-white shadow-md"><i class="fa-solid fa-moon mr-2"></i> Sono & Foco</button>
-                <button onclick="mudarAbaSaude('treino')" id="tab-treino" class="tab-saude px-5 py-2.5 rounded-t-xl text-xs font-bold transition-all bg-panel border border-theme border-b-0 text-muted hover:text-strong"><i class="fa-solid fa-dumbbell mr-2"></i> Musculação & Fisiologia</button>
-                <button onclick="mudarAbaSaude('esportes')" id="tab-esportes" class="tab-saude px-5 py-2.5 rounded-t-xl text-xs font-bold transition-all bg-panel border border-theme border-b-0 text-muted hover:text-strong"><i class="fa-solid fa-person-running mr-2"></i> Pista & Campo</button>
-                <button onclick="mudarAbaSaude('nutri')" id="tab-nutri" class="tab-saude px-5 py-2.5 rounded-t-xl text-xs font-bold transition-all bg-panel border border-theme border-b-0 text-muted hover:text-strong"><i class="fa-solid fa-apple-whole mr-2"></i> Nutrição & Dieta</button>
-            </div>
-
-            <div id="conteudo-sono" class="aba-saude-conteudo space-y-6 fade-in block">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="space-y-6">
-                        <div class="glass-card p-6 border-l-4 border-blue-500">
-                            <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-2 flex items-center gap-2"><i class="fa-solid fa-bed text-blue-500"></i> Playbook do Sono</h3>
-                            <textarea id="playbook-sono" onblur="salvarSaude()" class="w-full h-32 bg-bg-color border border-theme rounded-xl p-3 text-sm font-semibold text-strong focus:outline-none focus:border-blue-500 resize-none mt-2" placeholder="Ex: Telas amarelas após 20h. Leitura leve. Magnésio."></textarea>
-                        </div>
-                        <div class="glass-card p-6 border-l-4 border-purple-500">
-                            <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-2 flex items-center gap-2"><i class="fa-solid fa-brain text-purple-500"></i> Playbook do Foco</h3>
-                            <textarea id="playbook-foco" onblur="salvarSaude()" class="w-full h-32 bg-bg-color border border-theme rounded-xl p-3 text-sm font-semibold text-strong focus:outline-none focus:border-purple-500 resize-none mt-2" placeholder="Ex: Celular em outro cômodo. Fone com ruído marrom."></textarea>
-                        </div>
-                    </div>
-                    <div class="glass-card p-6 border-t-4 border-theme flex flex-col">
-                        <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
-                            <h3 class="text-sm font-black uppercase tracking-widest text-strong">Diário de Descanso</h3>
-                            <button onclick="addSono()" class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-md hover:scale-105 transition-transform"><i class="fa-solid fa-plus mr-1"></i> Registrar</button>
-                        </div>
-                        <div class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3" id="lista-sono"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="conteudo-treino" class="aba-saude-conteudo space-y-6 fade-in hidden">
-                
-                <div class="glass-card p-6 md:p-8 bg-gradient-to-r from-panel to-purple-500/5 border-l-4 border-purple-500">
-                    <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-4 border-b border-theme pb-4">
-                        <div>
-                            <h3 class="text-lg font-black uppercase tracking-widest text-strong flex items-center gap-2"><i class="fa-solid fa-route text-purple-500"></i> O Mapa do Macrociclo</h3>
-                            <p class="text-[10px] text-muted font-bold mt-1 uppercase tracking-widest">Sua localização exata na periodização de treinos.</p>
-                        </div>
-                        <button onclick="abrirModalPeriodizacao()" class="text-purple-500 hover:text-strong text-[10px] font-black uppercase tracking-widest bg-purple-500/10 px-3 py-1.5 rounded-lg transition-colors"><i class="fa-solid fa-pen mr-1"></i> Configurar Rota</button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div class="bg-bg-color border border-theme rounded-xl p-4 relative overflow-hidden group"><div class="absolute top-0 left-0 w-1 h-full bg-purple-500"></div><p class="text-[9px] font-black uppercase tracking-widest text-muted mb-1">Macrociclo (Geral)</p><h4 id="lbl-macro" class="text-base font-black text-strong truncate">Hipertrofia Base</h4></div>
-                        <div class="bg-bg-color border border-theme rounded-xl p-4 relative overflow-hidden group"><div class="absolute top-0 left-0 w-1 h-full bg-accent"></div><p class="text-[9px] font-black uppercase tracking-widest text-muted mb-1">Mesociclo (Fase Atual)</p><h4 id="lbl-meso" class="text-base font-black text-strong truncate">Volume</h4></div>
-                        <div class="bg-bg-color border border-theme rounded-xl p-4 relative overflow-hidden group"><div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div><p class="text-[9px] font-black uppercase tracking-widest text-muted mb-1">Foco Semanal (Microciclo)</p><h4 id="lbl-micro" class="text-base font-black text-strong truncate">Adaptação</h4></div>
-                    </div>
-
-                    <div class="bg-bg-color border border-theme rounded-xl p-5 mt-4">
-                        <div class="flex justify-between items-end text-[9px] font-black uppercase tracking-widest text-muted mb-2">
-                            <span>Início do Ciclo</span>
-                            <div class="text-center relative">
-                                <span id="lbl-progresso-semanas" class="text-accent text-xs font-bold">Semana 1 / 16</span>
-                            </div>
-                            <span>Auge do Ciclo</span>
-                        </div>
-                        <div class="flex gap-1 h-6 items-end" id="timeline-periodizacao">
-                            </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    <div class="lg:col-span-2 glass-card p-6 border-t-4 border-theme">
-                        <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
-                            <h3 class="text-sm font-black uppercase tracking-widest text-strong">Fichas de Execução</h3>
-                            <button onclick="addFichaTreino()" class="bg-panel border border-theme text-muted hover:text-strong px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Nova Ficha</button>
-                        </div>
-                        <div id="container-fichas" class="space-y-4"></div>
-                    </div>
-
-                    <div class="space-y-6 lg:col-span-1">
-                        <div class="glass-card p-6 border-t-4 border-red-500 flex flex-col justify-between">
-                            <div>
-                                <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-sm font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-clipboard-user text-red-500 mr-1"></i> Laboratório Biométrico</h3>
-                                    <button onclick="abrirModalAvaliacao()" class="text-red-500 hover:text-strong text-[10px] font-black uppercase tracking-widest"><i class="fa-solid fa-plus"></i> Novo</button>
-                                </div>
-                                <div class="bg-bg-color border border-theme p-4 rounded-xl space-y-4">
-                                    <div class="flex justify-between items-end border-b border-theme pb-2">
-                                        <div><p class="text-[9px] uppercase font-bold text-muted">Peso (Kg)</p><p id="av-peso" class="text-2xl font-black text-strong">--</p></div>
-                                        <div class="text-right"><p class="text-[9px] uppercase font-bold text-muted">BF (%)</p><p id="av-bf" class="text-2xl font-black text-strong">--</p></div>
-                                    </div>
-                                    <div class="flex justify-between items-center">
-                                        <div><p class="text-[9px] uppercase font-bold text-muted">IMC (Cálculo Autom.)</p><p id="av-imc-val" class="text-sm font-black text-strong">--</p><p id="av-imc-status" class="text-[8px] font-bold text-blue-500 uppercase tracking-widest">--</p></div>
-                                        <div class="text-right"><p class="text-[9px] uppercase font-bold text-muted">Última Análise</p><p id="av-data" class="text-xs font-bold text-muted mt-1">--/--/----</p></div>
-                                    </div>
-                                </div>
-                                <button onclick="abrirModalAvaliacao(true)" class="w-full mt-4 bg-panel border border-theme text-muted hover:text-strong text-[10px] font-black uppercase tracking-widest py-2 rounded-lg transition-colors hover:border-accent">Ver Ficha Completa & Histórico</button>
-                            </div>
-                        </div>
-
-                        <div class="glass-card p-6 border-t-4 border-blue-500">
-                            <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
-                                <h3 class="text-xs font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-folder-open text-blue-500 mr-1"></i> Arquivos & Estudos</h3>
-                                <button onclick="addAnexo()" class="text-blue-500 hover:text-strong text-[10px] font-black uppercase tracking-widest"><i class="fa-solid fa-plus"></i></button>
-                            </div>
-                            <ul id="lista-anexos" class="space-y-2"></ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="conteudo-esportes" class="aba-saude-conteudo space-y-6 fade-in hidden">
-                <div class="flex justify-between items-center bg-panel border border-theme p-4 rounded-2xl sticky top-[140px] z-10">
-                    <select id="filtro-esporte" onchange="renderEsportes()" class="bg-bg-color border border-theme rounded-xl px-4 py-2 text-sm font-black uppercase tracking-widest text-strong focus:outline-none focus:border-accent cursor-pointer appearance-none">
-                        <option value="todos">Todos os Registros</option>
-                        <option value="corrida">🏃 Corrida</option>
-                        <option value="futebol">⚽ Futebol / Pelada</option>
-                        <option value="custom">⚡ Outros</option>
-                    </select>
-                    <button onclick="abrirModalEsporte()" class="bg-accent text-bg-color px-5 py-2.5 rounded-xl text-xs font-black shadow-lg hover:scale-105 transition-transform flex items-center gap-2 uppercase tracking-widest"><i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Registrar</span></button>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1 space-y-6">
-                        <div class="glass-card p-6 border-l-4 border-blue-500"><h3 class="text-[10px] font-black uppercase tracking-widest text-muted mb-4"><i class="fa-solid fa-person-running text-blue-500 mr-1"></i> Totais Corrida</h3><div class="flex items-end gap-2"><span id="stat-run-km" class="text-3xl font-black text-strong">0.0</span><span class="text-sm font-bold text-muted mb-1">Km</span></div><p class="text-[10px] font-bold text-muted mt-2">Melhor Pace: <span id="stat-run-pace" class="text-blue-500">--:--</span></p></div>
-                        <div class="glass-card p-6 border-l-4 border-green-500"><h3 class="text-[10px] font-black uppercase tracking-widest text-muted mb-4"><i class="fa-solid fa-futbol text-green-500 mr-1"></i> Artilharia Futebol</h3><div class="flex justify-between"><div><p class="text-2xl font-black text-strong" id="stat-fut-gols">0</p><p class="text-[10px] font-bold text-muted uppercase tracking-widest">Gols</p></div><div><p class="text-2xl font-black text-strong" id="stat-fut-ass">0</p><p class="text-[10px] font-bold text-muted uppercase tracking-widest">Assist.</p></div><div><p class="text-2xl font-black text-strong text-green-500" id="stat-fut-nota">-</p><p class="text-[10px] font-bold text-muted uppercase tracking-widest">Média</p></div></div></div>
-                    </div>
-                    <div class="lg:col-span-2 glass-card p-6"><h3 class="text-sm font-black uppercase tracking-widest text-strong mb-6 border-b border-theme pb-4">Feed de Desempenho</h3><div id="feed-esportes" class="space-y-4"></div></div>
-                </div>
-            </div>
-
-            <div id="conteudo-nutri" class="aba-saude-conteudo space-y-6 fade-in hidden">
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="glass-card p-6 border-t-4 border-blue-400 md:col-span-1">
-                        <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-2 flex items-center gap-2"><i class="fa-solid fa-droplet text-blue-400"></i> Hidratação</h3>
-                        <div class="flex items-center justify-between bg-bg-color border border-theme p-4 rounded-2xl mt-4">
-                            <button onclick="addAgua(-250)" class="w-10 h-10 rounded-full bg-panel border border-theme text-muted hover:text-red-500 font-black">-</button>
-                            <div class="text-center"><span id="lbl-agua" class="text-3xl font-black text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.4)]">0</span> <span class="text-sm font-bold text-muted">ml</span></div>
-                            <button onclick="addAgua(250)" class="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors font-black">+</button>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mt-4">
-                            <button onclick="addAgua('reset')" class="py-2 text-[10px] text-muted font-bold uppercase tracking-widest border border-theme rounded-lg hover:text-red-500 transition-colors">Zerar Diário</button>
-                            <button onclick="arquivarAgua()" class="py-2 text-[10px] text-muted font-bold uppercase tracking-widest border border-theme rounded-lg hover:text-accent transition-colors">Arquivar Dia</button>
-                        </div>
-                    </div>
-                    <div class="glass-card p-6 border-t-4 border-green-500 md:col-span-2">
-                        <h3 class="text-sm font-black uppercase tracking-widest text-strong mb-2 flex items-center gap-2"><i class="fa-solid fa-leaf text-green-500"></i> Protocolo Alimentar</h3>
-                        <textarea id="playbook-nutri" onblur="salvarSaude()" class="w-full h-24 bg-bg-color border border-theme rounded-xl p-3 text-sm font-semibold text-strong focus:outline-none focus:border-green-500 resize-none mt-2" placeholder="Regras inegociáveis. Ex: Zero açúcar, bater macros diários..."></textarea>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 glass-card p-6 border-l-4 border-green-500">
-                        <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
-                            <h3 class="text-sm font-black uppercase tracking-widest text-strong">Cronograma Base (Dieta Semanal)</h3>
-                            <button onclick="addRefeicao()" class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-md hover:scale-105 transition-transform"><i class="fa-solid fa-plus mr-1"></i> Add Refeição</button>
-                        </div>
-                        <div id="lista-dieta" class="space-y-4"></div>
-                    </div>
-
-                    <div class="lg:col-span-1 glass-card p-6 border-l-4 border-orange-500">
-                        <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
-                            <h3 class="text-sm font-black uppercase tracking-widest text-strong">Compras do Mês</h3>
-                            <button onclick="addCompraNutri()" class="text-orange-500 hover:text-strong text-[10px] font-black uppercase tracking-widest"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                        <ul id="lista-compras-nutri" class="space-y-2"></ul>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <div id="modal-periodizacao" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-panel border border-theme rounded-3xl w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300" id="mp-content">
-            <div class="p-6 border-b border-theme flex justify-between items-center bg-bg-color/50 rounded-t-3xl"><h3 class="text-xl font-black text-strong uppercase tracking-tight">Rota de Treino</h3><button onclick="fecharModalPeriodizacao()" class="text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></button></div>
-            <div class="p-6 space-y-4">
-                <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Macrociclo (Geral)</label><input type="text" id="inp-macro" class="w-full bg-bg-color border border-theme rounded-xl p-2.5 text-sm font-bold text-strong focus:border-purple-500"></div>
-                <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Mesociclo (Fase Atual)</label><input type="text" id="inp-meso" class="w-full bg-bg-color border border-theme rounded-xl p-2.5 text-sm font-bold text-strong focus:border-accent"></div>
-                <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Foco Semanal (Microciclo)</label><input type="text" id="inp-micro" class="w-full bg-bg-color border border-theme rounded-xl p-2.5 text-sm font-bold text-strong focus:border-blue-500"></div>
-                <div class="grid grid-cols-2 gap-4 border-t border-theme pt-4 mt-2">
-                    <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Duração Ciclo (Sem)</label><input type="number" id="inp-semanas-total" class="w-full bg-bg-color border border-theme rounded-xl p-2 text-sm text-center font-bold text-strong focus:border-purple-500"></div>
-                    <div><label class="block text-[10px] font-black uppercase text-muted mb-1">Semana Atual</label><input type="number" id="inp-semana-atual" class="w-full bg-bg-color border border-theme rounded-xl p-2 text-sm text-center font-bold text-strong focus:border-purple-500"></div>
-                </div>
-            </div>
-            <div class="p-6 border-t border-theme"><button onclick="salvarPeriodizacao()" class="w-full bg-purple-500 text-white py-3 rounded-xl text-sm font-black uppercase tracking-widest shadow-lg hover:scale-105 transition-transform">Atualizar Rota</button></div>
-        </div>
-    </div>
-
-    <div id="modal-avaliacao" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[110] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-panel border border-theme rounded-3xl w-full max-w-2xl shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="mav-content">
-            <div class="p-6 border-b border-theme flex justify-between items-center bg-bg-color/50 rounded-t-3xl shrink-0">
-                <div><h3 class="text-xl font-black text-strong uppercase tracking-tight">Laboratório Biométrico</h3><p class="text-[10px] text-muted font-bold uppercase tracking-widest">Controle Completo & Histórico</p></div>
-                <button onclick="fecharModalAvaliacao()" class="text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-6 flex-1 overflow-y-auto custom-scrollbar space-y-6">
-                <div id="form-nova-avaliacao" class="bg-bg-color border border-theme p-5 rounded-2xl relative overflow-hidden group">
-                    <div class="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                    <h4 class="text-xs font-black uppercase tracking-widest text-strong mb-4 border-b border-theme pb-2 text-red-500">Nova Medição</h4>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div><label class="block text-[9px] font-bold uppercase text-muted mb-1">Data</label><input type="date" id="mav-data" class="w-full bg-panel border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:border-red-500"></div>
-                        <div><label class="block text-[9px] font-bold uppercase text-muted mb-1">Peso (Kg)</label><input type="number" step="0.1" id="mav-peso" class="w-full bg-panel border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:border-red-500"></div>
-                        <div><label class="block text-[9px] font-bold uppercase text-muted mb-1">Altura (m)</label><input type="number" step="0.01" id="mav-altura" class="w-full bg-panel border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:border-red-500" placeholder="Ex: 1.80"></div>
-                        <div><label class="block text-[9px] font-bold uppercase text-muted mb-1">BF (%)</label><input type="number" step="0.1" id="mav-bf" class="w-full bg-panel border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:border-red-500"></div>
-                        <div><label class="block text-[9px] font-bold uppercase text-muted mb-1">Peitoral (cm)</label><input type="number" step="0.5" id="mav-peito" class="w-full bg-panel border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:border-red-500"></div>
-                        <div><label class="block text-[9px] font-bold uppercase text-muted mb-1">Cintura (cm)</label><input type="number" step="0.5" id="mav-cintura" class="w-full bg-panel border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:border-red-500"></div>
-                        <div><label class="block text-[9px] font-bold uppercase text-muted mb-1">Quadril (cm)</label><input type="number" step="0.5" id="mav-quadril" class="w-full bg-panel border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:border-red-500"></div>
-                        <div><label class="block text-[9px] font-bold uppercase text-muted mb-1">Braço D (cm)</label><input type="number" step="0.5" id="mav-braco-d" class="w-full bg-panel border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:border-red-500"></div>
-                        <div><label class="block text-[9px] font-bold uppercase text-muted mb-1">Braço E (cm)</label><input type="number" step="0.5" id="mav-braco-e" class="w-full bg-panel border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:border-red-500"></div>
-                        <div><label class="block text-[9px] font-bold uppercase text-muted mb-1">Coxa D (cm)</label><input type="number" step="0.5" id="mav-coxa-d" class="w-full bg-panel border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:border-red-500"></div>
-                        <div><label class="block text-[9px] font-bold uppercase text-muted mb-1">Coxa E (cm)</label><input type="number" step="0.5" id="mav-coxa-e" class="w-full bg-panel border border-theme rounded-lg p-2 text-xs font-bold text-strong focus:border-red-500"></div>
-                    </div>
-                    <div class="mt-4 flex justify-end"><button onclick="salvarAvaliacao()" class="bg-red-500 text-white px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest shadow-md hover:scale-105 transition-transform">Salvar & Calcular IMC</button></div>
-                </div>
-                <div>
-                    <h4 class="text-xs font-black uppercase tracking-widest text-strong mb-3 border-b border-theme pb-2">Histórico de Evolução</h4>
-                    <div class="overflow-x-auto no-scrollbar border border-theme rounded-xl">
-                        <table class="w-full text-left text-xs text-strong whitespace-nowrap">
-                            <thead class="bg-bg-color uppercase text-[8px] text-muted font-black border-b border-theme">
-                                <tr><th class="p-3">Data</th><th class="p-3">Peso/Alt.</th><th class="p-3">IMC</th><th class="p-3">BF%</th><th class="p-3">Peito/Cint./Quad.</th><th class="p-3">Braços D/E</th><th class="p-3">Coxas D/E</th><th class="p-3">Excluir</th></tr>
-                            </thead>
-                            <tbody id="lista-avaliacoes" class="divide-y divide-theme/50 bg-panel"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-esporte" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[110] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-panel border border-theme rounded-3xl w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="me-content">
-            <div class="p-6 border-b border-theme flex justify-between items-center bg-bg-color/50 rounded-t-3xl shrink-0">
-                <h3 class="text-xl font-black text-strong uppercase tracking-tight">Novo Registro</h3>
-                <button onclick="fecharModalEsporte()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-bg-color border border-theme text-muted hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
-            <div class="p-6 overflow-y-auto custom-scrollbar space-y-5">
-                <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Modalidade</label>
-                    <select id="me-tipo" onchange="trocarFormEsporte()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-black text-strong focus:outline-none focus:border-accent cursor-pointer appearance-none">
-                        <option value="corrida">Corrida</option>
-                        <option value="futebol">Futebol</option>
-                        <option value="custom">Outro Esporte</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Data</label><input type="date" id="me-data" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-xs font-bold text-strong focus:border-accent"></div>
-                    <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Local / Título</label><input type="text" id="me-local" placeholder="Ex: Parque / Quadra 1" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-xs font-bold text-strong focus:border-accent"></div>
-                </div>
+            <div class="flex items-center gap-2 lg:gap-3">
+                <button onclick="abrirModalSync()" class="bg-panel border border-theme hover:border-blue-500 text-strong hover:text-blue-500 px-3 py-2 rounded-xl text-[10px] font-black transition-colors shadow-sm flex items-center gap-2 group">
+                    <i class="fa-solid fa-cloud-arrow-up text-blue-500 group-hover:animate-bounce"></i> <span class="hidden md:inline uppercase tracking-widest">Sync</span>
+                </button>
+                <button id="theme-toggle" class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-panel border border-theme flex items-center justify-center text-strong hover:text-blue-500 transition-all shadow-sm"><i class="fa-solid fa-moon text-lg"></i></button>
+            </div>
+        </header>
 
-                <div id="form-corrida" class="space-y-4 pt-2 border-t border-theme border-dashed">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Distância (Km)</label><input type="number" step="0.01" id="me-run-km" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold focus:border-blue-500" placeholder="0.00"></div>
-                        <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Tempo (MM:SS)</label><input type="text" id="me-run-tempo" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold focus:border-blue-500" placeholder="25:30"></div>
-                        <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Pace Médio</label><input type="text" id="me-run-pace" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold focus:border-blue-500" placeholder="5:30"></div>
-                        <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Vel. Máx (Km/h)</label><input type="number" step="0.1" id="me-run-vel" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold focus:border-blue-500" placeholder="0.0"></div>
+        <div class="px-4 lg:px-8 pt-4 bg-bg-color shrink-0 flex gap-2 overflow-x-auto no-scrollbar border-b border-theme">
+            <button onclick="mudarAba('macro')" id="tab-macro" class="tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-t-xl text-xs lg:text-sm font-bold transition-all bg-blue-500 text-white shadow-md border-b-2 border-transparent">Macrociclo</button>
+            <button onclick="mudarAba('musculo')" id="tab-musculo" class="tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-t-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong border-b-2 border-transparent">Musculação</button>
+            <button onclick="mudarAba('esportes')" id="tab-esportes" class="tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-t-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong border-b-2 border-transparent">Cardio & Esportes</button>
+            <button onclick="mudarAba('dieta')" id="tab-dieta" class="tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-t-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong border-b-2 border-transparent">Plano Alimentar</button>
+            <button onclick="mudarAba('biblio')" id="tab-biblio" class="tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-t-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong border-b-2 border-transparent">Arquivos Médicos</button>
+        </div>
+
+        <div id="conteudo-macro" class="tab-conteudo flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8 w-full max-w-[1600px] mx-auto space-y-6 fade-in block">
+            
+            <div class="flex flex-col lg:flex-row gap-6">
+                <div class="w-full lg:w-2/3 space-y-6">
+                    <div class="glass-card p-6 border-t-4 border-blue-500">
+                        <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
+                            <div>
+                                <h3 class="text-lg font-black uppercase tracking-widest text-strong" id="macro-titulo-atual">Macrociclo Atual</h3>
+                                <p class="text-[10px] font-bold text-muted uppercase tracking-widest mt-1">Estratégia de Longo Prazo</p>
+                            </div>
+                            <button onclick="arquivarMacrociclo()" class="bg-blue-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-colors shadow-md"><i class="fa-solid fa-box-archive mr-2"></i> Salvar & Arquivar</button>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Nome do Projeto/Fase</label>
+                                <input type="text" id="macro-nome" onblur="salvarMacroAtual()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:outline-none focus:border-blue-500" placeholder="Ex: Projeto Monstro 2026, Emagrecimento Q1...">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Data de Início</label>
+                                    <input type="date" id="macro-inicio" onchange="salvarMacroAtual()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-xs font-bold text-strong focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Data Alvo (Fim)</label>
+                                    <input type="date" id="macro-fim" onchange="salvarMacroAtual()" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-xs font-bold text-strong focus:outline-none focus:border-blue-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Plano de Treino / Estratégia Geral</label>
+                                <textarea id="macro-plano" onblur="salvarMacroAtual()" class="w-full h-40 bg-bg-color border border-theme rounded-xl p-4 text-sm font-semibold text-strong focus:outline-none focus:border-blue-500 resize-none custom-scrollbar" placeholder="Descreva as fases do mesociclo, periodização, foco principal..."></textarea>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div id="form-futebol" class="space-y-4 pt-2 border-t border-theme border-dashed hidden">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Gols</label><input type="number" id="me-fut-gol" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-center focus:border-green-500" value="0"></div>
-                        <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Assist.</label><input type="number" id="me-fut-ass" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-center focus:border-green-500" value="0"></div>
-                        <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Sua Nota (0-10)</label><input type="number" step="0.1" id="me-fut-nota" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-center focus:border-green-500" placeholder="8.5"></div>
-                        <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Cansaço (1-5)</label><input type="number" id="me-fut-fatiga" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-center focus:border-green-500" placeholder="3"></div>
+                <div class="w-full lg:w-1/3 space-y-6">
+                    <div class="glass-card p-6 border-t-4 border-theme">
+                        <h4 class="text-xs font-black uppercase tracking-widest text-strong mb-4 border-b border-theme pb-2"><i class="fa-solid fa-folder-open text-muted mr-2"></i> Histórico (Arquivos)</h4>
+                        <div id="lista-macros-arquivados" class="space-y-3">
+                            </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div id="form-custom" class="space-y-4 pt-2 border-t border-theme border-dashed hidden">
-                    <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Nome do Esporte/Atividade</label><input type="text" id="me-cus-nome" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold focus:border-accent" placeholder="Ex: Natação, Fisioterapia Perna..."></div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Métrica</label><input type="text" id="me-cus-met" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-xs font-bold focus:border-accent" placeholder="Ex: Reps, Metros"></div>
-                        <div><label class="block text-[10px] font-black uppercase text-muted mb-2">Valor</label><input type="text" id="me-cus-val" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold focus:border-accent"></div>
+        <div id="conteudo-musculo" class="tab-conteudo flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8 w-full max-w-[1600px] mx-auto space-y-6 fade-in hidden">
+            
+            <div class="glass-card p-6 border-t-4 border-accent">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-theme pb-4">
+                    <div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong flex items-center gap-2"><i class="fa-solid fa-chart-simple text-accent"></i> Radar de Constância</h3>
+                        <p class="text-[10px] font-bold text-muted uppercase tracking-widest mt-1">Últimas 4 Semanas de Treino</p>
                     </div>
+                    <button onclick="abrirModalLogTreino()" class="bg-accent text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform shadow-md"><i class="fa-solid fa-dumbbell mr-2"></i> Registrar Treino de Hoje</button>
                 </div>
-
-                <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Autoavaliação / Notas</label>
-                    <textarea id="me-notas" class="w-full h-20 bg-bg-color border border-theme rounded-xl p-3 text-sm font-semibold text-strong focus:outline-none focus:border-accent resize-none placeholder-muted/50" placeholder="Como foi o desempenho? Sentiu dor?"></textarea>
+                
+                <div class="flex flex-col lg:flex-row gap-8 items-center">
+                    <div class="w-full lg:w-auto">
+                        <div class="flex text-[9px] font-black text-muted uppercase tracking-widest mb-2 justify-between px-2">
+                            <span class="w-8 text-center">Seg</span><span class="w-8 text-center">Ter</span><span class="w-8 text-center">Qua</span><span class="w-8 text-center">Qui</span><span class="w-8 text-center">Sex</span><span class="w-8 text-center">Sáb</span><span class="w-8 text-center text-red-500">Dom</span>
+                        </div>
+                        <div id="tracker-grid" class="tracker-grid w-full max-w-[300px] mx-auto lg:mx-0">
+                            </div>
+                    </div>
+                    
+                    <div class="flex-1 w-full border-t lg:border-t-0 lg:border-l border-theme pt-4 lg:pt-0 lg:pl-8">
+                        <h4 class="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Últimos Registros</h4>
+                        <div id="lista-logs-treino" class="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto custom-scrollbar">
+                            </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="p-6 border-t border-theme flex justify-end gap-3 bg-bg-color/50 rounded-b-3xl shrink-0">
-                <button onclick="fecharModalEsporte()" class="px-5 py-2.5 rounded-xl text-sm font-bold text-muted hover:bg-panel transition-colors">Cancelar</button>
-                <button onclick="salvarEsporte()" class="bg-accent text-bg-color px-8 py-2.5 rounded-xl text-sm font-black shadow-lg hover:scale-105 transition-transform">Salvar Registro</button>
+            <div class="glass-card p-6 border-t-4 border-theme">
+                <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-strong"><i class="fa-solid fa-clipboard-list text-muted mr-2"></i> Minhas Fichas</h3>
+                    <button onclick="abrirModalNovaFicha()" class="bg-panel border border-theme text-strong hover:text-blue-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors"><i class="fa-solid fa-plus mr-2"></i> Criar Ficha</button>
+                </div>
+                
+                <div class="flex gap-2 overflow-x-auto no-scrollbar mb-4">
+                    <button onclick="setFiltroFichas('ativas')" id="btn-ficha-ativas" class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-blue-500 text-white shadow-md">Ativas</button>
+                    <button onclick="setFiltroFichas('arquivadas')" id="btn-ficha-arquivadas" class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-panel border border-theme text-muted hover:text-strong">Arquivadas</button>
+                </div>
+
+                <div id="grid-fichas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    </div>
+            </div>
+
+        </div>
+
+        <div id="conteudo-esportes" class="tab-conteudo flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8 w-full max-w-[1600px] mx-auto space-y-6 fade-in hidden">
+            
+            <div class="glass-card p-6 border-t-4 border-orange-500">
+                <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
+                    <div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong flex items-center gap-2"><i class="fa-solid fa-person-running text-orange-500"></i> Histórico de Cardio</h3>
+                        <p class="text-[10px] font-bold text-muted uppercase tracking-widest mt-1">Corridas, Natação, Ciclismo, etc.</p>
+                    </div>
+                    <button onclick="abrirModalCardio()" class="bg-orange-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-colors shadow-md"><i class="fa-solid fa-plus mr-2"></i> Novo Registro</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-bg-color border border-theme p-4 rounded-xl text-center"><p class="text-[10px] font-black uppercase tracking-widest text-muted mb-1">Total Atividades</p><p class="text-2xl font-black text-strong" id="c-total">0</p></div>
+                    <div class="bg-bg-color border border-theme p-4 rounded-xl text-center"><p class="text-[10px] font-black uppercase tracking-widest text-muted mb-1">Distância Total (Km)</p><p class="text-2xl font-black text-orange-500" id="c-km">0</p></div>
+                    <div class="bg-bg-color border border-theme p-4 rounded-xl text-center"><p class="text-[10px] font-black uppercase tracking-widest text-muted mb-1">Pace Médio Global</p><p class="text-2xl font-black text-strong" id="c-pace">0:00</p></div>
+                </div>
+
+                <div id="lista-cardio" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    </div>
+            </div>
+        </div>
+
+        <div id="conteudo-dieta" class="tab-conteudo flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8 w-full max-w-[1600px] mx-auto space-y-6 fade-in hidden">
+            
+            <div class="glass-card p-6 border-t-4 border-emerald-500">
+                <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-strong flex items-center gap-2"><i class="fa-solid fa-utensils text-emerald-500"></i> Estrutura da Dieta</h3>
+                    <button onclick="salvarDieta()" class="bg-emerald-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors shadow-md"><i class="fa-solid fa-save mr-2"></i> Salvar Dieta</button>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Estratégia / Foco Atual (Ex: Déficit, Bulking, Manutenção)</label>
+                    <input type="text" id="dieta-foco" class="w-full bg-bg-color border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div class="bg-bg-color border border-theme p-4 rounded-xl">
+                            <h4 class="text-[10px] font-black uppercase tracking-widest text-strong mb-2 border-b border-theme pb-1">Refeição 1 (Café da Manhã)</h4>
+                            <textarea id="dieta-r1" class="w-full h-24 bg-transparent text-sm text-strong focus:outline-none resize-none custom-scrollbar" placeholder="Alimentos, quantidades, suplementos..."></textarea>
+                        </div>
+                        <div class="bg-bg-color border border-theme p-4 rounded-xl">
+                            <h4 class="text-[10px] font-black uppercase tracking-widest text-strong mb-2 border-b border-theme pb-1">Refeição 2 (Almoço)</h4>
+                            <textarea id="dieta-r2" class="w-full h-24 bg-transparent text-sm text-strong focus:outline-none resize-none custom-scrollbar" placeholder="Alimentos, quantidades..."></textarea>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-bg-color border border-theme p-4 rounded-xl">
+                            <h4 class="text-[10px] font-black uppercase tracking-widest text-strong mb-2 border-b border-theme pb-1">Refeição 3 (Lanche / Pré-Treino)</h4>
+                            <textarea id="dieta-r3" class="w-full h-24 bg-transparent text-sm text-strong focus:outline-none resize-none custom-scrollbar" placeholder="Alimentos, quantidades..."></textarea>
+                        </div>
+                        <div class="bg-bg-color border border-theme p-4 rounded-xl">
+                            <h4 class="text-[10px] font-black uppercase tracking-widest text-strong mb-2 border-b border-theme pb-1">Refeição 4 (Jantar / Ceia)</h4>
+                            <textarea id="dieta-r4" class="w-full h-24 bg-transparent text-sm text-strong focus:outline-none resize-none custom-scrollbar" placeholder="Alimentos, quantidades..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="conteudo-biblio" class="tab-conteudo flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8 w-full max-w-[1600px] mx-auto space-y-6 fade-in hidden">
+            
+            <div class="glass-card p-6 border-t-4 border-purple-500">
+                <div class="flex justify-between items-center mb-6 border-b border-theme pb-4">
+                    <div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-strong flex items-center gap-2"><i class="fa-solid fa-file-medical text-purple-500"></i> Repositório de Exames</h3>
+                        <p class="text-[10px] font-bold text-muted uppercase tracking-widest mt-1">Guarde PDFs, Imagens e Anotações Locais</p>
+                    </div>
+                    <button onclick="abrirModalArquivo()" class="bg-purple-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-600 transition-colors shadow-md"><i class="fa-solid fa-upload mr-2"></i> Adicionar Arquivo</button>
+                </div>
+
+                <div id="grid-arquivos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="modal-ficha" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg-color border border-theme rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl transform scale-95 transition-transform duration-300" id="mf-content">
+            <div class="p-5 border-b border-theme flex justify-between items-center bg-panel rounded-t-3xl shrink-0">
+                <h3 class="text-sm font-black text-strong uppercase tracking-widest"><i class="fa-solid fa-clipboard-list text-blue-500 mr-2"></i> Construtor de Ficha</h3>
+                <button onclick="fecharModalNovaFicha()" class="text-muted hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="p-5 flex-1 overflow-y-auto custom-scrollbar space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Título da Ficha (Ex: Treino A - Peito)</label>
+                        <input type="text" id="mf-titulo" class="w-full bg-panel border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Objetivo / Foco</label>
+                        <input type="text" id="mf-objetivo" class="w-full bg-panel border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="bg-panel p-4 rounded-xl border border-theme">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-[10px] font-black uppercase tracking-widest text-strong">Exercícios</h4>
+                    </div>
+                    <div id="mf-lista-exercicios" class="space-y-2 mb-3"></div>
+                    
+                    <div class="grid grid-cols-12 gap-2 bg-bg-color p-3 rounded-lg border border-theme border-dashed">
+                        <div class="col-span-12 md:col-span-5"><input type="text" id="mf-ex-nome" placeholder="Nome do Exercício" class="w-full bg-transparent text-xs font-semibold text-strong focus:outline-none"></div>
+                        <div class="col-span-4 md:col-span-2"><input type="text" id="mf-ex-series" placeholder="Séries" class="w-full bg-transparent text-xs text-strong focus:outline-none text-center border-l border-theme px-2"></div>
+                        <div class="col-span-4 md:col-span-2"><input type="text" id="mf-ex-reps" placeholder="Reps" class="w-full bg-transparent text-xs text-strong focus:outline-none text-center border-l border-theme px-2"></div>
+                        <div class="col-span-4 md:col-span-2"><input type="text" id="mf-ex-rest" placeholder="Descanso" class="w-full bg-transparent text-xs text-strong focus:outline-none text-center border-l border-theme px-2"></div>
+                        <div class="col-span-12 md:col-span-1 flex justify-end"><button type="button" onclick="addExercicioModal()" class="text-blue-500 hover:text-blue-400 font-bold text-xs">Add</button></div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Observações Gerais</label>
+                    <textarea id="mf-notas" class="w-full h-20 bg-panel border border-theme rounded-xl p-3 text-sm text-strong focus:outline-none focus:border-blue-500 resize-none custom-scrollbar" placeholder="Técnicas avançadas, cadência..."></textarea>
+                </div>
+            </div>
+
+            <div class="p-5 border-t border-theme flex justify-end gap-3 bg-panel rounded-b-3xl shrink-0">
+                <button onclick="fecharModalNovaFicha()" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted hover:bg-bg-color transition-colors">Cancelar</button>
+                <button onclick="salvarFicha()" class="bg-blue-500 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-transform">Salvar Ficha</button>
             </div>
         </div>
     </div>
 
-    <div id="xp-floater" class="fixed pointer-events-none opacity-0 font-black text-xl z-[9999] drop-shadow-md"></div>
+    <div id="modal-log-treino" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg-color border border-theme rounded-3xl w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300" id="mlt-content">
+            <div class="p-5 border-b border-theme flex justify-between items-center bg-panel rounded-t-3xl">
+                <h3 class="text-xs font-black text-strong uppercase tracking-widest"><i class="fa-solid fa-dumbbell text-accent mr-2"></i> Registrar Treino</h3>
+                <button onclick="fecharModalLogTreino()" class="text-muted hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Data</label>
+                    <input type="date" id="mlt-data" class="w-full bg-panel border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:outline-none focus:border-accent">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Qual ficha realizou?</label>
+                    <select id="mlt-ficha" class="w-full bg-panel border border-theme rounded-xl p-3 text-sm font-bold text-strong focus:outline-none focus:border-accent cursor-pointer appearance-none">
+                        </select>
+                </div>
+                <button onclick="salvarLogTreino()" class="w-full bg-accent text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-transform mt-2">Gravar no Diário</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-cardio" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg-color border border-theme rounded-3xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300" id="mc-content">
+            <div class="p-5 border-b border-theme flex justify-between items-center bg-panel rounded-t-3xl">
+                <h3 class="text-xs font-black text-strong uppercase tracking-widest"><i class="fa-solid fa-person-running text-orange-500 mr-2"></i> Registro Esportivo</h3>
+                <button onclick="fecharModalCardio()" class="text-muted hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <input type="hidden" id="mc-id"> <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Data</label>
+                        <input type="date" id="mc-data" class="w-full bg-panel border border-theme rounded-xl p-2.5 text-xs font-bold text-strong focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Modalidade</label>
+                        <select id="mc-tipo" class="w-full bg-panel border border-theme rounded-xl p-2.5 text-xs font-bold text-strong focus:outline-none">
+                            <option value="Corrida">Corrida</option><option value="Ciclismo">Ciclismo</option><option value="Natação">Natação</option><option value="Futebol">Futebol</option><option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Distância</label>
+                        <input type="text" id="mc-distancia" placeholder="Ex: 5km" class="w-full bg-panel border border-theme rounded-xl p-2.5 text-xs font-bold text-strong focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Tempo</label>
+                        <input type="text" id="mc-tempo" placeholder="Ex: 30:00" class="w-full bg-panel border border-theme rounded-xl p-2.5 text-xs font-bold text-strong focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">FC Média</label>
+                        <input type="text" id="mc-bpm" placeholder="Ex: 150" class="w-full bg-panel border border-theme rounded-xl p-2.5 text-xs font-bold text-strong focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Notas / Sensação</label>
+                    <textarea id="mc-notas" class="w-full h-16 bg-panel border border-theme rounded-xl p-2 text-xs text-strong focus:outline-none resize-none custom-scrollbar" placeholder="Como foi o treino?"></textarea>
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button onclick="fecharModalCardio()" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted hover:bg-panel transition-colors">Cancelar</button>
+                    <button onclick="salvarCardio()" class="bg-orange-500 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-105 transition-transform">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-arquivo" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg-color border border-theme rounded-3xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300" id="ma-content">
+            <div class="p-5 border-b border-theme flex justify-between items-center bg-panel rounded-t-3xl">
+                <h3 class="text-xs font-black text-strong uppercase tracking-widest"><i class="fa-solid fa-file-arrow-up text-purple-500 mr-2"></i> Guardar Arquivo</h3>
+                <button onclick="fecharModalArquivo()" class="text-muted hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <p class="text-[9px] text-muted font-bold text-center mb-4 bg-panel border border-theme p-2 rounded-lg">Aviso: Para não sobrecarregar o seu navegador local, limite o tamanho dos arquivos a ~2MB. Funciona melhor com imagens e anotações curtas.</p>
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Título</label>
+                    <input type="text" id="ma-titulo" class="w-full bg-panel border border-theme rounded-xl p-2.5 text-xs font-bold text-strong focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Escolha o ficheiro</label>
+                    <input type="file" id="ma-file" accept=".pdf, image/*" class="w-full text-xs text-muted file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-purple-500 file:text-white hover:file:bg-purple-600 cursor-pointer">
+                </div>
+                <div class="text-center mt-2 text-[10px] font-bold text-muted">OU</div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-muted mb-1">Criar Nota Escrita (Em vez de ficheiro)</label>
+                    <textarea id="ma-nota" class="w-full h-20 bg-panel border border-theme rounded-xl p-2 text-xs text-strong focus:outline-none resize-none custom-scrollbar" placeholder="Escreva os resultados do exame ou laudo aqui..."></textarea>
+                </div>
+                
+                <button onclick="processarEsalvarArquivo()" class="w-full bg-purple-500 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-transform mt-4">Guardar no Repositório</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-sync" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-bg-color border border-theme rounded-3xl w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300" id="ms-content">
+            <div class="p-5 border-b border-theme flex justify-between items-center bg-panel rounded-t-3xl">
+                <h3 class="text-xs font-black text-strong uppercase tracking-widest"><i class="fa-solid fa-cloud-arrow-up text-blue-500 mr-2"></i> Backup & Sync</h3>
+                <button onclick="fecharModalSync()" class="text-muted hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-5 space-y-6">
+                <div class="space-y-3">
+                    <h4 class="text-[9px] font-black uppercase tracking-widest text-strong border-b border-theme/50 pb-1">Passo 1: Exportar</h4>
+                    <button onclick="exportarBackup()" class="w-full bg-panel border border-theme hover:border-accent hover:text-accent text-strong py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Baixar Arquivo</button>
+                </div>
+                <div class="space-y-3 pt-4">
+                    <h4 class="text-[9px] font-black uppercase tracking-widest text-strong border-b border-theme/50 pb-1">Passo 2: Importar</h4>
+                    <input type="file" id="file-import" accept=".json" class="hidden" onchange="processarImportacao(event)">
+                    <button onclick="document.getElementById('file-import').click()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"><i class="fa-solid fa-upload"></i> Carregar Backup</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="components.js"></script>
     <script src="script.js"></script>
-    
+
     <script>
         // ==========================================
-        // BANCO DE DADOS E GAMIFICAÇÃO
+        // BANCO DE DADOS (NOVA ESTRUTURA BLINDADA)
         // ==========================================
-        const DB_SAUDE = 'lifeos_saude_v4'; // Atualizei a versão para evitar conflitos com dados velhos corrompidos
-        let db = JSON.parse(localStorage.getItem(DB_SAUDE)) || {
-            stats: { xp: 0, level: 1 },
-            playbooks: { sono: "", foco: "", treino: "", nutri: "" },
-            aguaDiaria: 0, aguaData: new Date().toISOString().split('T')[0],
-            periodizacao: { macro: "Hipertrofia Base", meso: "Volume", micro: "Adaptação", semAtual: 1, semTotal: 16 },
-            avaliacoes: [], sonoLogs: [], fichas: [], esportes: [],
-            dieta: [ { id: 1, ref: "Café da Manhã", itens: "3 Ovos, Pão Integ, Café" }, { id: 2, ref: "Almoço", itens: "Frango, Arroz, Salada" } ],
-            comprasNutri: [ { id: 1, texto: "Whey Protein", comprado: false } ],
-            biblioteca: []
+        const DB_KEY = 'lifeos_saude_v2';
+        
+        let bd = {
+            macroAtual: { nome: '', inicio: '', fim: '', plano: '' },
+            macrociclos: [],
+            fichas: [],
+            logsTreino: [],
+            esportes: [],
+            dieta: { f: '', r1: '', r2: '', r3: '', r4: '' },
+            arquivos: []
         };
 
-        function salvarDB() { localStorage.setItem(DB_SAUDE, JSON.stringify(db)); }
+        // Arrays temporários para os modais
+        let tempExerciciosModal = [];
 
-        // ==========================================
-        // UI & NAVEGAÇÃO
-        // ==========================================
-        function mudarAbaSaude(aba) {
-            document.querySelectorAll('.aba-saude-conteudo').forEach(el => { el.classList.remove('block'); el.classList.add('hidden'); });
-            document.querySelectorAll('.tab-saude').forEach(btn => btn.className = "tab-saude px-5 py-2.5 rounded-t-xl text-xs font-bold transition-all bg-panel border border-theme border-b-0 text-muted hover:text-strong");
-            document.getElementById(`conteudo-${aba}`).classList.remove('hidden'); document.getElementById(`conteudo-${aba}`).classList.add('block');
-            let cor = 'bg-blue-500'; if(aba==='treino') cor = 'bg-purple-500 text-white'; if(aba==='esportes') cor = 'bg-accent text-bg-color'; if(aba==='nutri') cor = 'bg-green-500 text-white';
-            document.getElementById(`tab-${aba}`).className = `tab-saude px-5 py-2.5 rounded-t-xl text-xs font-black transition-all shadow-md border-none ${cor}`;
-            if(aba==='esportes') renderEsportes();
-        }
-
-        function darXP(qtd) {
-            db.stats.xp += qtd; let maxXP = db.stats.level * 500;
-            if(db.stats.xp >= maxXP) { db.stats.xp -= maxXP; db.stats.level++; alert(`🧬 NÍVEL DE ATLETA ${db.stats.level}!`); }
-            salvarDB(); atualizarUXP();
-        }
-
-        function atualizarUXP() {
-            let maxXP = db.stats.level * 500; let p = (db.stats.xp / maxXP) * 100;
-            document.getElementById('health-lvl').innerText = db.stats.level; document.getElementById('health-xp').innerText = db.stats.xp;
-            document.getElementById('health-max-xp').innerText = maxXP; document.getElementById('health-bar').style.width = `${p}%`;
-        }
-
-        function carregarTextos() {
-            document.getElementById('playbook-sono').value = db.playbooks.sono || ""; document.getElementById('playbook-foco').value = db.playbooks.foco || "";
-            document.getElementById('playbook-treino').value = db.playbooks.treino || ""; document.getElementById('playbook-nutri').value = db.playbooks.nutri || "";
-            const hoje = new Date().toISOString().split('T')[0]; if(db.aguaData !== hoje) { db.aguaDiaria = 0; db.aguaData = hoje; salvarDB(); }
-            document.getElementById('lbl-agua').innerText = db.aguaDiaria;
-        }
-
-        function salvarSaude() {
-            db.playbooks.sono = document.getElementById('playbook-sono').value; db.playbooks.foco = document.getElementById('playbook-foco').value;
-            db.playbooks.treino = document.getElementById('playbook-treino').value; db.playbooks.nutri = document.getElementById('playbook-nutri').value;
-            salvarDB();
-        }
-
-        // ==========================================
-        // ÁGUA (HIDRATAÇÃO)
-        // ==========================================
-        function addAgua(ml) {
-            if(ml === 'reset') db.aguaDiaria = 0; else { db.aguaDiaria += ml; if(db.aguaDiaria < 0) db.aguaDiaria = 0; }
-            if(ml > 0 && db.aguaDiaria % 1000 === 0 && db.aguaDiaria > 0) darXP(10);
-            document.getElementById('lbl-agua').innerText = db.aguaDiaria; salvarDB();
-        }
-
-        function arquivarAgua() {
-            if(confirm(`Arquivar meta de água de hoje (${db.aguaDiaria}ml)? Você ganhará +20 XP e o contador será zerado para amanhã.`)) {
-                darXP(20); db.aguaDiaria = 0; salvarDB(); document.getElementById('lbl-agua').innerText = db.aguaDiaria;
-                alert("Hidratação arquivada com sucesso! Continue assim.");
-            }
-        }
-
-        // ==========================================
-        // TREINO: PERIODIZAÇÃO
-        // ==========================================
-        function renderPeriodizacao() {
-            document.getElementById('lbl-macro').innerText = db.periodizacao.macro || "--";
-            document.getElementById('lbl-meso').innerText = db.periodizacao.meso || "--";
-            document.getElementById('lbl-micro').innerText = db.periodizacao.micro || "--";
-            let semTot = parseInt(db.periodizacao.semTotal) || 16;
-            let semAtu = parseInt(db.periodizacao.semAtual) || 1;
-            document.getElementById('lbl-progresso-semanas').innerText = `Semana ${semAtu} / ${semTot}`;
-
-            const t = document.getElementById('timeline-periodizacao'); t.innerHTML = '';
-            for(let i=1; i<=semTot; i++) {
-                let div = document.createElement('div');
-                div.className = "flex-1 rounded-sm micro-block ";
-                
-                let perc = i / semTot;
-                if(i < semAtu) {
-                    div.className += "bg-purple-500/30 h-1/2"; 
-                } else if (i === semAtu) {
-                    div.className += "bg-accent h-full active"; 
+        function carregarDados() {
+            try {
+                let saved = localStorage.getItem(DB_KEY);
+                if (saved) {
+                    let parsed = JSON.parse(saved);
+                    // Merge seguro
+                    bd.macroAtual = parsed.macroAtual || bd.macroAtual;
+                    bd.macrociclos = parsed.macrociclos || [];
+                    bd.fichas = parsed.fichas || [];
+                    bd.logsTreino = parsed.logsTreino || [];
+                    bd.esportes = parsed.esportes || [];
+                    bd.dieta = parsed.dieta || bd.dieta;
+                    bd.arquivos = parsed.arquivos || [];
                 } else {
-                    if(perc < 0.4) div.className += "bg-purple-500/20 border border-purple-500/30 h-1/2";
-                    else if (perc < 0.7) div.className += "bg-indigo-500/20 border border-indigo-500/30 h-1/2";
-                    else div.className += "bg-blue-500/20 border border-blue-500/30 h-1/2";
+                    // Tenta resgatar versão v1 se existir
+                    let v1 = localStorage.getItem('lifeos_saude');
+                    if(v1) {
+                        let parsedV1 = JSON.parse(v1);
+                        if(parsedV1.esportes) bd.esportes = parsedV1.esportes;
+                        if(parsedV1.biblioteca) bd.arquivos = parsedV1.biblioteca.map(b => ({id: Date.now(), titulo: b.titulo, tipo: 'url', conteudo: b.url}));
+                    }
                 }
-                t.appendChild(div);
-            }
+            } catch (e) { console.error("Erro ao carregar DB Saúde", e); }
+            salvarDados();
         }
 
-        function abrirModalPeriodizacao() {
-            document.getElementById('inp-macro').value = db.periodizacao.macro; document.getElementById('inp-meso').value = db.periodizacao.meso;
-            document.getElementById('inp-micro').value = db.periodizacao.micro; document.getElementById('inp-semana-atual').value = db.periodizacao.semAtual;
-            document.getElementById('inp-semanas-total').value = db.periodizacao.semTotal;
-            document.getElementById('modal-periodizacao').classList.remove('hidden'); document.getElementById('modal-periodizacao').classList.add('flex');
-            setTimeout(() => { document.getElementById('modal-periodizacao').classList.remove('opacity-0'); document.getElementById('mp-content').classList.remove('scale-95'); }, 10);
-        }
-
-        function fecharModalPeriodizacao() {
-            document.getElementById('modal-periodizacao').classList.add('opacity-0'); document.getElementById('mp-content').classList.add('scale-95');
-            setTimeout(() => { document.getElementById('modal-periodizacao').classList.remove('flex'); document.getElementById('modal-periodizacao').classList.add('hidden'); }, 300);
-        }
-
-        function salvarPeriodizacao() {
-            db.periodizacao.macro = document.getElementById('inp-macro').value; db.periodizacao.meso = document.getElementById('inp-meso').value;
-            db.periodizacao.micro = document.getElementById('inp-micro').value; db.periodizacao.semAtual = parseInt(document.getElementById('inp-semana-atual').value);
-            db.periodizacao.semTotal = parseInt(document.getElementById('inp-semanas-total').value);
-            salvarDB(); renderPeriodizacao(); fecharModalPeriodizacao();
+        function salvarDados() {
+            localStorage.setItem(DB_KEY, JSON.stringify(bd));
         }
 
         // ==========================================
-        // TREINO: AVALIAÇÃO FÍSICA
+        // NAVEGAÇÃO
         // ==========================================
-        function calcularImc(peso, altura) {
-            if(!peso || !altura || altura <= 0) return 0;
-            return (peso / (altura * altura)).toFixed(1);
+        function mudarAba(aba) {
+            document.querySelectorAll('.tab-conteudo').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-t-xl text-xs lg:text-sm font-bold transition-all bg-panel border border-theme text-muted hover:text-strong border-b-2 border-transparent");
+            
+            document.getElementById(`conteudo-${aba}`).classList.remove('hidden');
+            
+            const btn = document.getElementById(`tab-${aba}`);
+            btn.className = "tab-btn shrink-0 px-4 py-2 lg:px-6 lg:py-2.5 rounded-t-xl text-xs lg:text-sm font-bold transition-all bg-blue-500 text-white shadow-md border-b-2 border-transparent";
+            
+            if (aba === 'macro') renderMacro();
+            if (aba === 'musculo') { btn.classList.replace('bg-blue-500', 'bg-accent'); renderMusculo(); }
+            if (aba === 'esportes') { btn.classList.replace('bg-blue-500', 'bg-orange-500'); renderEsportes(); }
+            if (aba === 'dieta') { btn.classList.replace('bg-blue-500', 'bg-emerald-500'); renderDieta(); }
+            if (aba === 'biblio') { btn.classList.replace('bg-blue-500', 'bg-purple-500'); renderBiblio(); }
         }
-
-        function getStatusImc(imc) {
-            if(imc <= 0) return "--"; if(imc < 18.5) return "Abaixo do peso";
-            if(imc < 24.9) return "Normal"; if(imc < 29.9) return "Sobrepeso"; return "Obesidade";
-        }
-
-        function renderAvaliacaoResumo() {
-            if(db.avaliacoes.length > 0) {
-                let ult = db.avaliacoes[0];
-                document.getElementById('av-peso').innerText = ult.peso || '--';
-                document.getElementById('av-bf').innerText = ult.bf ? ult.bf + '%' : '--';
-                document.getElementById('av-imc-val').innerText = ult.imc || '--';
-                document.getElementById('av-imc-status').innerText = getStatusImc(ult.imc);
-                document.getElementById('av-data').innerText = ult.data ? ult.data.split('-').reverse().join('/') : '--';
-            }
-        }
-
-        function abrirModalAvaliacao(apenasVer = false) {
-            document.getElementById('mav-data').value = new Date().toISOString().split('T')[0];
-            renderHistoricoAvaliacao();
-            document.getElementById('form-nova-avaliacao').classList.toggle('hidden', apenasVer);
-            document.getElementById('modal-avaliacao').classList.remove('hidden'); document.getElementById('modal-avaliacao').classList.add('flex');
-            setTimeout(() => { document.getElementById('modal-avaliacao').classList.remove('opacity-0'); document.getElementById('mav-content').classList.remove('scale-95'); }, 10);
-        }
-
-        function fecharModalAvaliacao() {
-            document.getElementById('modal-avaliacao').classList.add('opacity-0'); document.getElementById('mav-content').classList.add('scale-95');
-            setTimeout(() => { document.getElementById('modal-avaliacao').classList.remove('flex'); document.getElementById('modal-avaliacao').classList.add('hidden'); }, 300);
-        }
-
-        function salvarAvaliacao() {
-            let p = parseFloat(document.getElementById('mav-peso').value);
-            let a = parseFloat(document.getElementById('mav-altura').value);
-            let obj = {
-                id: Date.now(), data: document.getElementById('mav-data').value,
-                peso: p, altura: a, imc: calcularImc(p, a), bf: document.getElementById('mav-bf').value,
-                peito: document.getElementById('mav-peito').value, cintura: document.getElementById('mav-cintura').value, quadril: document.getElementById('mav-quadril').value,
-                bracoD: document.getElementById('mav-braco-d').value, bracoE: document.getElementById('mav-braco-e').value,
-                coxaD: document.getElementById('mav-coxa-d').value, coxaE: document.getElementById('mav-coxa-e').value
-            };
-            db.avaliacoes.unshift(obj); darXP(40); salvarDB(); renderHistoricoAvaliacao(); renderAvaliacaoResumo();
-            document.querySelectorAll('#modal-avaliacao input').forEach(i => { if(i.type !== 'date') i.value = '' });
-        }
-
-        function renderHistoricoAvaliacao() {
-            const trs = document.getElementById('lista-avaliacoes'); trs.innerHTML = '';
-            db.avaliacoes.forEach((av, i) => {
-                trs.innerHTML += `
-                    <tr class="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                        <td class="p-3 font-bold">${av.data.split('-').reverse().join('/')}</td>
-                        <td class="p-3 text-red-500 font-bold">${av.peso||'-'}k / ${av.altura||'-'}m</td>
-                        <td class="p-3 font-black text-strong">${av.imc} <span class="text-[8px] text-muted block">${getStatusImc(av.imc)}</span></td>
-                        <td class="p-3 text-red-500">${av.bf ? av.bf+'%' : '-'}</td>
-                        <td class="p-3 text-[10px] text-muted">${av.peito||'-'} / ${av.cintura||'-'} / ${av.quadril||'-'}</td>
-                        <td class="p-3 text-[10px] text-muted">${av.bracoD||'-'} / ${av.bracoE||'-'}</td>
-                        <td class="p-3 text-[10px] text-muted">${av.coxaD||'-'} / ${av.coxaE||'-'}</td>
-                        <td class="p-3 text-center"><button onclick="excAvaliacao(${i})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button></td>
-                    </tr>`;
-            });
-        }
-
-        function excAvaliacao(i) { db.avaliacoes.splice(i,1); salvarDB(); renderHistoricoAvaliacao(); renderAvaliacaoResumo(); }
 
         // ==========================================
-        // BIBLIOTECA, FICHAS DE TREINO E SONO
+        // ABA: MACROCICLO
         // ==========================================
-        function renderBiblioteca() {
-            const ul = document.getElementById('lista-anexos'); ul.innerHTML = '';
-            if(db.biblioteca.length === 0) ul.innerHTML = `<li class="text-[10px] text-muted font-bold italic py-2">Nenhum estudo salvo.</li>`;
-            db.biblioteca.forEach((b, i) => {
-                ul.innerHTML += `<li class="flex items-center justify-between p-2 hover:bg-bg-color rounded-lg group border border-transparent hover:border-theme transition-colors"><a href="${b.link}" target="_blank" class="text-xs font-semibold text-strong hover:text-blue-500 hover:underline flex items-center gap-2 truncate"><i class="fa-solid fa-link text-[10px] text-muted"></i> ${b.titulo}</a><button onclick="excAnexo(${i})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-xmark text-xs"></i></button></li>`;
-            });
-        }
-        function addAnexo() { let t = prompt("Nome:"); let l = prompt("Link (URL):"); if(t&&l){ db.biblioteca.push({ titulo: t, link: l }); salvarDB(); renderBiblioteca(); } }
-        function excAnexo(i) { db.biblioteca.splice(i,1); salvarDB(); renderBiblioteca(); }
+        function renderMacro() {
+            document.getElementById('macro-nome').value = bd.macroAtual.nome || '';
+            document.getElementById('macro-inicio').value = bd.macroAtual.inicio || '';
+            document.getElementById('macro-fim').value = bd.macroAtual.fim || '';
+            document.getElementById('macro-plano').value = bd.macroAtual.plano || '';
 
-        function renderSono() { 
-            const ul = document.getElementById('lista-sono'); ul.innerHTML = ''; 
-            db.sonoLogs.forEach((l, i) => { 
-                let e = '★'.repeat(l.qualidade) + '☆'.repeat(5-l.qualidade); 
-                ul.innerHTML += `<div class="flex justify-between items-center bg-bg-color border border-theme p-3 rounded-lg group"><div><p class="text-sm font-bold text-strong">${l.horas}h <span class="text-xs text-blue-500 ml-2">${e}</span></p><p class="text-[9px] font-bold text-muted uppercase tracking-widest">${l.data}</p></div><button onclick="db.sonoLogs.splice(${i},1); salvarDB(); renderSono();" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash text-xs"></i></button></div>`; 
-            }); 
-        }
-        function addSono() { let h = prompt("Horas dormidas?"); let q = prompt("Qualidade 1-5?"); if(h&&q){ db.sonoLogs.unshift({ data: new Date().toLocaleDateString('pt-BR'), horas: h, qualidade: parseInt(q) }); darXP(20); salvarDB(); renderSono(); } }
-
-        function renderFichas() { 
-            const c = document.getElementById('container-fichas'); c.innerHTML = ''; 
-            db.fichas.forEach((f, fi) => { 
-                let ex = f.exercicios.map((e, ei) => `<div class="grid grid-cols-12 gap-2 text-xs font-semibold items-center py-2 border-b border-theme/50 hover:bg-black/5 dark:hover:bg-white/5 px-2 rounded group"><div class="col-span-4 truncate">${e.nome}</div><div class="col-span-2 text-muted text-[10px]">${e.musculo}</div><div class="col-span-1 text-center">${e.series}</div><div class="col-span-2 text-center text-red-500">${e.reps}</div><div class="col-span-2 text-center text-muted">${e.descanso}</div><div class="col-span-1 text-right opacity-0 group-hover:opacity-100"><button onclick="db.fichas[${fi}].exercicios.splice(${ei},1); salvarDB(); renderFichas();" class="text-red-500"><i class="fa-solid fa-xmark"></i></button></div></div>`).join(''); 
-                c.innerHTML += `<div class="bg-bg-color border border-theme rounded-xl overflow-hidden"><div class="bg-panel p-4 flex justify-between items-center cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden')"><h4 class="text-sm font-black text-strong uppercase tracking-widest border-l-4 border-red-500 pl-3">${f.nome}</h4><div class="flex gap-3"><button onclick="if(confirm('Apagar ficha?')){ db.fichas.splice(${fi},1); salvarDB(); renderFichas(); }" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button><i class="fa-solid fa-chevron-down text-muted text-xs"></i></div></div><div class="hidden p-4 border-t border-theme"><div class="grid grid-cols-12 gap-2 text-[9px] font-black uppercase text-muted mb-2 px-2"><div class="col-span-4">Ex</div><div class="col-span-2">Alvo</div><div class="col-span-1 text-center">Ser</div><div class="col-span-2 text-center">Rep</div><div class="col-span-2 text-center">Pausa</div></div><div class="space-y-1 mb-4">${ex}</div><div class="flex justify-between"><button onclick="let n=prompt('Ex:');let m=prompt('Músculo:');let s=prompt('Series:');let r=prompt('Reps:');let d=prompt('Pausa:');if(n){db.fichas[${fi}].exercicios.push({nome:n,musculo:m,series:s,reps:r,descanso:d});salvarDB();renderFichas();}" class="text-[10px] font-bold text-red-500 hover:underline"><i class="fa-solid fa-plus mr-1"></i> Add Ex</button> <button onclick="darXP(50); alert('Treino Concluído! +50 XP');" class="bg-red-500 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-md">Finalizar Treino</button></div></div></div>`; 
-            }); 
-        }
-        function addFichaTreino() { let n=prompt("Nome do Treino:"); if(n){ db.fichas.push({id:Date.now(), nome:n, exercicios:[]}); salvarDB(); renderFichas(); } }
-
-        // ==========================================
-        // NUTRIÇÃO (DIETA & COMPRAS)
-        // ==========================================
-        function renderNutri() {
-            const ulD = document.getElementById('lista-dieta'); ulD.innerHTML = '';
-            db.dieta.forEach((d, i) => {
-                ulD.innerHTML += `<div class="p-4 bg-bg-color border border-theme rounded-xl group relative"><div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="editRef(${i})" class="text-muted hover:text-green-500"><i class="fa-solid fa-pen text-xs"></i></button><button onclick="excRef(${i})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button></div><h4 class="text-[10px] font-black uppercase tracking-widest text-green-500 mb-1 border-b border-theme/50 pb-1">${d.ref}</h4><p class="text-sm font-bold text-strong leading-relaxed">${d.itens}</p></div>`;
-            });
-            const ulC = document.getElementById('lista-compras-nutri'); ulC.innerHTML = '';
-            db.comprasNutri.forEach((c, i) => {
-                const box = c.comprado ? 'bg-orange-500 border-orange-500 text-white' : 'border-theme text-transparent hover:border-orange-500';
-                const txt = c.comprado ? 'text-muted line-through opacity-60' : 'text-strong';
-                ulC.innerHTML += `<li class="flex items-center gap-3 p-1 hover:bg-bg-color rounded group border border-transparent"><div onclick="toggleCompraNutri(${i})" class="w-4 h-4 rounded border flex items-center justify-center cursor-pointer transition-colors ${box}"><i class="fa-solid fa-check text-[10px]"></i></div><span onclick="editCompraNutri(${i})" class="text-xs font-semibold flex-1 cursor-pointer transition-colors ${txt}">${c.texto}</span><button onclick="excCompraNutri(${i})" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center"><i class="fa-solid fa-xmark text-[10px]"></i></button></li>`;
-            });
-        }
-        function addRefeicao() { let r=prompt("Nome (Ex: Almoço):"); let i=prompt("Alimentos / Quantidades:"); if(r&&i){ db.dieta.push({ref:r, itens:i}); salvarDB(); renderNutri(); } }
-        function editRef(i) { let r=prompt("Editar Nome:", db.dieta[i].ref); let it=prompt("Editar Itens:", db.dieta[i].itens); if(r&&it){ db.dieta[i].ref=r; db.dieta[i].itens=it; salvarDB(); renderNutri(); } }
-        function excRef(i) { if(confirm("Apagar refeição?")){ db.dieta.splice(i,1); salvarDB(); renderNutri(); } }
-        function addCompraNutri() { let t=prompt("Item:"); if(t){ db.comprasNutri.push({texto:t, comprado:false}); salvarDB(); renderNutri(); } }
-        function editCompraNutri(i) { let t=prompt("Editar:", db.comprasNutri[i].texto); if(t){ db.comprasNutri[i].texto=t; salvarDB(); renderNutri(); } }
-        function excCompraNutri(i) { db.comprasNutri.splice(i,1); salvarDB(); renderNutri(); }
-        function toggleCompraNutri(i) { db.comprasNutri[i].comprado = !db.comprasNutri[i].comprado; salvarDB(); renderNutri(); }
-
-        // ==========================================
-        // ESPORTES (LABORATÓRIO)
-        // ==========================================
-        function trocarFormEsporte() {
-            const tipo = document.getElementById('me-tipo').value;
-            ['corrida', 'futebol', 'custom'].forEach(t => document.getElementById(`form-${t}`).classList.add('hidden'));
-            if(tipo === 'corrida') document.getElementById('form-corrida').classList.remove('hidden');
-            if(tipo === 'futebol') document.getElementById('form-futebol').classList.remove('hidden');
-            if(tipo === 'custom') document.getElementById('form-custom').classList.remove('hidden');
-        }
-
-        function abrirModalEsporte() {
-            document.getElementById('me-data').value = new Date().toISOString().split('T')[0];
-            document.getElementById('modal-esporte').classList.remove('hidden'); document.getElementById('modal-esporte').classList.add('flex');
-            setTimeout(() => { document.getElementById('modal-esporte').classList.remove('opacity-0'); document.getElementById('me-content').classList.remove('scale-95'); }, 10);
-        }
-
-        function fecharModalEsporte() {
-            document.getElementById('modal-esporte').classList.add('opacity-0'); document.getElementById('me-content').classList.add('scale-95');
-            setTimeout(() => { document.getElementById('modal-esporte').classList.remove('flex'); document.getElementById('modal-esporte').classList.add('hidden'); }, 300);
-        }
-
-        function salvarEsporte() {
-            const tipo = document.getElementById('me-tipo').value;
-            const data = document.getElementById('me-data').value;
-            const local = document.getElementById('me-local').value || "Não informado";
-            const notas = document.getElementById('me-notas').value;
-            let obj = { id: Date.now(), tipo, data, local, notas };
-
-            if(tipo === 'corrida') {
-                obj.km = document.getElementById('me-run-km').value; obj.tempo = document.getElementById('me-run-tempo').value;
-                obj.pace = document.getElementById('me-run-pace').value; obj.vel = document.getElementById('me-run-vel').value;
-            } else if(tipo === 'futebol') {
-                obj.gols = document.getElementById('me-fut-gol').value; obj.ass = document.getElementById('me-fut-ass').value;
-                obj.notaFut = document.getElementById('me-fut-nota').value; obj.fadiga = document.getElementById('me-fut-fatiga').value;
-            } else {
-                obj.nomeCus = document.getElementById('me-cus-nome').value || 'Custom';
-                obj.metCus = document.getElementById('me-cus-met').value; obj.valCus = document.getElementById('me-cus-val').value;
+            const list = document.getElementById('lista-macros-arquivados');
+            list.innerHTML = '';
+            
+            if(bd.macrociclos.length === 0) {
+                list.innerHTML = '<p class="text-[10px] font-bold text-muted italic">Nenhum macrociclo arquivado.</p>';
+                return;
             }
 
-            db.esportes.unshift(obj); darXP(30); salvarDB(); fecharModalEsporte(); renderEsportes();
-            document.querySelectorAll('#modal-esporte input[type="text"], #modal-esporte input[type="number"], textarea').forEach(i => i.value='');
-        }
-
-        function editarEsporte(i) {
-            let e = db.esportes[i];
-            
-            let dataForm = prompt("Editar Data (YYYY-MM-DD):", e.data); if(dataForm !== null) e.data = dataForm;
-            let localForm = prompt("Editar Local/Título:", e.local); if(localForm !== null) e.local = localForm;
-            
-            if(e.tipo === 'corrida') {
-                let km = prompt("Editar Distância (Km):", e.km); if(km !== null) e.km = km;
-                let t = prompt("Editar Tempo (MM:SS):", e.tempo); if(t !== null) e.tempo = t;
-                let p = prompt("Editar Pace:", e.pace); if(p !== null) e.pace = p;
-                let v = prompt("Editar Vel. Máxima:", e.vel); if(v !== null) e.vel = v;
-            } else if(e.tipo === 'futebol') {
-                let g = prompt("Editar Gols:", e.gols); if(g !== null) e.gols = g;
-                let a = prompt("Editar Assistências:", e.ass); if(a !== null) e.ass = a;
-                let n = prompt("Editar Nota (0-10):", e.notaFut); if(n !== null) e.notaFut = n;
-                let f = prompt("Editar Cansaço (1-5):", e.fadiga); if(f !== null) e.fadiga = f;
-            } else {
-                let nm = prompt("Editar Nome do Esporte:", e.nomeCus); if(nm !== null) e.nomeCus = nm;
-                let mc = prompt("Editar Métrica:", e.metCus); if(mc !== null) e.metCus = mc;
-                let vc = prompt("Editar Valor:", e.valCus); if(vc !== null) e.valCus = vc;
-            }
-            
-            let nt = prompt("Editar Notas/Avaliação:", e.notas); if(nt !== null) e.notas = nt;
-            
-            salvarDB(); renderEsportes();
-        }
-
-        function renderEsportes() {
-            const filtro = document.getElementById('filtro-esporte').value;
-            const feed = document.getElementById('feed-esportes'); feed.innerHTML = '';
-
-            let list = db.esportes;
-            if(filtro !== 'todos') list = list.filter(e => e.tipo === filtro);
-
-            let totKm=0, totGols=0, totAss=0, totNota=0, futCount=0;
-            db.esportes.forEach(e => {
-                if(e.tipo==='corrida' && e.km) totKm += parseFloat(e.km);
-                if(e.tipo==='futebol') { if(e.gols) totGols += parseInt(e.gols); if(e.ass) totAss += parseInt(e.ass); if(e.notaFut) { totNota += parseFloat(e.notaFut); futCount++; } }
-            });
-            document.getElementById('stat-run-km').innerText = totKm.toFixed(1); document.getElementById('stat-fut-gols').innerText = totGols;
-            document.getElementById('stat-fut-ass').innerText = totAss; document.getElementById('stat-fut-nota').innerText = futCount > 0 ? (totNota/futCount).toFixed(1) : '-';
-
-            if(list.length === 0) { feed.innerHTML = `<p class="text-xs text-muted text-center py-4">Nenhum registro para exibir.</p>`; return; }
-
-            list.forEach((e, i) => {
-                let badge='', details=''; let dataF = e.data ? e.data.split('-').reverse().join('/') : '--';
-                if(e.tipo === 'corrida') {
-                    badge = `<span class="bg-blue-500/10 text-blue-500 border border-blue-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest"><i class="fa-solid fa-person-running mr-1"></i> Corrida</span>`;
-                    details = `<div class="flex gap-4 mt-3"><div class="text-center"><p class="text-[10px] text-muted uppercase font-bold">Distância</p><p class="text-sm font-black text-strong">${e.km} Km</p></div><div class="text-center"><p class="text-[10px] text-muted uppercase font-bold">Tempo</p><p class="text-sm font-black text-strong">${e.tempo}</p></div><div class="text-center"><p class="text-[10px] text-muted uppercase font-bold">Pace</p><p class="text-sm font-black text-blue-500">${e.pace}</p></div></div>`;
-                } else if (e.tipo === 'futebol') {
-                    badge = `<span class="bg-green-500/10 text-green-500 border border-green-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest"><i class="fa-solid fa-futbol mr-1"></i> Futebol</span>`;
-                    details = `<div class="flex gap-4 mt-3"><div class="text-center"><p class="text-[10px] text-muted uppercase font-bold">Gols</p><p class="text-sm font-black text-strong">${e.gols}</p></div><div class="text-center"><p class="text-[10px] text-muted uppercase font-bold">Assist.</p><p class="text-sm font-black text-strong">${e.ass}</p></div><div class="text-center"><p class="text-[10px] text-muted uppercase font-bold">Nota</p><p class="text-sm font-black text-green-500">${e.notaFut}</p></div></div>`;
-                } else {
-                    badge = `<span class="bg-accent/10 text-accent border border-accent/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest"><i class="fa-solid fa-bolt mr-1"></i> ${e.nomeCus}</span>`;
-                    details = `<div class="mt-3"><p class="text-[10px] text-muted uppercase font-bold">${e.metCus}</p><p class="text-sm font-black text-strong">${e.valCus}</p></div>`;
-                }
-
-                feed.innerHTML += `
-                    <div class="bg-bg-color border border-theme p-4 rounded-xl group relative">
-                        <div class="absolute top-4 right-4 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="editarEsporte(${i})" class="text-muted hover:text-blue-500"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="if(confirm('Apagar registro?')){ db.esportes.splice(${i},1); salvarDB(); renderEsportes(); }" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
+            bd.macrociclos.forEach((m, i) => {
+                list.innerHTML += `
+                    <div class="bg-panel border border-theme p-3 rounded-xl flex justify-between items-center group">
+                        <div>
+                            <p class="text-xs font-bold text-strong">${m.nome || 'Sem Nome'}</p>
+                            <p class="text-[9px] font-bold text-muted uppercase tracking-widest mt-1">${m.inicio} a ${m.fim}</p>
                         </div>
-                        <div class="flex justify-between items-start mb-2">${badge}<span class="text-[10px] font-bold text-muted">${dataF} • ${e.local}</span></div>
-                        ${details} ${e.notas ? `<p class="text-xs text-muted mt-3 italic bg-panel p-2 rounded border border-theme/50">"${e.notas}"</p>` : ''}
-                    </div>`;
+                        <button onclick="if(confirm('Excluir este arquivo?')){ bd.macrociclos.splice(${i},1); salvarDados(); renderMacro(); }" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                `;
             });
         }
 
+        function salvarMacroAtual() {
+            bd.macroAtual.nome = document.getElementById('macro-nome').value;
+            bd.macroAtual.inicio = document.getElementById('macro-inicio').value;
+            bd.macroAtual.fim = document.getElementById('macro-fim').value;
+            bd.macroAtual.plano = document.getElementById('macro-plano').value;
+            salvarDados();
+        }
+
+        function arquivarMacrociclo() {
+            if(!bd.macroAtual.nome) return alert("Dê um nome ao Macrociclo antes de arquivar.");
+            if(confirm("Deseja salvar este macrociclo no histórico e limpar o atual para um novo?")) {
+                bd.macrociclos.unshift({ ...bd.macroAtual, id: Date.now() });
+                bd.macroAtual = { nome: '', inicio: '', fim: '', plano: '' };
+                salvarDados();
+                renderMacro();
+            }
+        }
+
         // ==========================================
-        // BOOT SYSTEM
+        // ABA: MUSCULAÇÃO E FICHAS
         // ==========================================
-        window.onload = () => {
-            atualizarUXP(); carregarTextos();
-            renderSono(); renderPeriodizacao(); renderAvaliacaoResumo(); renderBiblioteca(); renderFichas();
-            renderNutri(); renderEsportes();
-        };
+        let filtroFichas = 'ativas'; // 'ativas' ou 'arquivadas'
+
+        function renderMusculo() {
+            renderFichas();
+            renderTrackerDashboard();
+        }
+
+        // --- Gestão de Fichas ---
+        function setFiltroFichas(status) {
+            filtroFichas = status;
+            document.getElementById('btn-ficha-ativas').className = `px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest shadow-md ${status === 'ativas' ? 'bg-blue-500 text-white' : 'bg-panel border border-theme text-muted hover:text-strong'}`;
+            document.getElementById('btn-ficha-arquivadas').className = `px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest shadow-md ${status === 'arquivadas' ? 'bg-blue-500 text-white' : 'bg-panel border border-theme text-muted hover:text-strong'}`;
+            renderFichas();
+        }
+
+        function renderFichas() {
+            const grid = document.getElementById('grid-fichas');
+            grid.innerHTML = '';
+            
+            let filtradas = bd.fichas.filter(f => filtroFichas === 'arquivadas' ? f.arquivada : !f.arquivada);
+
+            if(filtradas.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-8 text-center text-muted"><p class="text-[10px] font-bold uppercase tracking-widest">Nenhuma ficha encontrada.</p></div>`;
+                return;
+            }
+
+            filtradas.forEach(f => {
+                let exerciciosHTML = f.exercicios.map(e => `<li class="flex justify-between border-b border-theme/50 pb-1 mb-1"><span class="font-semibold text-strong truncate pr-2">${e.nome}</span><span class="text-muted shrink-0">${e.series}x${e.reps}</span></li>`).join('');
+                
+                grid.innerHTML += `
+                    <div class="bg-bg-color border border-theme rounded-2xl p-5 flex flex-col hover:border-blue-500 transition-colors shadow-sm relative group">
+                        <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="arquivarFicha(${f.id})" class="text-muted hover:text-blue-500 bg-panel border border-theme w-7 h-7 rounded-lg flex items-center justify-center" title="Arquivar/Desarquivar"><i class="fa-solid fa-box-archive text-[10px]"></i></button>
+                            <button onclick="excluirFicha(${f.id})" class="text-muted hover:text-red-500 bg-panel border border-theme w-7 h-7 rounded-lg flex items-center justify-center" title="Excluir"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                        </div>
+                        <h4 class="text-sm font-black text-strong leading-tight pr-16 mb-1">${f.titulo}</h4>
+                        <p class="text-[9px] font-bold text-muted uppercase tracking-widest mb-4">${f.objetivo || 'Treino'}</p>
+                        
+                        <div class="flex-1 bg-panel border border-theme rounded-xl p-3 mb-4">
+                            <ul class="text-[10px] space-y-1">${exerciciosHTML}</ul>
+                        </div>
+                        
+                        ${f.notas ? `<div class="mt-auto pt-3 border-t border-theme border-dashed"><p class="text-[9px] text-muted italic line-clamp-2">${f.notas}</p></div>` : ''}
+                    </div>
+                `;
+            });
+        }
+
+        // --- Modal Criar Ficha ---
+        function abrirModalNovaFicha() {
+            document.getElementById('mf-titulo').value = '';
+            document.getElementById('mf-objetivo').value = '';
+            document.getElementById('mf-notas').value = '';
+            tempExerciciosModal = [];
+            atualizarListaExerciciosModal();
+            
+            const m = document.getElementById('modal-ficha');
+            m.classList.remove('hidden'); m.classList.add('flex');
+            setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('mf-content').classList.remove('scale-95'); }, 10);
+        }
+        
+        function fecharModalNovaFicha() {
+            const m = document.getElementById('modal-ficha');
+            m.classList.add('opacity-0'); document.getElementById('mf-content').classList.add('scale-95');
+            setTimeout(() => { m.classList.remove('flex'); m.classList.add('hidden'); }, 300);
+        }
+
+        function addExercicioModal() {
+            const nome = document.getElementById('mf-ex-nome').value.trim();
+            const series = document.getElementById('mf-ex-series').value.trim() || '-';
+            const reps = document.getElementById('mf-ex-reps').value.trim() || '-';
+            const rest = document.getElementById('mf-ex-rest').value.trim() || '-';
+            if(!nome) return;
+            
+            tempExerciciosModal.push({ nome, series, reps, rest });
+            ['nome', 'series', 'reps', 'rest'].forEach(k => document.getElementById(`mf-ex-${k}`).value = '');
+            document.getElementById('mf-ex-nome').focus();
+            atualizarListaExerciciosModal();
+        }
+
+        function atualizarListaExerciciosModal() {
+            const container = document.getElementById('mf-lista-exercicios');
+            container.innerHTML = tempExerciciosModal.map((ex, i) => `
+                <div class="flex items-center justify-between text-xs bg-bg-color border border-theme p-2 rounded-lg">
+                    <span class="font-bold text-strong flex-1">${ex.nome}</span>
+                    <span class="text-muted w-24 text-center border-l border-theme">${ex.series}x${ex.reps}</span>
+                    <span class="text-muted w-16 text-center border-l border-theme hidden md:block">${ex.rest}</span>
+                    <button onclick="tempExerciciosModal.splice(${i},1); atualizarListaExerciciosModal();" class="text-red-500 ml-2 px-2"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function salvarFicha() {
+            const titulo = document.getElementById('mf-titulo').value.trim();
+            if(!titulo) return alert("A ficha precisa de um título.");
+            
+            bd.fichas.unshift({
+                id: Date.now(),
+                titulo,
+                objetivo: document.getElementById('mf-objetivo').value.trim(),
+                notas: document.getElementById('mf-notas').value.trim(),
+                exercicios: [...tempExerciciosModal],
+                arquivada: false
+            });
+            salvarDados();
+            fecharModalNovaFicha();
+            renderFichas();
+        }
+
+        function arquivarFicha(id) {
+            const f = bd.fichas.find(x => x.id === id);
+            if(f) { f.arquivada = !f.arquivada; salvarDados(); renderFichas(); }
+        }
+
+        function excluirFicha(id) {
+            if(confirm("Excluir ficha definitivamente?")) {
+                bd.fichas = bd.fichas.filter(x => x.id !== id);
+                salvarDados(); renderFichas();
+            }
+        }
+
+        // --- Tracker (Log de Treinos) ---
+        function abrirModalLogTreino() {
+            document.getElementById('mlt-data').value = new Date().toISOString().split('T')[0];
+            const select = document.getElementById('mlt-ficha');
+            select.innerHTML = '<option value="Outro (Sem Ficha)">Outro Treino (Livre)</option>';
+            bd.fichas.filter(f => !f.arquivada).forEach(f => {
+                select.innerHTML += `<option value="${f.titulo}">${f.titulo}</option>`;
+            });
+            
+            const m = document.getElementById('modal-log-treino');
+            m.classList.remove('hidden'); m.classList.add('flex');
+            setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('mlt-content').classList.remove('scale-95'); }, 10);
+        }
+
+        function fecharModalLogTreino() {
+            const m = document.getElementById('modal-log-treino');
+            m.classList.add('opacity-0'); document.getElementById('mlt-content').classList.add('scale-95');
+            setTimeout(() => { m.classList.remove('flex'); m.classList.add('hidden'); }, 300);
+        }
+
+        function salvarLogTreino() {
+            const dataStr = document.getElementById('mlt-data').value;
+            const ficha = document.getElementById('mlt-ficha').value;
+            if(!dataStr) return;
+
+            bd.logsTreino.push({ id: Date.now(), data: dataStr, ficha });
+            salvarDados();
+            fecharModalLogTreino();
+            renderTrackerDashboard();
+        }
+
+        function renderTrackerDashboard() {
+            // Últimos Logs Lista
+            const listaLogs = document.getElementById('lista-logs-treino');
+            listaLogs.innerHTML = '';
+            const logsOrdenados = [...bd.logsTreino].sort((a,b) => new Date(b.data) - new Date(a.data));
+            
+            if(logsOrdenados.length === 0) {
+                listaLogs.innerHTML = '<span class="text-[10px] text-muted font-bold italic">Nenhum treino registrado.</span>';
+            } else {
+                logsOrdenados.slice(0, 8).forEach((l, i) => {
+                    const dataF = l.data.split('-').reverse().join('/');
+                    listaLogs.innerHTML += `
+                        <div class="bg-panel border border-theme px-3 py-1.5 rounded-lg flex items-center gap-2 group cursor-pointer hover:border-accent transition-colors">
+                            <span class="text-[9px] font-black text-accent bg-accent/10 px-1.5 rounded">${dataF}</span>
+                            <span class="text-[10px] font-bold text-strong truncate max-w-[120px]">${l.ficha}</span>
+                            <button onclick="if(confirm('Excluir log?')){ bd.logsTreino.splice(bd.logsTreino.findIndex(x=>x.id===${l.id}), 1); salvarDados(); renderTrackerDashboard(); }" class="text-muted hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-xmark text-[9px]"></i></button>
+                        </div>
+                    `;
+                });
+            }
+
+            // Grid Tracker (4 Semanas)
+            const grid = document.getElementById('tracker-grid');
+            grid.innerHTML = '';
+            
+            // Map datas treinadas
+            const diasTreinados = new Set(bd.logsTreino.map(l => l.data));
+            
+            // Gerar ultimos 28 dias
+            const hoje = new Date();
+            // Ajustar para cair no domingo final (opcional, para alinhar grade)
+            let datas = [];
+            for(let i = 27; i >= 0; i--) {
+                let d = new Date(hoje);
+                d.setDate(d.getDate() - i);
+                datas.push(d.toISOString().split('T')[0]);
+            }
+
+            datas.forEach(dt => {
+                const isDone = diasTreinados.has(dt);
+                const classNome = isDone ? 'tracker-cell done' : 'tracker-cell empty';
+                const label = dt.split('-')[2]; // pega so o dia
+                grid.innerHTML += `<div class="${classNome}" title="${dt}">${isDone ? '<i class="fa-solid fa-check"></i>' : label}</div>`;
+            });
+        }
+
+
+        // ==========================================
+        // ABA: CARDIO & ESPORTES
+        // ==========================================
+        function renderEsportes() {
+            const lista = document.getElementById('lista-cardio');
+            lista.innerHTML = '';
+            
+            let totalKm = 0;
+            bd.esportes.sort((a,b) => new Date(b.data) - new Date(a.data)).forEach((e, i) => {
+                const km = parseFloat(e.distancia) || 0;
+                totalKm += km;
+                const d = e.data.split('-').reverse().join('/');
+                let icone = e.tipo === 'Corrida' ? 'fa-person-running' : e.tipo === 'Ciclismo' ? 'fa-person-biking' : e.tipo === 'Natação' ? 'fa-person-swimming' : 'fa-bolt';
+
+                lista.innerHTML += `
+                    <div class="bg-bg-color border border-theme p-5 rounded-2xl flex flex-col group hover:border-orange-500 transition-colors shadow-sm relative">
+                        <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="editarCardio(${e.id})" class="text-muted hover:text-blue-500 bg-panel border border-theme w-7 h-7 rounded-lg flex items-center justify-center"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                            <button onclick="excluirCardio(${e.id})" class="text-muted hover:text-red-500 bg-panel border border-theme w-7 h-7 rounded-lg flex items-center justify-center"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                        </div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500"><i class="fa-solid ${icone}"></i></div>
+                            <div>
+                                <h4 class="text-sm font-black text-strong uppercase tracking-widest">${e.tipo}</h4>
+                                <p class="text-[10px] font-bold text-muted">${d}</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center bg-panel rounded-xl p-3 border border-theme">
+                            <div class="text-center"><p class="text-[9px] font-black uppercase tracking-widest text-muted">Distância</p><p class="text-sm font-bold text-strong">${e.distancia || '-'}</p></div>
+                            <div class="text-center border-l border-theme px-4"><p class="text-[9px] font-black uppercase tracking-widest text-muted">Tempo</p><p class="text-sm font-bold text-strong">${e.tempo || '-'}</p></div>
+                            <div class="text-center border-l border-theme pl-4"><p class="text-[9px] font-black uppercase tracking-widest text-muted">BPM</p><p class="text-sm font-bold text-strong">${e.bpm || '-'}</p></div>
+                        </div>
+                        ${e.notas ? `<p class="text-[10px] font-medium text-muted mt-3 italic">"${e.notas}"</p>` : ''}
+                    </div>
+                `;
+            });
+
+            document.getElementById('c-total').innerText = bd.esportes.length;
+            document.getElementById('c-km').innerText = totalKm.toFixed(1);
+        }
+
+        function abrirModalCardio(id = null) {
+            document.getElementById('mc-id').value = id || '';
+            if(id) {
+                const e = bd.esportes.find(x => x.id === id);
+                document.getElementById('mc-data').value = e.data;
+                document.getElementById('mc-tipo').value = e.tipo;
+                document.getElementById('mc-distancia').value = e.distancia;
+                document.getElementById('mc-tempo').value = e.tempo;
+                document.getElementById('mc-bpm').value = e.bpm;
+                document.getElementById('mc-notas').value = e.notas;
+            } else {
+                document.getElementById('mc-data').value = new Date().toISOString().split('T')[0];
+                ['distancia', 'tempo', 'bpm', 'notas'].forEach(k => document.getElementById(`mc-${k}`).value = '');
+            }
+
+            const m = document.getElementById('modal-cardio');
+            m.classList.remove('hidden'); m.classList.add('flex');
+            setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('mc-content').classList.remove('scale-95'); }, 10);
+        }
+
+        function fecharModalCardio() {
+            const m = document.getElementById('modal-cardio');
+            m.classList.add('opacity-0'); document.getElementById('mc-content').classList.add('scale-95');
+            setTimeout(() => { m.classList.remove('flex'); m.classList.add('hidden'); }, 300);
+        }
+
+        function salvarCardio() {
+            const id = document.getElementById('mc-id').value;
+            const dados = {
+                data: document.getElementById('mc-data').value,
+                tipo: document.getElementById('mc-tipo').value,
+                distancia: document.getElementById('mc-distancia').value,
+                tempo: document.getElementById('mc-tempo').value,
+                bpm: document.getElementById('mc-bpm').value,
+                notas: document.getElementById('mc-notas').value
+            };
+
+            if(!dados.data) return;
+
+            if(id) {
+                const idx = bd.esportes.findIndex(x => x.id == id);
+                bd.esportes[idx] = { ...bd.esportes[idx], ...dados };
+            } else {
+                bd.esportes.push({ id: Date.now(), ...dados });
+            }
+
+            salvarDados(); fecharModalCardio(); renderEsportes();
+        }
+
+        function editarCardio(id) { abrirModalCardio(id); }
+        function excluirCardio(id) { if(confirm("Excluir atividade?")) { bd.esportes = bd.esportes.filter(x => x.id !== id); salvarDados(); renderEsportes(); } }
+
+        // ==========================================
+        // ABA: DIETA
+        // ==========================================
+        function renderDieta() {
+            document.getElementById('dieta-foco').value = bd.dieta.f || '';
+            document.getElementById('dieta-r1').value = bd.dieta.r1 || '';
+            document.getElementById('dieta-r2').value = bd.dieta.r2 || '';
+            document.getElementById('dieta-r3').value = bd.dieta.r3 || '';
+            document.getElementById('dieta-r4').value = bd.dieta.r4 || '';
+        }
+
+        function salvarDieta() {
+            bd.dieta.f = document.getElementById('dieta-foco').value;
+            bd.dieta.r1 = document.getElementById('dieta-r1').value;
+            bd.dieta.r2 = document.getElementById('dieta-r2').value;
+            bd.dieta.r3 = document.getElementById('dieta-r3').value;
+            bd.dieta.r4 = document.getElementById('dieta-r4').value;
+            salvarDados();
+            alert("Plano Alimentar guardado com sucesso!");
+        }
+
+        // ==========================================
+        // ABA: BIBLIOTECA / ARQUIVOS
+        // ==========================================
+        function renderBiblio() {
+            const grid = document.getElementById('grid-arquivos');
+            grid.innerHTML = '';
+
+            if(bd.arquivos.length === 0) {
+                grid.innerHTML = '<div class="col-span-full py-8 text-center text-muted"><p class="text-[10px] font-bold uppercase tracking-widest">Nenhum arquivo guardado.</p></div>';
+                return;
+            }
+
+            bd.arquivos.forEach((arq) => {
+                let conteudoHTML = '';
+                if(arq.tipo === 'nota') {
+                    conteudoHTML = `<div class="bg-bg-color border border-theme p-3 rounded-xl h-24 overflow-y-auto custom-scrollbar text-[10px] text-strong font-medium mb-3">${arq.conteudo}</div>`;
+                } else if(arq.tipo === 'img') {
+                    conteudoHTML = `<div class="h-24 bg-bg-color border border-theme rounded-xl mb-3 overflow-hidden flex items-center justify-center"><img src="${arq.conteudo}" class="max-h-full max-w-full object-contain"></div>`;
+                } else {
+                    conteudoHTML = `<div class="h-24 bg-bg-color border border-theme rounded-xl mb-3 flex items-center justify-center"><i class="fa-solid fa-file-pdf text-3xl text-red-500 opacity-80"></i></div>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="bg-panel border border-theme p-4 rounded-2xl flex flex-col group relative shadow-sm hover:border-purple-500 transition-colors">
+                        <button onclick="if(confirm('Excluir arquivo?')){ bd.arquivos = bd.arquivos.filter(x=>x.id!==${arq.id}); salvarDados(); renderBiblio(); }" class="absolute top-2 right-2 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-xmark"></i></button>
+                        <h4 class="text-xs font-black text-strong mb-3 pr-6 truncate">${arq.titulo}</h4>
+                        ${conteudoHTML}
+                        ${arq.tipo !== 'nota' ? `<a href="${arq.conteudo}" download="${arq.titulo}" class="text-[9px] font-bold uppercase tracking-widest text-center text-white bg-purple-500 py-2 rounded-lg hover:bg-purple-600 transition-colors">Download</a>` : `<span class="text-[9px] font-bold uppercase tracking-widest text-center text-purple-500 py-2">Nota Interna</span>`}
+                    </div>
+                `;
+            });
+        }
+
+        function abrirModalArquivo() {
+            document.getElementById('ma-titulo').value = '';
+            document.getElementById('ma-file').value = '';
+            document.getElementById('ma-nota').value = '';
+            const m = document.getElementById('modal-arquivo');
+            m.classList.remove('hidden'); m.classList.add('flex');
+            setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('ma-content').classList.remove('scale-95'); }, 10);
+        }
+
+        function fecharModalArquivo() {
+            const m = document.getElementById('modal-arquivo');
+            m.classList.add('opacity-0'); document.getElementById('ma-content').classList.add('scale-95');
+            setTimeout(() => { m.classList.remove('flex'); m.classList.add('hidden'); }, 300);
+        }
+
+        function processarEsalvarArquivo() {
+            const titulo = document.getElementById('ma-titulo').value.trim() || 'Sem Título';
+            const fileInput = document.getElementById('ma-file');
+            const nota = document.getElementById('ma-nota').value.trim();
+
+            if (nota) {
+                bd.arquivos.unshift({ id: Date.now(), titulo, tipo: 'nota', conteudo: nota });
+                salvarDados(); fecharModalArquivo(); renderBiblio();
+                return;
+            }
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if(file.size > 2.5 * 1024 * 1024) { // Limite de 2.5MB
+                    alert("Atenção: Arquivo muito grande para salvar direto no navegador. Escolha um menor (até 2MB) ou use a opção de 'Nota Escrita'.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const tipo = file.type.startsWith('image/') ? 'img' : 'file';
+                    bd.arquivos.unshift({ id: Date.now(), titulo, tipo, conteudo: e.target.result });
+                    salvarDados(); fecharModalArquivo(); renderBiblio();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert("Insira um ficheiro ou escreva uma nota.");
+            }
+        }
+
+        // ==========================================
+        // BACKUP & SYNC
+        // ==========================================
+        window.abrirModalSync = function() { document.getElementById('modal-sync').classList.remove('hidden'); document.getElementById('modal-sync').classList.add('flex'); setTimeout(() => { document.getElementById('modal-sync').classList.remove('opacity-0'); document.getElementById('ms-content').classList.remove('scale-95'); }, 10); };
+        window.fecharModalSync = function() { document.getElementById('modal-sync').classList.add('opacity-0'); document.getElementById('ms-content').classList.add('scale-95'); setTimeout(() => { document.getElementById('modal-sync').classList.remove('flex'); document.getElementById('modal-sync').classList.add('hidden'); }, 300); };
+        window.exportarBackup = function() { let backupData = {}; for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key.startsWith('lifeos_') || key === 'theme') { backupData[key] = localStorage.getItem(key); } } const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2)); const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); const dataHoje = new Date().toISOString().split('T')[0]; downloadAnchorNode.setAttribute("download", `lifeos_backup_${dataHoje}.json`); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove(); };
+        window.processarImportacao = function(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const importedData = JSON.parse(e.target.result); let hasValidKeys = false; for (const key in importedData) { if (key.startsWith('lifeos_') || key === 'theme') hasValidKeys = true; } if(!hasValidKeys) { alert("Ficheiro inválido."); return; } if(confirm("APAGAR DADOS ATUAIS e substituir pelo backup?")) { for (let i = localStorage.length - 1; i >= 0; i--) { const key = localStorage.key(i); if (key.startsWith('lifeos_')) localStorage.removeItem(key); } for (const key in importedData) { localStorage.setItem(key, importedData[key]); } alert("Sucesso!"); window.location.reload(); } } catch (error) { alert("Erro de formato."); } }; reader.readAsText(file); event.target.value = ''; };
+
+        // BOOT
+        window.onload = () => { carregarDados(); mudarAba('macro'); };
+
     </script>
 </body>
 </html>
